@@ -44,5 +44,5 @@ __marimo__/
 .DS_Store
 Thumbs.db
 
-# Generated docs (keep docs/ for GitHub Pages)
-# docs/*.html is generated but committed for Pages
+# Generated docs (built during CI for GitHub Pages)
+docs/

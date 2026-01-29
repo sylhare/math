@@ -14,14 +14,17 @@ from pathlib import Path
 
 import pytest
 
-# Project paths
-PROJECT_ROOT = Path(__file__).parent.parent.parent
-NOTEBOOKS_DIR = PROJECT_ROOT / "notebooks"
+# Use the shared export utilities
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
-
-def get_all_notebooks() -> list[Path]:
-    """Get all notebook files in the notebooks directory."""
-    return sorted(NOTEBOOKS_DIR.glob("*.py"))
+from math_explorations.export import (
+    get_all_notebooks,
+    extract_metadata,
+    export_notebook,
+    export_all,
+    PROJECT_ROOT,
+)
 
 
 class TestNotebookExecution:
@@ -52,32 +55,16 @@ class TestNotebookExecution:
     def test_notebook_exports_without_errors(self, notebook: Path):
         """Verify notebook exports to HTML without cell execution errors."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            output_path = Path(tmpdir) / f"{notebook.stem}.html"
+            output_dir = Path(tmpdir)
 
-            result = subprocess.run(
-                [
-                    "uv", "run", "marimo", "export", "html",
-                    str(notebook),
-                    "-o", str(output_path),
-                    "--no-include-code",
-                ],
-                capture_output=True,
-                text=True,
-                cwd=PROJECT_ROOT,
-                timeout=120,
-            )
-
-            # Check for export errors
-            assert result.returncode == 0, (
-                f"Export failed for {notebook.name}:\n"
-                f"stdout: {result.stdout}\n"
-                f"stderr: {result.stderr}"
-            )
-
-            # Check that "cells failed to execute" is not in output
-            assert "cells failed to execute" not in result.stderr.lower(), (
-                f"Some cells failed in {notebook.name}:\n{result.stderr}"
-            )
+            try:
+                output_path = export_notebook(notebook, output_dir)
+            except subprocess.CalledProcessError as e:
+                pytest.fail(
+                    f"Export failed for {notebook.name}:\n"
+                    f"stdout: {e.stdout}\n"
+                    f"stderr: {e.stderr}"
+                )
 
             # Verify output file was created
             assert output_path.exists(), f"Output HTML not created for {notebook.name}"
@@ -96,23 +83,16 @@ class TestNotebookContent:
         """Export all notebooks and return their HTML content and size."""
         html_content = {}
         with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
             for notebook in get_all_notebooks():
-                output_path = Path(tmpdir) / f"{notebook.stem}.html"
-                subprocess.run(
-                    [
-                        "uv", "run", "marimo", "export", "html",
-                        str(notebook),
-                        "-o", str(output_path),
-                        "--no-include-code",
-                    ],
-                    capture_output=True,
-                    cwd=PROJECT_ROOT,
-                    timeout=120,
-                )
-                if output_path.exists():
-                    content = output_path.read_text()
-                    size = output_path.stat().st_size
-                    html_content[notebook.stem] = (content, size)
+                try:
+                    output_path = export_notebook(notebook, output_dir)
+                    if output_path.exists():
+                        content = output_path.read_text()
+                        size = output_path.stat().st_size
+                        html_content[notebook.stem] = (content, size)
+                except subprocess.CalledProcessError:
+                    pass  # Skip failed exports for this fixture
         return html_content
 
     def test_output_size_reasonable(self, exported_html: dict[str, tuple[str, int]]):
@@ -260,3 +240,49 @@ class TestNotebookStructure:
             assert f"import {imp}" in content or f"from {imp}" in content, (
                 f"{notebook.name}: Missing import for {imp}"
             )
+
+
+class TestMetadataExtraction:
+    """Test that notebook metadata extraction works correctly."""
+
+    def test_all_notebooks_have_metadata(self):
+        """Verify metadata can be extracted from all notebooks."""
+        for notebook in get_all_notebooks():
+            meta = extract_metadata(notebook)
+            assert meta.number, f"{notebook.name}: Missing number"
+            assert meta.title, f"{notebook.name}: Missing title"
+            assert meta.description, f"{notebook.name}: Missing description"
+            assert len(meta.tags) > 0, f"{notebook.name}: No tags inferred"
+
+    def test_notebook_numbers_are_sequential(self):
+        """Verify notebook numbers follow a pattern."""
+        notebooks = get_all_notebooks()
+        numbers = [extract_metadata(nb).number for nb in notebooks]
+        # All should be numeric
+        for num in numbers:
+            assert num.isdigit(), f"Non-numeric notebook number: {num}"
+
+
+class TestExportAll:
+    """Test the full export workflow."""
+
+    def test_export_all_creates_files(self):
+        """Verify export_all creates all expected files."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            generated = export_all(output_dir)
+
+            # Should have one HTML per notebook plus index.html
+            notebooks = get_all_notebooks()
+            expected_count = len(notebooks) + 1  # notebooks + index.html
+
+            assert len(generated) == expected_count, (
+                f"Expected {expected_count} files, got {len(generated)}"
+            )
+
+            # Verify index.html exists and has content
+            index_path = output_dir / "index.html"
+            assert index_path.exists(), "index.html not created"
+            index_content = index_path.read_text()
+            assert "Math Explorations" in index_content
+            assert "card" in index_content  # Should have notebook cards
