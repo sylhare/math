@@ -119,7 +119,7 @@ def _(mo):
         | Saddle | $f(x,y) = x^2 - y^2$ | Horse saddle shape |
         | Plane | $f(x,y) = ax + by + c$ | Flat tilted surface |
         | Gaussian | $f(x,y) = e^{-(x^2+y^2)}$ | Bell curve in 2D |
-        | Ripples | $f(x,y) = \sin(\sqrt{x^2+y^2})$ | Circular waves |
+        | Ripples | $f(x,y) = \sin(3\sqrt{x^2+y^2})$ | Circular waves |
 
         Let's visualize these surfaces to build intuition.
         """
@@ -997,8 +997,8 @@ def _(mo):
         - $\nabla^2 f = 0$: The point equals its local average (**harmonic function**)
 
         **Physical meaning for heat**: Heat flows from high to low temperature. If a point
-        is hotter than its surroundings ($\nabla^2 T > 0$), heat flows in, cooling it.
-        If cooler ($\nabla^2 T < 0$), heat flows out.
+        is cooler than its surroundings ($\nabla^2 T > 0$), heat flows in, warming it.
+        If hotter ($\nabla^2 T < 0$), heat flows out, cooling it.
 
         Let's visualize steady-state heat distribution on a plate.
         """

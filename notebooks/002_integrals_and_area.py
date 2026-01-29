@@ -1,15 +1,3 @@
-# /// script
-# requires-python = ">=3.11"
-# dependencies = [
-#     "marimo",
-#     "polars>=1.0.0",
-#     "plotly>=5.18.0",
-#     "numpy>=1.26.0",
-#     "sympy>=1.12",
-#     "scipy>=1.11.0",
-# ]
-# ///
-
 import marimo
 
 __generated_with = "0.9.0"
@@ -189,8 +177,8 @@ def _(mo):
 
         Use the slider above to increase the number of polygon sides. Notice how:
         - With just 4 sides (square), the approximation is rough (~2.0 vs π ≈ 3.14159)
-        - With 24 sides, we're within 0.5% of the true area
-        - With 48 sides, the error is less than 0.15%
+        - With 24 sides, we're within about 1% of the true area
+        - With 48 sides, the error drops to about 0.3%
 
         Archimedes used 96-sided polygons to prove that $3\frac{10}{71} < \pi < 3\frac{1}{7}$,
         a result that stood for centuries!
@@ -367,9 +355,9 @@ def _(mo):
 
         Press **Animate** or use the slider to see how the Riemann sum improves:
 
-        - With 2 rectangles, we're off by about 50%
-        - With 8 rectangles, the error drops to about 6%
-        - With 64 rectangles, we're within 1.6% of the true value
+        - With 2 rectangles, the error is substantial (the rectangles overshoot significantly)
+        - With 8 rectangles, the error drops noticeably
+        - With 64 rectangles, we're getting quite close to the true value
 
         The rectangles are using the **right endpoint rule**—each rectangle's height
         is determined by the function value at its right edge. Other choices

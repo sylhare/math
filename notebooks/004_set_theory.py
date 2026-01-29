@@ -1245,7 +1245,7 @@ def _(mo):
 
 
 @app.cell
-def _(go):
+def _(go, np):
     # Visualize a homomorphism
     _fig_hom = go.Figure()
 

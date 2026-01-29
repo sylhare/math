@@ -193,7 +193,7 @@ def _(mo):
         The notation grows exponentially.
 
         **Key insight**: The natural number n, when written as a von Neumann ordinal,
-        contains 2ⁿ - 1 pairs of braces. Mathematics is built from nothing but
+        contains 2ⁿ pairs of braces. Mathematics is built from nothing but
         emptiness and the concept of "collection."
         """
     )
@@ -201,7 +201,7 @@ def _(mo):
 
 
 @app.cell
-def _(go):
+def _(go, np):
     # Visualize Von Neumann ordinal construction
     _fig = go.Figure()
 
@@ -1290,7 +1290,7 @@ def _(mo):
 
 
 @app.cell
-def _(go):
+def _(go, np):
     # Visualization of choice function
     _fig = go.Figure()
 
@@ -2505,9 +2505,9 @@ def _(go, make_subplots):
     # Show N5 (pentagon) and M3 (diamond)
     _fig = make_subplots(rows=1, cols=2, subplot_titles=["N₅ (Pentagon) - Not Modular", "M₃ (Diamond) - Not Distributive"])
 
-    # N5 Pentagon
-    _n5_nodes = {"0": (0, 0), "a": (-0.5, 1), "b": (0.5, 1), "c": (0, 2), "1": (0, 3)}
-    _n5_edges = [("0", "a"), ("0", "b"), ("a", "c"), ("b", "c"), ("c", "1")]
+    # N5 Pentagon: 0 < a < b < 1, and separately 0 < c < 1, with c incomparable to a,b
+    _n5_nodes = {"0": (0, 0), "a": (-0.5, 1), "b": (-0.5, 2), "c": (0.5, 1.5), "1": (0, 3)}
+    _n5_edges = [("0", "a"), ("a", "b"), ("b", "1"), ("0", "c"), ("c", "1")]
 
     for _a, _b in _n5_edges:
         _x0, _y0 = _n5_nodes[_a]
