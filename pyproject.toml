@@ -1,0 +1,28 @@
+[project]
+name = "math-explorations"
+version = "0.1.0"
+description = "Feynman-style interactive mathematics explorations"
+requires-python = ">=3.11"
+
+dependencies = [
+    "marimo==0.19.6",
+    "polars==1.37.1",
+    "plotly==6.5.2",
+    "numpy==2.4.1",
+    "sympy==1.14.0",
+    "scipy==1.17.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.0.2",
+    "pytest-timeout==2.4.0",
+]
+
+[tool.marimo]
+package_manager = "uv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+timeout = 120
