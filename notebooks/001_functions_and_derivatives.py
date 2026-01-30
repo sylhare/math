@@ -898,7 +898,12 @@ def _(mo):
         Find the derivative of $f(x) = \frac{x^2}{x + 1}$:
 
         Using the quotient rule with $u = x^2$ and $v = x + 1$:
-        $$f'(x) = \frac{u'v - uv'}{v^2} = \frac{(2x)(x+1) - (x^2)(1)}{(x+1)^2} = \frac{2x^2 + 2x - x^2}{(x+1)^2} = \frac{x^2 + 2x}{(x+1)^2}$$
+        $$\begin{aligned}
+        f'(x) &= \frac{u'v - uv'}{v^2} \\
+        &= \frac{(2x)(x+1) - (x^2)(1)}{(x+1)^2} \\
+        &= \frac{2x^2 + 2x - x^2}{(x+1)^2} \\
+        &= \frac{x^2 + 2x}{(x+1)^2}
+        \end{aligned}$$
 
         ### When to Use Which Rule
 
@@ -956,7 +961,11 @@ def _(mo):
         - $\frac{du}{dx} = 2x$ (power rule)
 
         **Step 3**: Multiply them together
-        $$\frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx} = \cos(x^2) \cdot 2x = 2x\cos(x^2)$$
+        $$\begin{aligned}
+        \frac{dy}{dx} &= \frac{dy}{du} \cdot \frac{du}{dx} \\
+        &= \cos(x^2) \cdot 2x \\
+        &= 2x\cos(x^2)
+        \end{aligned}$$
 
         ### Why the Chain Rule Works (Intuition)
 
@@ -1678,7 +1687,12 @@ def _(mo):
         The antiderivative of $f(x) = x^2$ is $F(x) = \frac{x^3}{3}$ (verify: $F'(x) = x^2$ ✓)
 
         By the Fundamental Theorem of Calculus:
-        $$\int_0^3 x^2 \, dx = F(3) - F(0) = \frac{3^3}{3} - \frac{0^3}{3} = \frac{27}{3} - 0 = 9$$
+        $$\begin{aligned}
+        \int_0^3 x^2 \, dx &= F(3) - F(0) \\
+        &= \frac{3^3}{3} - \frac{0^3}{3} \\
+        &= \frac{27}{3} - 0 \\
+        &= 9
+        \end{aligned}$$
 
         This is much easier than computing an infinite sum of rectangles!
         """

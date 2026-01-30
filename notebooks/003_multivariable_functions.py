@@ -962,8 +962,12 @@ def _(mo):
 
         **Exact calculation** for $f(x,y) = x^2 + y^2$ over $[0,2] \times [0,2]$:
 
-        $$\int_0^2 \int_0^2 (x^2 + y^2) \, dy \, dx = \int_0^2 \left[ x^2 y + \frac{y^3}{3} \right]_0^2 dx$$
-        $$= \int_0^2 \left( 2x^2 + \frac{8}{3} \right) dx = \left[ \frac{2x^3}{3} + \frac{8x}{3} \right]_0^2 = \frac{16}{3} + \frac{16}{3} = \frac{32}{3} \approx 10.667$$
+        $$\begin{aligned}
+        \int_0^2 \int_0^2 (x^2 + y^2) \, dy \, dx &= \int_0^2 \left[ x^2 y + \frac{y^3}{3} \right]_0^2 dx \\
+        &= \int_0^2 \left( 2x^2 + \frac{8}{3} \right) dx \\
+        &= \left[ \frac{2x^3}{3} + \frac{8x}{3} \right]_0^2 \\
+        &= \frac{16}{3} + \frac{16}{3} = \frac{32}{3} \approx 10.667
+        \end{aligned}$$
         """
     )
     return
@@ -1295,7 +1299,11 @@ def _(mo):
 
         Computing the area of a circle $x^2 + y^2 \leq R^2$ using polar coordinates:
 
-        $$A = \iint dx \, dy = \int_0^{2\pi} \int_0^R r \, dr \, d\theta = \int_0^{2\pi} \frac{R^2}{2} \, d\theta = \pi R^2$$
+        $$\begin{aligned}
+        A &= \iint dx \, dy \\
+        &= \int_0^{2\pi} \int_0^R r \, dr \, d\theta \\
+        &= \int_0^{2\pi} \frac{R^2}{2} \, d\theta = \pi R^2
+        \end{aligned}$$
 
         The symmetry makes the calculation trivial in polar coordinates!
         """

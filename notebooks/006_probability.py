@@ -1380,7 +1380,11 @@ def _(mo):
         $$= 0.99 \\times 0.01 + 0.01 \\times 0.99 = 0.0099 + 0.0099 = 0.0198$$
 
         So:
-        $$P(\\text{disease}|\\text{positive}) = \\frac{0.99 \\times 0.01}{0.0198} = \\frac{0.0099}{0.0198} = 0.5 = 50\\%$$
+        $$\\begin{aligned}
+        P(\\text{disease}|\\text{positive}) &= \\frac{0.99 \\times 0.01}{0.0198} \\\\
+        &= \\frac{0.0099}{0.0198} \\\\
+        &= 0.5 = 50\\%
+        \\end{aligned}$$
         """
     )
     return
@@ -2546,7 +2550,11 @@ def _(mo):
 
         **Expected value**:
 
-        $$E[\\text{payout}] = \\frac{1}{2}(2) + \\frac{1}{4}(4) + \\frac{1}{8}(8) + \\cdots = 1 + 1 + 1 + \\cdots = \\infty$$
+        $$\\begin{aligned}
+        E[\\text{payout}] &= \\frac{1}{2}(2) + \\frac{1}{4}(4) + \\frac{1}{8}(8) + \\cdots \\\\
+        &= 1 + 1 + 1 + \\cdots \\\\
+        &= \\infty
+        \\end{aligned}$$
 
         The expected value is **infinite**!
 
