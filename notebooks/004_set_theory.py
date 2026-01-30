@@ -137,8 +137,7 @@ def _(mo):
 def _():
     import numpy as np
     import plotly.graph_objects as go
-    from plotly.subplots import make_subplots
-    return go, make_subplots, np
+    return go, np
 
 
 @app.cell
@@ -395,7 +394,7 @@ def _(go, np, operation_selector):
     _fig_venn.add_trace(go.Scatter(
         x=_circle_a_x, y=_circle_a_y,
         fill="toself",
-        fillcolor=_c["a_only"] if _op != "complement" else _c["a_only"],
+        fillcolor=_c["a_only"],
         line=dict(color="#00d4ff", width=2),
         name="A",
         opacity=0.7,

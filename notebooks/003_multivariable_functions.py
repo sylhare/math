@@ -143,7 +143,7 @@ def _(mo):
             "Paraboloid: x² + y²": "paraboloid",
             "Saddle: x² - y²": "saddle",
             "Gaussian: e^(-(x²+y²))": "gaussian",
-            "Ripples: sin(√(x²+y²))": "ripples",
+            "Ripples: sin(3√(x²+y²))": "ripples",
             "Plane: x + y": "plane",
             "Monkey Saddle: x³ - 3xy²": "monkey_saddle",
         },
@@ -1026,6 +1026,9 @@ def _(go, np):
         for _i in range(1, _n-1):
             for _j in range(1, _n-1):
                 _T[_i, _j] = 0.25 * (_T[_i+1, _j] + _T[_i-1, _j] + _T[_i, _j+1] + _T[_i, _j-1])
+        # Check for convergence
+        if np.max(np.abs(_T - _T_old)) < 1e-6:
+            break
 
     _x = np.linspace(0, 1, _n)
     _y = np.linspace(0, 1, _n)

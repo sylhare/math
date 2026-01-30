@@ -10,10 +10,10 @@ def _():
     import numpy as np
     import plotly.graph_objects as go
     import sympy as sp
-    from sympy import Symbol, latex, sin, cos, exp, log, sqrt, pi, integrate, oo
+    from sympy import Symbol, sin, cos, exp, sqrt, integrate
     import polars as pl
     from scipy import integrate as sci_integrate
-    return go, latex, mo, np, pl, sp, cos, exp, log, pi, sin, sqrt, Symbol, integrate, oo, sci_integrate
+    return go, mo, np, pl, sp, cos, exp, sin, sqrt, Symbol, integrate, sci_integrate
 
 
 @app.cell
@@ -646,7 +646,7 @@ def _(integral_function, lower_bound, upper_bound, go, np, sp, Symbol, integrate
         _definite = integrate(_expr, (_x, _a, _b))
         _result = float(_definite.evalf())
         _antideriv_str = sp.latex(_antideriv)
-    except:
+    except Exception:
         _result = None
         _antideriv_str = "?"
 
@@ -756,7 +756,7 @@ def _(mo):
 
         $$\int_a^b f(x) \, dx \approx \frac{\Delta x}{2} \left[ f(x_0) + 2f(x_1) + 2f(x_2) + \cdots + 2f(x_{n-1}) + f(x_n) \right]$$
 
-        **Error**: $O(1/n^2)$ — to halve the error, multiply rectangles by $\sqrt{2}$.
+        **Error**: $O(1/n^2)$ — to halve the error, multiply $n$ by $\sqrt{2}$.
 
         ### Method 3: Simpson's Rule
 
@@ -765,7 +765,7 @@ def _(mo):
 
         $$\int_a^b f(x) \, dx \approx \frac{\Delta x}{3} \left[ f(x_0) + 4f(x_1) + 2f(x_2) + 4f(x_3) + \cdots + 4f(x_{n-1}) + f(x_n) \right]$$
 
-        **Error**: $O(1/n^4)$ — dramatically better! To halve the error, multiply by $\sqrt[4]{2} \approx 1.19$.
+        **Error**: $O(1/n^4)$ — dramatically better! To halve the error, multiply $n$ by $\sqrt[4]{2} \approx 1.19$.
 
         Simpson's Rule is remarkably accurate for smooth functions.
         """

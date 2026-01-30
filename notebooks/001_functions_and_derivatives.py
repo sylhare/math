@@ -10,9 +10,9 @@ def _():
     import numpy as np
     import plotly.graph_objects as go
     import sympy as sp
-    from sympy import Symbol, latex, sin, cos, exp, log, sqrt, pi
+    from sympy import Symbol, sin, cos, exp, log, sqrt
     import polars as pl
-    return go, latex, mo, np, pl, sp, cos, exp, log, pi, sin, sqrt, Symbol
+    return go, mo, np, pl, sp, cos, exp, log, sin, sqrt, Symbol
 
 
 @app.cell
@@ -1386,8 +1386,8 @@ def _(mo):
         The **second derivative** $f''(x)$ tells us about **concavity**—whether the function
         curves upward or downward:
 
-        - $f''(x) > 0$: Function is **concave up** (curves like a smile 😊)
-        - $f''(x) < 0$: Function is **concave down** (curves like a frown 😞)
+        - $f''(x) > 0$: Function is **concave up** (curves upward like $\cup$)
+        - $f''(x) < 0$: Function is **concave down** (curves downward like $\cap$)
 
         At a critical point where $f'(c) = 0$:
 

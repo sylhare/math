@@ -445,7 +445,7 @@ def _(mo):
 
 
 @app.cell
-def _(go):
+def _(go, make_subplots):
     # Visualize 1 + ω vs ω + 1
     _fig = make_subplots(rows=2, cols=1, subplot_titles=["1 + ω = ω", "ω + 1 > ω"], vertical_spacing=0.3)
 
@@ -852,7 +852,7 @@ def _(mo, pairing_step):
 
 
 @app.cell
-def _(go, pairing_step):
+def _(go, np, pairing_step):
     def _cantor_unpair(z):
         """Inverse of Cantor pairing function."""
         # Find which diagonal z is on
@@ -2164,55 +2164,59 @@ def _(mo):
 @app.cell
 def _(go):
     # Schröder-Bernstein visualization
+    # Show two sets of the same infinite cardinality (represented finitely)
+    # with injections in both directions
     _fig = go.Figure()
 
-    # Set A elements
-    _A = ["a₁", "a₂", "a₃", "a₄", "a₅"]
-    _A_y = [4, 3, 2, 1, 0]
+    # Set A: even numbers {0, 2, 4, 6, ...} represented by first few
+    _A = ["0", "2", "4", "6"]
+    _A_y = [3, 2, 1, 0]
 
-    # Set B elements
-    _B = ["b₁", "b₂", "b₃", "b₄"]
-    _B_y = [3.5, 2.5, 1.5, 0.5]
+    # Set B: natural numbers {0, 1, 2, 3, ...} represented by first few
+    _B = ["0", "1", "2", "3", "4"]
+    _B_y = [3.5, 2.5, 1.5, 0.5, -0.5]
 
-    # Draw A
+    # Draw A (evens)
     for _i, (_a, _y) in enumerate(zip(_A, _A_y)):
         _fig.add_trace(go.Scatter(
             x=[0], y=[_y], mode="markers+text",
             marker=dict(size=30, color="#4ecdc4"),
             text=[_a], textposition="middle center",
-            textfont=dict(size=10, color="#1a1a2e"),
+            textfont=dict(size=12, color="#1a1a2e"),
             showlegend=False,
         ))
 
-    # Draw B
+    # Draw B (naturals)
     for _i, (_b, _y) in enumerate(zip(_B, _B_y)):
         _fig.add_trace(go.Scatter(
-            x=[3], y=[_y], mode="markers+text",
+            x=[4], y=[_y], mode="markers+text",
             marker=dict(size=30, color="#ff6b6b"),
             text=[_b], textposition="middle center",
-            textfont=dict(size=10, color="#1a1a2e"),
+            textfont=dict(size=12, color="#1a1a2e"),
             showlegend=False,
         ))
 
-    # Injection f: A → B (some elements of B not hit)
-    _f_arrows = [(0, 0), (1, 1), (2, 2), (3, 3), (4, 1)]  # a₅ also maps to b₂
-    for _ai, _bi in _f_arrows[:4]:  # Just first 4 for clarity
+    # Injection f: A → B (inclusion: 0→0, 2→2, 4→4, 6→6) - evens into naturals
+    _f_arrows = [(0, 0), (1, 2), (2, 4)]  # 0→0, 2→2, 4→4
+    for _ai, _bi in _f_arrows:
         _fig.add_annotation(
-            x=2.7, y=_B_y[_bi], ax=0.3, ay=_A_y[_ai],
+            x=3.7, y=_B_y[_bi], ax=0.3, ay=_A_y[_ai],
             xref="x", yref="y", axref="x", ayref="y",
             showarrow=True, arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor="#00d4ff",
         )
 
     # Labels
-    _fig.add_annotation(x=0, y=5, text="Set A", font=dict(size=14, color="#4ecdc4"), showarrow=False)
-    _fig.add_annotation(x=3, y=5, text="Set B", font=dict(size=14, color="#ff6b6b"), showarrow=False)
-    _fig.add_annotation(x=1.5, y=5, text="f: A → B", font=dict(size=12, color="#00d4ff"), showarrow=False)
-    _fig.add_annotation(x=1.5, y=-1, text="Both injections exist ⟹ bijection exists!", font=dict(size=12, color="#ffd93d"), showarrow=False)
+    _fig.add_annotation(x=0, y=4.2, text="A = Evens", font=dict(size=12, color="#4ecdc4"), showarrow=False)
+    _fig.add_annotation(x=4, y=4.2, text="B = ℕ", font=dict(size=12, color="#ff6b6b"), showarrow=False)
+    _fig.add_annotation(x=2, y=4.2, text="f: n ↦ n", font=dict(size=11, color="#00d4ff"), showarrow=False)
+    _fig.add_annotation(x=2, y=-1.5, text="f: A ↪ B (inclusion)", font=dict(size=10, color="#00d4ff"), showarrow=False)
+    _fig.add_annotation(x=2, y=-2, text="g: B ↪ A (n ↦ 2n)", font=dict(size=10, color="#ffd93d"), showarrow=False)
+    _fig.add_annotation(x=2, y=-2.7, text="Both injections exist ⟹ |A| = |B|", font=dict(size=11, color="#a0a0a0"), showarrow=False)
 
     _fig.update_layout(
-        title=dict(text="Schröder-Bernstein: Injections in Both Directions ⟹ Bijection", font=dict(color="#eaeaea", size=14)),
-        xaxis=dict(visible=False, range=[-1, 4]),
-        yaxis=dict(visible=False, range=[-2, 6]),
+        title=dict(text="Schröder-Bernstein: Evens ↔ Naturals", font=dict(color="#eaeaea", size=14)),
+        xaxis=dict(visible=False, range=[-1, 5]),
+        yaxis=dict(visible=False, range=[-3.5, 5]),
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
         height=400,

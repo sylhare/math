@@ -125,6 +125,16 @@ def _infer_tags(content: str, stem: str) -> list[str]:
         "monte carlo": "Monte Carlo",
         "history": "History",
         "double integral": "Double Integrals",
+        "probability": "Probability",
+        "bayes": "Bayes' Theorem",
+        "conditional": "Conditional Probability",
+        "distribution": "Distributions",
+        "binomial": "Binomial",
+        "poisson": "Poisson",
+        "normal": "Normal Distribution",
+        "expected value": "Expected Value",
+        "variance": "Variance",
+        "random": "Random Variables",
     }
 
     for keyword, tag in tag_keywords.items():
