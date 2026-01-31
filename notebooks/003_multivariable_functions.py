@@ -698,36 +698,36 @@ def _(mo):
 @app.cell
 def _(go, np):
     # Animated saddle point visualization
-    _x = np.linspace(-2, 2, 50)
-    _y = np.linspace(-2, 2, 50)
+    _x = np.linspace(-2, 2, 30)  # Reduced resolution for smaller file size
+    _y = np.linspace(-2, 2, 30)
     _X, _Y = np.meshgrid(_x, _y)
     _Z = _X**2 - _Y**2
 
-    # Create slices through the saddle
+    # Create slices through the saddle - only animate the slice, not the surface
     _frames = []
-    _angles = np.linspace(0, 2*np.pi, 60)
+    _angles = np.linspace(0, 2*np.pi, 30)  # Reduced frames for smaller file size
 
     for _angle in _angles:
         # Slice along direction at angle
-        _t = np.linspace(-2, 2, 100)
+        _t = np.linspace(-2, 2, 50)
         _slice_x = _t * np.cos(_angle)
         _slice_y = _t * np.sin(_angle)
         _slice_z = _slice_x**2 - _slice_y**2
 
+        # Only include the changing traces in frames (not the static surface)
         _frames.append(go.Frame(
             data=[
-                go.Surface(x=_X, y=_Y, z=_Z, colorscale="RdBu", showscale=False, opacity=0.7),
                 go.Scatter3d(
                     x=_slice_x, y=_slice_y, z=_slice_z,
                     mode="lines",
                     line=dict(color="#00d4ff", width=6),
                 ),
-                go.Scatter3d(x=[0], y=[0], z=[0], mode="markers", marker=dict(size=8, color="#ffff00")),
             ],
+            traces=[1],  # Only update trace index 1 (the slice)
             name=str(_angle),
         ))
 
-    _t_init = np.linspace(-2, 2, 100)
+    _t_init = np.linspace(-2, 2, 50)
     _fig_saddle = go.Figure(
         data=[
             go.Surface(x=_X, y=_Y, z=_Z, colorscale="RdBu", showscale=False, opacity=0.7),
@@ -1169,18 +1169,22 @@ def _(gd_lr_slider, gd_x0_slider, gd_y0_slider, go, np):
     _path = np.array(_path)
     _z_path = _path[:, 0]**2 + _path[:, 1]**2
 
-    # Surface
-    _xs = np.linspace(-2, 2, 50)
-    _ys = np.linspace(-2, 2, 50)
+    # Surface - reduced resolution for smaller file size
+    _xs = np.linspace(-2, 2, 30)
+    _ys = np.linspace(-2, 2, 30)
     _Xs, _Ys = np.meshgrid(_xs, _ys)
     _Zs = _Xs**2 + _Ys**2
 
-    # Create frames for animation
+    # Create frames for animation - only include changing traces, not the static surface
     _frames = []
-    for _k in range(1, len(_path)):
+    # Sample every few steps to reduce number of frames
+    _step_indices = list(range(0, len(_path), max(1, len(_path) // 30)))
+    if _step_indices[-1] != len(_path) - 1:
+        _step_indices.append(len(_path) - 1)
+
+    for _k in _step_indices[1:]:  # Skip first (it's the initial state)
         _frames.append(go.Frame(
             data=[
-                go.Surface(x=_Xs, y=_Ys, z=_Zs, colorscale="Viridis", opacity=0.6, showscale=False),
                 go.Scatter3d(
                     x=_path[:_k+1, 0], y=_path[:_k+1, 1], z=_z_path[:_k+1],
                     mode="lines+markers",
@@ -1193,12 +1197,19 @@ def _(gd_lr_slider, gd_x0_slider, gd_y0_slider, go, np):
                     marker=dict(size=8, color="#00d4ff"),
                 ),
             ],
+            traces=[1, 2],  # Only update trace indices 1 and 2 (path and current point)
             name=str(_k),
         ))
 
     _fig_gd = go.Figure(
         data=[
             go.Surface(x=_Xs, y=_Ys, z=_Zs, colorscale="Viridis", opacity=0.6, showscale=False),
+            go.Scatter3d(
+                x=[_path[0, 0]], y=[_path[0, 1]], z=[_z_path[0]],
+                mode="lines+markers",
+                line=dict(color="#ff6b6b", width=4),
+                marker=dict(size=4, color="#ff6b6b"),
+            ),
             go.Scatter3d(
                 x=[_path[0, 0]], y=[_path[0, 1]], z=[_z_path[0]],
                 mode="markers",
