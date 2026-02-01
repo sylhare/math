@@ -1,3 +1,3 @@
-"""Math Explorations - Feynman-style interactive mathematics."""
+"""Math Explorations - Interactive mathematics."""
 
 __version__ = "0.1.0"

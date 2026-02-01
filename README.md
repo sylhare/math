@@ -1,6 +1,6 @@
 # Math Explorations
 
-Feynman-style interactive mathematics explorations using [marimo](https://marimo.io) notebooks.
+Interactive mathematics explorations using [marimo](https://marimo.io) notebooks.
 
 ## Overview
 
@@ -81,7 +81,6 @@ uv run pytest tests/e2e/
 ## Inspiration
 
 This project is inspired by:
-- Richard Feynman's approach to teaching physics
 - Grant Sanderson's [3Blue1Brown](https://www.3blue1brown.com) visual mathematics
 - The belief that mathematics should be explored, not just memorized
 

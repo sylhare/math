@@ -1,7 +1,7 @@
 [project]
 name = "math-explorations"
 version = "0.1.0"
-description = "Feynman-style interactive mathematics explorations"
+description = "Interactive mathematics explorations"
 requires-python = ">=3.11"
 
 dependencies = [

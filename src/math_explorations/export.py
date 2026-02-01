@@ -216,118 +216,169 @@ def generate_index_html(notebooks: list[NotebookMetadata], output_dir: Path) -> 
         }}
 
         body {{
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #eaeaea;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            background: #ffffff;
+            color: #1a1a1a;
             min-height: 100vh;
-            padding: 2rem;
+            padding: 3rem 2rem;
+            line-height: 1.7;
         }}
 
         .container {{
-            max-width: 1200px;
+            max-width: 720px;
             margin: 0 auto;
         }}
 
         header {{
-            text-align: center;
             margin-bottom: 3rem;
-            padding: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #e0e0e0;
         }}
 
         h1 {{
-            font-size: 3rem;
+            font-size: 2.5rem;
+            font-weight: normal;
+            font-style: italic;
             margin-bottom: 0.5rem;
-            background: linear-gradient(90deg, #00d4ff, #4ecdc4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #1a1a1a;
         }}
 
         .subtitle {{
-            font-size: 1.2rem;
-            color: #a0a0a0;
-            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: #c41e3a;
+            margin-bottom: 1.5rem;
+            font-style: normal;
         }}
 
         .description {{
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-            color: #c0c0c0;
+            font-size: 1rem;
+            color: #444444;
+            line-height: 1.8;
         }}
 
         .notebooks {{
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 1.5rem;
-            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
         }}
 
         .card {{
-            background: rgba(22, 33, 62, 0.8);
-            border: 1px solid #2d3a4f;
-            border-radius: 12px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 1.5rem 0;
             text-decoration: none;
             color: inherit;
             display: block;
+            transition: background-color 0.2s ease;
         }}
 
         .card:hover {{
-            transform: translateY(-4px);
-            border-color: #00d4ff;
-            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.2);
+            background-color: #fafafa;
+        }}
+
+        .card:last-child {{
+            border-bottom: none;
         }}
 
         .card-number {{
-            font-size: 0.8rem;
-            color: #00d4ff;
-            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #c41e3a;
+            margin-bottom: 0.25rem;
+            font-family: Georgia, serif;
         }}
 
         .card-title {{
-            font-size: 1.3rem;
-            margin-bottom: 0.75rem;
-            color: #eaeaea;
+            font-size: 1.25rem;
+            font-weight: normal;
+            margin-bottom: 0.5rem;
+            color: #1a1a1a;
         }}
 
         .card-description {{
-            font-size: 0.9rem;
-            color: #a0a0a0;
-            line-height: 1.5;
+            font-size: 0.95rem;
+            color: #555555;
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
         }}
 
         .card-tags {{
-            margin-top: 1rem;
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
         }}
 
         .tag {{
-            background: rgba(0, 212, 255, 0.1);
-            color: #00d4ff;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            background: transparent;
+            color: #888888;
+            padding: 0;
+            font-size: 0.85rem;
+            font-style: italic;
+        }}
+
+        .tag::after {{
+            content: ",";
+        }}
+
+        .tag:last-child::after {{
+            content: "";
         }}
 
         footer {{
-            text-align: center;
             margin-top: 3rem;
-            padding: 2rem;
-            color: #a0a0a0;
+            padding-top: 2rem;
+            border-top: 1px solid #e0e0e0;
+            color: #888888;
             font-size: 0.9rem;
         }}
 
         footer a {{
-            color: #00d4ff;
+            color: #c41e3a;
             text-decoration: none;
         }}
 
         footer a:hover {{
             text-decoration: underline;
+        }}
+
+        @media (max-width: 768px) {{
+            body {{
+                padding: 2rem 1rem;
+            }}
+
+            h1 {{
+                font-size: 1.8rem;
+            }}
+
+            .subtitle {{
+                font-size: 1rem;
+            }}
+
+            .card-title {{
+                font-size: 1.1rem;
+            }}
+        }}
+
+        @media (max-width: 480px) {{
+            body {{
+                padding: 1.5rem 0.75rem;
+            }}
+
+            h1 {{
+                font-size: 1.5rem;
+            }}
+
+            .card {{
+                padding: 1rem 0;
+            }}
+
+            .card-title {{
+                font-size: 1rem;
+            }}
+
+            .card-description {{
+                font-size: 0.9rem;
+            }}
         }}
     </style>
 </head>
@@ -335,7 +386,7 @@ def generate_index_html(notebooks: list[NotebookMetadata], output_dir: Path) -> 
     <div class="container">
         <header>
             <h1>Math Explorations</h1>
-            <p class="subtitle">Feynman-style Interactive Mathematics</p>
+            <p class="subtitle">Interactive Mathematics</p>
             <p class="description">
                 A collection of interactive notebooks exploring mathematics through
                 historical narrative, animated visualizations, and hands-on exploration.

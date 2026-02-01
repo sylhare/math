@@ -57,7 +57,13 @@ DARK_THEME: dict[str, Any] = {
         "bordercolor": COLORS["grid"],
         "borderwidth": 1,
         "font": {"color": COLORS["text"]},
+        "orientation": "h",
+        "yanchor": "bottom",
+        "y": -0.15,
+        "xanchor": "center",
+        "x": 0.5,
     },
+    "margin": {"l": 40, "r": 40, "t": 50, "b": 80},
     "hoverlabel": {
         "bgcolor": COLORS["paper"],
         "bordercolor": COLORS["primary"],
