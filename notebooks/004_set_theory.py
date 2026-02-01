@@ -442,6 +442,16 @@ def _(go, np, operation_selector):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** The two overlapping circles represent sets $A$ (cyan, left) and $B$ (red, right). The highlighted region shows the result of the selected set operation. The overlapping area in the middle contains elements that belong to both sets—this is $A \cap B$, the intersection.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ### Algebraic Properties of Set Operations
 
         Set operations satisfy many algebraic laws, similar to arithmetic:
@@ -622,6 +632,16 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This diagram illustrates the transitive property: if $a$ is related to $b$ (blue arrow), and $b$ is related to $c$ (blue arrow), then transitivity guarantees that $a$ is related to $c$ (red arrow). The red arrow represents the relationship that "must exist" due to transitivity—it's a logical consequence of the first two relationships.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ### Proof: Transitivity of Subset Relation
 
         Let's prove that $\subseteq$ is transitive.
@@ -749,6 +769,16 @@ def _(go, np):
         margin=dict(l=40, r=40, t=50, b=80),
     )
     _fig_equiv
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        **What this shows:** The integers are partitioned into three equivalence classes based on their remainder when divided by 3. Each colored row contains all integers that are equivalent to each other modulo 3: the teal row $[0]$ contains multiples of 3, the red row $[1]$ contains numbers with remainder 1, and the yellow row $[2]$ contains numbers with remainder 2. Every integer belongs to exactly one class—no overlaps, no gaps.
+        """
+    )
     return
 
 
@@ -953,6 +983,16 @@ def _(func_type_selector, go):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** Blue arrows show how each element in the domain $A$ (teal circles) maps to an element in the codomain $B$ (red circles). Bright red circles are "hit" by at least one arrow; faded circles are not mapped to by any element. This visualization lets you see whether the function is injective (no two arrows hit the same target), surjective (every target is hit), or bijective (both).
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ## Cardinality: Comparing Set Sizes
 
         **Cardinality** measures the "size" of a set. For finite sets, this is just
@@ -1056,6 +1096,16 @@ def _(go):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** The top row displays natural numbers $\mathbb{N} = \{0, 1, 2, 3, \ldots\}$, and the bottom row shows integers $\mathbb{Z} = \{\ldots, -2, -1, 0, 1, 2, \ldots\}$. The arrows demonstrate a bijection: we can pair every natural number with a unique integer. By alternating between positive and negative integers ($0 \mapsto 0$, $1 \mapsto -1$, $2 \mapsto 1$, $3 \mapsto -2$, etc.), we prove these infinite sets have the same cardinality.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ## Cantor's Diagonal Argument
 
         **Theorem**: The real numbers are **uncountable**—there's no bijection $\mathbb{N} \to \mathbb{R}$.
@@ -1149,6 +1199,16 @@ def _(go):
         height=450,
     )
     _fig_diag
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        **What this shows:** This grid represents a hypothetical list of all real numbers. Each row is a decimal expansion, and the red diagonal highlights the $n$-th digit of the $n$-th number. By constructing a new number that differs from each row at its diagonal position, we create a real number not in our list—proving that no list can contain all reals. This is Cantor's brilliant diagonal argument for the uncountability of $\mathbb{R}$.
+        """
+    )
     return
 
 
@@ -1312,6 +1372,16 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** The left circle represents the group $\mathbb{Z}_6$ (integers modulo 6), and the right circle represents $\mathbb{Z}_3$ (integers modulo 3). The arrow shows the homomorphism $\phi(n) = n \mod 3$, which maps elements from the larger group to the smaller one while preserving the group operation. Notice that multiple elements in $\mathbb{Z}_6$ map to the same element in $\mathbb{Z}_3$ (e.g., both 0 and 3 map to 0).
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ## Orderings: Partial and Total Orders
 
         **Orderings** are special relations that organize elements into hierarchies.
@@ -1414,6 +1484,16 @@ def _(go, np):
         height=400,
     )
     _fig_hasse
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        **What this shows:** This Hasse diagram visualizes the divisibility relation on $\{1, 2, 3, 4, 6, 12\}$. Each line going upward means "divides"—so $2$ divides $4$, $4$ divides $12$, etc. The element $1$ is at the bottom (it divides everything), and $12$ is at the top (everything divides it). This is a partial order because not all pairs are comparable: for instance, $4$ and $6$ have no direct relationship (neither divides the other).
+        """
+    )
     return
 
 

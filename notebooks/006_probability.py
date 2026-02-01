@@ -333,6 +333,16 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** The six faces of a fair die represent the sample space Ω = {1, 2, 3, 4, 5, 6}. The highlighted faces (2, 4, 6) form the event "roll an even number." Since all outcomes are equally likely, P(even) = 3/6 = 1/2. This visual connects the abstract notion of "event as a subset" to concrete outcomes.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ## Classical Probability Formula
 
         When all outcomes in the sample space are **equally likely**, probability has a
@@ -452,6 +462,16 @@ def _(go, mo, np):
         height=400,
     )
     _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        **What this shows:** As we flip a coin more and more times, the relative frequency of heads (blue line) converges toward the true probability of 0.5 (red dashed line). Early on, the frequency fluctuates wildly, but by 1000+ flips, it stabilizes near 0.5. The shaded band shows where 95% of random walks would fall—notice how it narrows as sample size grows.
+        """
+    )
     return
 
 
@@ -616,6 +636,16 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This curve reveals the non-linear relationship between probability and odds. At P = 0.5, odds are 1:1 (even). As probability increases, odds grow exponentially—P = 0.9 corresponds to 9:1 odds, and P = 0.99 corresponds to 99:1 odds. The logarithmic y-axis helps visualize this dramatic growth. Bookmakers and Bayesian statisticians often prefer odds because they're unbounded and easier to update.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ## Betting Odds in Practice
 
         Bookmakers express odds in various formats:
@@ -743,6 +773,16 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** Two circles that don't overlap represent mutually exclusive events—events that cannot both occur. If you're in circle A, you cannot be in circle B, and vice versa. For such events, we can simply add probabilities: P(A ∪ B) = P(A) + P(B), because there's no overlap to worry about double-counting.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ## The General Addition Rule
 
         What if events CAN overlap? Then we must avoid **double-counting**!
@@ -818,6 +858,16 @@ def _(go, np):
         height=350,
     )
     _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        **What this shows:** When events overlap, we can't simply add probabilities—we'd count the overlap twice. Here, the small circle {2} is entirely contained within the larger circle {2, 4, 6}. If we naively added P({2}) + P({2,4,6}), we'd count "2" twice. The inclusion-exclusion formula corrects this by subtracting the intersection: P(A ∪ B) = P(A) + P(B) − P(A ∩ B).
+        """
+    )
     return
 
 
@@ -902,6 +952,16 @@ def _(go, np):
         height=400,
     )
     _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        **What this shows:** Three overlapping circles form a classic Venn diagram for three events. The inclusion-exclusion formula accounts for all possible overlaps: we add the three individual probabilities, subtract the three pairwise intersections (to correct for double-counting), then add back the triple intersection (which was subtracted too many times). This generalizes to any number of events.
+        """
+    )
     return
 
 
@@ -1081,6 +1141,16 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This simulation tests the gambler's fallacy. Among thousands of random coin flip sequences, we found cases where 10 consecutive heads occurred, then checked the 11th flip. Despite the "hot streak," the 11th flip is still approximately 50-50—the coin has no memory of previous flips. This demonstrates why the gambler's fallacy is indeed a fallacy.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ## ⚠️ Misconception #3: Multiplying Non-Independent Events
 
         > *"Two doctors are each 80% accurate. Together they must be 96% accurate!"*
@@ -1187,6 +1257,16 @@ def _(go, np):
         height=400,
     )
     _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        **What this shows:** A probability tree traces all possible outcomes of two coin flips. From the start, we branch to H (heads) or T (tails), each with probability 0.5. From each first-flip outcome, we branch again. The four endpoints (HH, HT, TH, TT) each have probability 0.25, found by multiplying along the branches. Trees make sequential probability calculations visual and systematic.
+        """
+    )
     return
 
 

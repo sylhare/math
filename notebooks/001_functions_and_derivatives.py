@@ -274,6 +274,8 @@ def _(function_dropdown, go, np, sp, Symbol):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This graph displays the selected function as a curve on the coordinate plane. The horizontal axis represents the input value $x$, and the vertical axis shows the output $f(x)$. Each point on the curve represents an input-output pair.
+
         **Things to notice as you explore:**
         - **$x^2$** is symmetric about the y-axis (even function)
         - **$x^3$** is symmetric about the origin (odd function)
@@ -471,6 +473,8 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This visualization demonstrates how secant lines (lines connecting two points on a curve) approach the tangent line as the distance between points shrinks. The blue curve is the parabola $f(x) = x^2$, the teal dashed line is the tangent at the fixed point, and the yellow line is the secant that rotates as you adjust $h$.
+
         **Try it!** Use the slider above to decrease $h$. Watch as:
         1. The **moving point** (yellow) approaches the **fixed point** (red)
         2. The **secant line** (yellow) rotates toward the **tangent line** (teal)
@@ -844,6 +848,8 @@ def _(go, np, power_slider):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** The blue curve is the original function $f(x) = x^n$, and the red curve is its derivative $f'(x) = nx^{n-1}$. By displaying both on the same axes, you can see how the derivative curve tells you about the slope of the original function at each point.
+
         **Observations** (try different values of n):
 
         - **$n = 1$**: $f(x) = x$, $f'(x) = 1$. A straight line has constant slope.
@@ -1034,6 +1040,8 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This graph displays three functions: the inner function $g(x) = x^2$ (teal), the composite function $f(g(x)) = \sin(x^2)$ (blue), and its derivative computed via the chain rule (red). The chain rule multiplies the derivative of the outer function (evaluated at the inner) by the derivative of the inner function.
+
         **Observations from the graph:**
 
         - The composite function $\sin(x^2)$ oscillates faster as $|x|$ increases (because $x^2$
@@ -1188,6 +1196,8 @@ def _(go, np, tangent_point):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** The blue curve is $f(x) = x^3 - x$, and the teal dashed line is the tangent line at the point you select with the slider. The yellow dot shows where the tangent touches the curve, and the red stars mark the critical points where the slope equals zero.
+
         **Key observations:**
 
         - **Horizontal tangents** occur where the slope is zero. For $f(x) = x^3 - x$, we have
@@ -1341,6 +1351,8 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This graph plots three related quantities for a ball thrown straight up: position (height) in blue, velocity in red, and acceleration in teal. These are connected by differentiation—velocity is the derivative of position, and acceleration is the derivative of velocity.
+
         **Reading the graph:**
 
         - **Blue curve (position)**: Parabola showing height over time. Maximum at the peak.
@@ -1512,6 +1524,8 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This visualization displays three functions together: the original function $f(x) = x^3 - 3x$ (blue), its first derivative $f'(x) = 3x^2 - 3$ (red), and its second derivative $f''(x) = 6x$ (teal dashed). The stars mark the critical points where $f'(x) = 0$, with labels showing whether each is a maximum or minimum.
+
         **Reading the optimization graph:**
 
         1. **Blue curve** ($f(x)$): The original function, with a peak at $x=-1$ and a valley at $x=1$
@@ -1681,6 +1695,8 @@ def _(go, np, rect_slider):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This visualization demonstrates the Riemann sum approximation of an integral. The blue curve is $f(x) = x^2$, and the teal bars are rectangles whose heights are determined by the function value at their midpoints. The sum of all rectangle areas approximates the area under the curve.
+
         **Try it!** Increase the number of rectangles and watch as:
         - The Riemann sum gets closer to the exact area (9.0)
         - The rectangles fill in the curve more precisely

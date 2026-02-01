@@ -174,6 +174,8 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** The blue circle represents the true shape whose area we want to find (π for a unit circle). The red polygon is inscribed inside it, providing a lower bound approximation. As you increase the number of sides, the polygon fills more of the circle, and its area approaches π.
+
         **Archimedes' Insight:**
 
         Use the slider above to increase the number of polygon sides. Notice how:
@@ -353,6 +355,8 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This animation demonstrates how Riemann sums converge to the exact integral. The blue curve is $f(x) = x^2$, and the teal rectangles approximate the area under the curve. As the number of rectangles increases, the approximation improves.
+
         **What the animation shows:**
 
         Press **Animate** or use the slider to see how the Riemann sum improves:
@@ -524,6 +528,8 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This visualization illustrates the Fundamental Theorem of Calculus. The blue curve shows the accumulated area function $A(x)$—the integral from 0 to $x$. The red line shows the original function $f(x) = x$. The key insight is that $A'(x) = f(x)$: the derivative of the area function equals the original function.
+
         **Reading the graph:**
 
         - **Blue curve**: The area function $A(x) = \int_0^x t \, dt = \frac{x^2}{2}$
@@ -725,6 +731,8 @@ def _(integral_function, lower_bound, upper_bound, go, np, sp, Symbol, integrate
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This interactive calculator computes and visualizes definite integrals. The blue curve is the selected function, the shaded teal region represents the integral (area between the curve and the x-axis), and the red dashed lines mark the integration bounds $a$ and $b$.
+
         **Try different functions and bounds:**
 
         - For $\int_0^2 x^2 \, dx$, you should get $\frac{8}{3} \approx 2.667$
@@ -951,6 +959,8 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This visualization displays the trapezoidal rule for numerical integration. The blue curve is $f(x) = x^2$, and the red trapezoids connect adjacent sample points with straight lines. The yellow dots mark where we sample the function. The area under the trapezoids approximates the integral.
+
         **The geometry of numerical integration:**
 
         The trapezoids (red) connect the sample points with straight lines.
@@ -1047,6 +1057,16 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** The shaded teal region represents the area trapped between two curves: the line $y = x$ (red) and the parabola $y = x^2$ (blue). The yellow dots mark where the curves intersect at $x = 0$ and $x = 1$. To find this area, we integrate the difference of the functions: $\int_0^1 (x - x^2) dx = \frac{1}{6}$.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ### Application 2: Physics — Work and Energy
 
         In physics, **work** is force times distance. But what if the force varies?
@@ -1108,6 +1128,16 @@ def _(go, np):
         margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        **What this shows:** The red line represents the force required to stretch a spring as a function of displacement (Hooke's Law: $F = kx$). The shaded area under this line equals the work done—the energy stored in the spring. Since force increases linearly with displacement, the area is a triangle with area $\frac{1}{2} \times base \times height = \frac{1}{2}kd^2$.
+        """
+    )
     return
 
 
@@ -1217,6 +1247,8 @@ def _(go, np, sci_integrate):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** The bell curve displays the probability density function of the normal distribution. The area under any portion of the curve equals the probability of a random value falling in that range. The shaded regions visualize the famous 68-95-99.7 rule.
+
         **Understanding the visualization:**
 
         - The **teal region** covers ±1 standard deviation from the mean, containing 68% of the probability
@@ -1324,6 +1356,8 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** This 3D surface represents a cone created by rotating a straight line around the x-axis. The disk method computes the volume by integrating the areas of circular cross-sections—each thin slice is a disk whose radius depends on position along the axis.
+
         **The 3D visualization shows:**
 
         - The **red line** is the generating curve $y = \frac{r}{h}x$
@@ -1458,6 +1492,8 @@ def _(go, np, n_points_slider):
 def _(mo):
     mo.md(
         r"""
+        **What this shows:** Random points are scattered uniformly across the unit square. Points inside the quarter circle (teal) and outside (red) are colored differently. The ratio of points inside to total points approximates $\pi/4$, since the quarter circle has area $\pi/4$ within the unit square.
+
         **Experiment with the slider:**
 
         - With 100 points, the estimate varies wildly (high variance)
