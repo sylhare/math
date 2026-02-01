@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.9.0"
-app = marimo.App(width="medium")
+app = marimo.App(width="full")
 
 
 @app.cell
@@ -263,7 +263,8 @@ def _(function_dropdown, go, np, sp, Symbol):
             'title': 'f(x)', 'range': [-10, 10]
         },
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
     return
@@ -832,7 +833,8 @@ def _(go, np, power_slider):
         xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
         yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y', 'range': [-10, 10]},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
     return
@@ -1021,7 +1023,8 @@ def _(go, np):
         xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
         yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y', 'range': [-5, 5]},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
     return
@@ -1174,7 +1177,8 @@ def _(go, np, tangent_point):
         xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x', 'range': [-3, 3]},
         yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y', 'range': [-4, 4]},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
     return
@@ -1326,7 +1330,8 @@ def _(go, np):
         xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'Time (s)'},
         yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y (m) or v (m/s)'},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
     return
@@ -1496,7 +1501,8 @@ def _(go, np):
         xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
         yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y', 'range': [-5, 5]},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'x': 1.02},
+        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
     return
@@ -1664,7 +1670,8 @@ def _(go, np, rect_slider):
         yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y'},
         barmode='overlay',
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
     return

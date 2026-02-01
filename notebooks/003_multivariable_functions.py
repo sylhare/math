@@ -1,14 +1,14 @@
 """
 Multivariable Functions: From Flat Maps to Mountain Landscapes
 
-A Feynman-style exploration of functions with multiple variables,
+An exploration of functions with multiple variables,
 their geometric meaning, partial derivatives, and multiple integrals.
 """
 
 import marimo
 
 __generated_with = "0.19.6"
-app = marimo.App(width="medium")
+app = marimo.App(width="full")
 
 
 @app.cell
@@ -1388,7 +1388,8 @@ def _(go, np):
         plot_bgcolor="#1a1a2e",
         height=450,
         showlegend=True,
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
     )
     _fig_polar
     return

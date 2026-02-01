@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.9.0"
-app = marimo.App(width="medium")
+app = marimo.App(width="full")
 
 
 @app.cell
@@ -152,7 +152,8 @@ def _(go, np):
             xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'scaleanchor': 'y'},
             yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0'},
             showlegend=True,
-            legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+            legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
             sliders=[{
                 "active": 0,
                 "currentvalue": {"prefix": "Sides: ", "visible": True},
@@ -317,7 +318,8 @@ def _(go, np):
             xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x', 'range': [-0.2, 2.5]},
             yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y', 'range': [-0.2, 5]},
             showlegend=True,
-            legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+            legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
             updatemenus=[{
                 "type": "buttons",
                 "showactive": False,
@@ -508,7 +510,8 @@ def _(go, np):
             xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
             yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y'},
             showlegend=True,
-            legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+            legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
         )
 
         return fig
@@ -711,7 +714,8 @@ def _(integral_function, lower_bound, upper_bound, go, np, sp, Symbol, integrate
         xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
         yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y'},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
     return
@@ -933,7 +937,8 @@ def _(go, np):
             xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
             yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y'},
             showlegend=True,
-            legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+            legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
         )
 
         return fig
@@ -1031,7 +1036,8 @@ def _(go, np):
         xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
         yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y'},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
     return
@@ -1098,7 +1104,8 @@ def _(go, np):
         xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'Displacement x (m)'},
         yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'Force F (N)'},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
     return
@@ -1199,7 +1206,8 @@ def _(go, np, sci_integrate):
         xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x (standard deviations from mean)'},
         yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'Probability density'},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
     return
@@ -1305,7 +1313,8 @@ def _(go, np):
             bgcolor='#1a1a2e',
         ),
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
     return
@@ -1438,7 +1447,8 @@ def _(go, np, n_points_slider):
         xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'scaleanchor': 'y', 'range': [-0.05, 1.05]},
         yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-0.05, 1.05]},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
+        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
+        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
     )
     _fig
     return

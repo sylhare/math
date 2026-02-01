@@ -1,7 +1,7 @@
 """
 Advanced Sets and Functions: Beyond Infinity
 
-A Feynman-style exploration of ordinal numbers, cardinal arithmetic,
+An exploration of ordinal numbers, cardinal arithmetic,
 the Axiom of Choice, construction of number systems, and lattice theory.
 Building on the foundations from 004_set_theory.py.
 """
@@ -9,7 +9,7 @@ Building on the foundations from 004_set_theory.py.
 import marimo
 
 __generated_with = "0.19.6"
-app = marimo.App(width="medium")
+app = marimo.App(width="full")
 
 
 @app.cell
@@ -250,7 +250,8 @@ def _(go, np):
         plot_bgcolor="#1a1a2e",
         height=400,
         showlegend=True,
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
     )
     _fig
     return
@@ -2318,7 +2319,8 @@ def _(go, np):
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
         height=400,
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
     )
     _fig
     return
@@ -2689,7 +2691,8 @@ def _(go, np):
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
         height=300,
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
     )
     _fig
     return

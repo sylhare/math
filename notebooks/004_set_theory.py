@@ -1,14 +1,14 @@
 """
 Set Theory: The Foundation of Modern Mathematics
 
-A Feynman-style exploration of sets, their axioms, operations,
+An exploration of sets, their axioms, operations,
 relations, and the structures that underpin all of mathematics.
 """
 
 import marimo
 
 __generated_with = "0.19.6"
-app = marimo.App(width="medium")
+app = marimo.App(width="full")
 
 
 @app.cell
@@ -431,7 +431,8 @@ def _(go, np, operation_selector):
         plot_bgcolor="#1a1a2e",
         height=350,
         showlegend=True,
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
     )
     _fig_venn
     return
@@ -744,7 +745,8 @@ def _(go, np):
         plot_bgcolor="#1a1a2e",
         height=350,
         showlegend=True,
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
     )
     _fig_equiv
     return

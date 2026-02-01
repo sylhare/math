@@ -1,7 +1,7 @@
 """
 Probability Theory: From Gambling to Science
 
-A Feynman-style exploration of probability theory with emphasis on intuition,
+An exploration of probability theory with emphasis on intuition,
 common misconceptions, and interactive demonstrations. Covers foundations,
 Bayes' theorem, famous paradoxes, and probability distributions.
 """
@@ -9,7 +9,7 @@ Bayes' theorem, famous paradoxes, and probability distributions.
 import marimo
 
 __generated_with = "0.19.6"
-app = marimo.App(width="medium")
+app = marimo.App(width="full")
 
 
 @app.cell
@@ -447,7 +447,8 @@ def _(go, mo, np):
         ),
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
         height=400,
     )
     _fig
@@ -603,7 +604,8 @@ def _(go, np):
         ),
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
         height=400,
     )
     _fig
@@ -729,7 +731,8 @@ def _(go, np):
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
         showlegend=True,
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
         height=350,
     )
     _fig
@@ -810,7 +813,8 @@ def _(go, np):
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
         showlegend=True,
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
         height=350,
     )
     _fig
@@ -893,7 +897,8 @@ def _(go, np):
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
         showlegend=True,
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
         height=400,
     )
     _fig
@@ -1267,7 +1272,8 @@ def _(go, np):
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
         showlegend=True,
-        legend=dict(font=dict(color="#a0a0a0"), x=0.7, y=0.95),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
         height=400,
     )
     _fig
@@ -1818,7 +1824,8 @@ def _(go, np):
                   gridcolor="#2a2a3e", range=[0, 1.05]),
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
         height=400,
     )
     _fig
@@ -1909,7 +1916,8 @@ def _(go, np):
         ),
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
         height=350,
     )
     _fig.update_xaxes(color="#a0a0a0")
@@ -2131,7 +2139,8 @@ def _(go, np, stats):
         yaxis=dict(title="P(X = k)", color="#a0a0a0", gridcolor="#2a2a3e"),
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
         barmode="overlay",
         height=400,
     )
@@ -2289,7 +2298,8 @@ def _(go, np, stats):
         yaxis=dict(title="Probability Density", color="#a0a0a0", gridcolor="#2a2a3e"),
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
         height=400,
     )
     _fig
@@ -2522,7 +2532,8 @@ def _(go, np):
         title=dict(text="Same Mean, Different Variance", font=dict(color="#eaeaea", size=16)),
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
         height=300,
     )
     _fig.update_xaxes(color="#a0a0a0", gridcolor="#2a2a3e")
@@ -2607,7 +2618,8 @@ def _(go, np):
         yaxis=dict(title="Running average", color="#a0a0a0", gridcolor="#2a2a3e", range=[1, 6]),
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
-        legend=dict(font=dict(color="#a0a0a0")),
+        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+        margin=dict(l=40, r=40, t=50, b=80),
         height=350,
     )
     _fig
