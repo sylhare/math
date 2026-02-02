@@ -400,7 +400,7 @@ def generate_index_html(notebooks: list[NotebookMetadata], output_dir: Path) -> 
         <footer>
             <p>
                 Built with <a href="https://marimo.io">marimo</a> and
-                <a href="https://plotly.com">Plotly</a>
+                <a href="https://plotly.com">Plotly</a> (made with AI)
             </p>
         </footer>
     </div>

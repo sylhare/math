@@ -261,7 +261,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** The concentric semicircles represent the first four von Neumann ordinals (0, 1, 2, 3). Each ordinal is literally the set of all smaller ordinals—so 2 contains both 0 and 1 inside it. The nesting shows how each number "contains its entire history," building all of mathematics from nothing but the empty set.
+        The concentric semicircles represent the first four von Neumann ordinals (0, 1, 2, 3). Each ordinal is literally the set of all smaller ordinals—so 2 contains both 0 and 1 inside it. The nesting shows how each number "contains its entire history," building all of mathematics from nothing but the empty set.
         """
     )
     return
@@ -281,9 +281,9 @@ def _(mo):
         yourself to the collection."
 
         **Examples:**
-        - $S(0) = 0 \cup \{0\} = \emptyset \cup \{\emptyset\} = \{\emptyset\} = 1$ ✓
-        - $S(1) = 1 \cup \{1\} = \{0\} \cup \{1\} = \{0, 1\} = 2$ ✓
-        - $S(2) = 2 \cup \{2\} = \{0, 1\} \cup \{2\} = \{0, 1, 2\} = 3$ ✓
+        - $S(0) = 0 \cup \{0\} = \emptyset \cup \{\emptyset\} = \{\emptyset\} = 1$
+        - $S(1) = 1 \cup \{1\} = \{0\} \cup \{1\} = \{0, 1\} = 2$
+        - $S(2) = 2 \cup \{2\} = \{0, 1\} \cup \{2\} = \{0, 1, 2\} = 3$
 
         This gives us all the **successor ordinals**: 1, 2, 3, 4, ...
 
@@ -427,7 +427,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** This number line extends counting beyond infinity. The finite ordinals (0, 1, 2, 3...) lead up to ω (omega), the first infinite ordinal. But the counting doesn't stop there—after ω come ω+1, ω+2, and eventually ω·2, ω², and beyond. The gaps between sections indicate that infinitely many positions have been compressed for display.
+        This number line extends counting beyond infinity. The finite ordinals (0, 1, 2, 3...) lead up to ω (omega), the first infinite ordinal. But the counting doesn't stop there—after ω come ω+1, ω+2, and eventually ω·2, ω², and beyond. The gaps between sections indicate that infinitely many positions have been compressed for display.
         """
     )
     return
@@ -529,7 +529,7 @@ def _(go, make_subplots):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** The top row shows "1 + ω"—placing one element (red) before infinitely many (teal). Surprisingly, this equals just ω, because the single element gets "absorbed" into the infinite sequence. The bottom row shows "ω + 1"—infinitely many elements followed by ONE more at the end. This creates something genuinely new: a sequence with a last element, which ω alone doesn't have. This demonstrates that ordinal addition is not commutative!
+        The top row shows "1 + ω"—placing one element (red) before infinitely many (teal). Surprisingly, this equals just ω, because the single element gets "absorbed" into the infinite sequence. The bottom row shows "ω + 1"—infinitely many elements followed by ONE more at the end. This creates something genuinely new: a sequence with a last element, which ω alone doesn't have. This demonstrates that ordinal addition is not commutative!
         """
     )
     return
@@ -803,7 +803,7 @@ def _(go):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** This demonstrates that ℵ₀ + ℵ₀ = ℵ₀ through interleaving. The top two rows represent two separate copies of the natural numbers. By weaving them together—taking one element from each in alternation—we create a single sequence at the bottom that contains all elements from both. This bijection proves that two countably infinite sets combined still have countable cardinality.
+        This demonstrates that ℵ₀ + ℵ₀ = ℵ₀ through interleaving. The top two rows represent two separate copies of the natural numbers. By weaving them together—taking one element from each in alternation—we create a single sequence at the bottom that contains all elements from both. This bijection proves that two countably infinite sets combined still have countable cardinality.
         """
     )
     return
@@ -861,8 +861,7 @@ def _(mo):
         So for point (m, n) on diagonal k = m + n:
         - Start of diagonal k: position k(k+1)/2
         - Position within diagonal: n steps along
-        - Final position: k(k+1)/2 + n = (m+n)(m+n+1)/2 + n ✓
-
+        - Final position: k(k+1)/2 + n = (m+n)(m+n+1)/2 + n
         **This proves ℕ × ℕ is countable!** And by extension, ℚ is countable
         (each rational is essentially a pair of integers).
         """
@@ -960,7 +959,7 @@ def _(go, np, pairing_step):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** The Cantor pairing function maps every point (m, n) in the infinite grid ℕ × ℕ to a unique natural number. The path zigzags along diagonals: first (0,0), then (1,0), (0,1), then (2,0), (1,1), (0,2), and so on. Each numbered circle shows which natural number that grid point maps to. This proves ℕ × ℕ has the same cardinality as ℕ, so ℵ₀ · ℵ₀ = ℵ₀.
+        The Cantor pairing function maps every point (m, n) in the infinite grid ℕ × ℕ to a unique natural number. The path zigzags along diagonals: first (0,0), then (1,0), (0,1), then (2,0), (1,1), (0,2), and so on. Each numbered circle shows which natural number that grid point maps to. This proves ℕ × ℕ has the same cardinality as ℕ, so ℵ₀ · ℵ₀ = ℵ₀.
         """
     )
     return
@@ -1106,8 +1105,7 @@ def _(cantor_element, mo):
     Check: Is D = f({cantor_element.value})?
     - f({cantor_element.value}) = {"{{a, b}}" if cantor_element.value == "a" else "{{b}}" if cantor_element.value == "b" else "{{a, c}}"}
     - D = ∅
-    - **D ≠ f({cantor_element.value})**! ✓
-    """)
+    - **D ≠ f({cantor_element.value})**!    """)
     return
 
 
@@ -1155,7 +1153,7 @@ def _(go):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** This table illustrates Cantor's diagonal argument for proving |A| < |P(A)|. For each element x (rows), we ask: "Is x in the set f(x)?" The diagonal set D collects all elements that answer "No." In this example, all three elements are in their assigned sets, so D = ∅. But notice: D differs from f(a), f(b), and f(c)—proving D is not in the range of f. No matter what function f we try, we can always construct a "missing" set this way.
+        This table illustrates Cantor's diagonal argument for proving |A| < |P(A)|. For each element x (rows), we ask: "Is x in the set f(x)?" The diagonal set D collects all elements that answer "No." In this example, all three elements are in their assigned sets, so D = ∅. But notice: D differs from f(a), f(b), and f(c)—proving D is not in the range of f. No matter what function f we try, we can always construct a "missing" set this way.
         """
     )
     return
@@ -1415,7 +1413,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** Three non-empty sets (A₁, A₂, A₃) each contain several elements. A choice function picks exactly one element from each set—here selecting b from A₁, y from A₂, and r from A₃. For finite collections this seems trivial, but the Axiom of Choice asserts that such a function exists even for infinite collections of sets, where we have no rule for choosing.
+        Three non-empty sets (A₁, A₂, A₃) each contain several elements. A choice function picks exactly one element from each set—here selecting b from A₁, y from A₂, and r from A₃. For finite collections this seems trivial, but the Axiom of Choice asserts that such a function exists even for infinite collections of sets, where we have no rule for choosing.
         """
     )
     return
@@ -1542,7 +1540,7 @@ def _(go):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** Four fundamental principles are connected by lines, indicating logical equivalence: the Axiom of Choice (AC), Zorn's Lemma, the Well-Ordering Theorem (WO), and Hausdorff's Maximal Principle. These statements sound completely different—one about choosing elements, one about maximal elements in posets, one about ordering any set—yet proving any one of them automatically proves all the others.
+        Four fundamental principles are connected by lines, indicating logical equivalence: the Axiom of Choice (AC), Zorn's Lemma, the Well-Ordering Theorem (WO), and Hausdorff's Maximal Principle. These statements sound completely different—one about choosing elements, one about maximal elements in posets, one about ordering any set—yet proving any one of them automatically proves all the others.
         """
     )
     return
@@ -1701,8 +1699,7 @@ def _(mo):
         - $n + 0 = n$
         - $n + S(m) = S(n + m)$
 
-        **Example**: 2 + 2 = 2 + S(1) = S(2 + 1) = S(S(2 + 0)) = S(S(2)) = S(3) = 4 ✓
-
+        **Example**: 2 + 2 = 2 + S(1) = S(2 + 1) = S(S(2 + 0)) = S(S(2)) = S(3) = 4
         ### Multiplication on ℕ
 
         Define multiplication using addition:
@@ -1814,7 +1811,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** This grid displays pairs (a, b) of natural numbers, where each pair represents the integer a - b. Points are colored by their integer value: teal for positive, yellow for zero, red for negative. Each diagonal line contains all pairs representing the same integer—for example, (3,1), (4,2), and (5,3) all lie on the same diagonal and all represent 2. The integers are formally defined as these diagonal equivalence classes.
+        This grid displays pairs (a, b) of natural numbers, where each pair represents the integer a - b. Points are colored by their integer value: teal for positive, yellow for zero, red for negative. Each diagonal line contains all pairs representing the same integer—for example, (3,1), (4,2), and (5,3) all lie on the same diagonal and all represent 2. The integers are formally defined as these diagonal equivalence classes.
         """
     )
     return
@@ -1828,16 +1825,13 @@ def _(mo):
 
         **Addition**: $[(a, b)] + [(c, d)] = [(a + c, b + d)]$
 
-        *In terms of "a - b": (a-b) + (c-d) = (a+c) - (b+d)* ✓
-
+        *In terms of "a - b": (a-b) + (c-d) = (a+c) - (b+d)*
         **Multiplication**: $[(a, b)] \cdot [(c, d)] = [(ac + bd, ad + bc)]$
 
-        *Check*: (a-b)(c-d) = ac - ad - bc + bd = (ac + bd) - (ad + bc) ✓
-
+        *Check*: (a-b)(c-d) = ac - ad - bc + bd = (ac + bd) - (ad + bc)
         **Additive Inverse**: $-[(a, b)] = [(b, a)]$
 
-        *Check*: (a-b) + (b-a) = 0 ✓
-
+        *Check*: (a-b) + (b-a) = 0
         **Theorem**: ℤ is a **ring**—it has addition, subtraction, and multiplication
         with all the expected properties (commutative, associative, distributive).
 
@@ -1880,7 +1874,7 @@ def _(mo):
 
         **Theorem**: ℚ is a **field**—every non-zero element has a multiplicative inverse!
 
-        We can now solve 2x = 1: x = 1/2 = [(1, 2)] ✓
+        We can now solve 2x = 1: x = 1/2 = [(1, 2)]
         """
     )
     return
@@ -2006,7 +2000,7 @@ def _(cut_value, go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** A Dedekind cut partitions the rational numbers into two sets: L (lower, teal) containing all rationals below the cut, and R (upper, red) containing all rationals above. The dashed line marks where the cut occurs. For irrational numbers like √2, no rational sits exactly at the boundary—there's a "gap" between L and R. This gap IS the real number. By defining reals as cuts, we fill all the holes in the rationals.
+        A Dedekind cut partitions the rational numbers into two sets: L (lower, teal) containing all rationals below the cut, and R (upper, red) containing all rationals above. The dashed line marks where the cut occurs. For irrational numbers like √2, no rational sits exactly at the boundary—there's a "gap" between L and R. This gap IS the real number. By defining reals as cuts, we fill all the holes in the rationals.
         """
     )
     return
@@ -2112,7 +2106,7 @@ def _(go):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** The "number system tower" shows how each number system contains the previous one: natural numbers ℕ at the base, then integers ℤ (adding negatives), then rationals ℚ (adding fractions), then reals ℝ (filling gaps). Every level is built from sets—ultimately, even complex numbers trace back to the empty set ∅ through this construction.
+        The "number system tower" shows how each number system contains the previous one: natural numbers ℕ at the base, then integers ℤ (adding negatives), then rationals ℚ (adding fractions), then reals ℝ (filling gaps). Every level is built from sets—ultimately, even complex numbers trace back to the empty set ∅ through this construction.
         """
     )
     return
@@ -2149,8 +2143,7 @@ def _(mo):
         | f₃ | 1 | 0 |
         | f₄ | 1 | 1 |
 
-        There are 2² = 4 such functions. ✓
-
+        There are 2² = 4 such functions.
         **Important Example**: $\{0, 1\}^\mathbb{N}$ = all infinite binary sequences
 
         This has cardinality $2^{\aleph_0} = \mathfrak{c}$ (the continuum).
@@ -2234,7 +2227,7 @@ def _(go):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** Four different functions from the domain {a, b, c} to the codomain {0, 1} are displayed side by side. Each function is a complete assignment—every element in the domain has exactly one arrow going to the codomain. With 3 domain elements and 2 codomain values, there are 2³ = 8 possible functions total. The function space {0,1}^{a,b,c} is the set containing all 8 of these functions.
+        Four different functions from the domain {a, b, c} to the codomain {0, 1} are displayed side by side. Each function is a complete assignment—every element in the domain has exactly one arrow going to the codomain. With 3 domain elements and 2 codomain values, there are 2³ = 8 possible functions total. The function space {0,1}^{a,b,c} is the set containing all 8 of these functions.
         """
     )
     return
@@ -2350,7 +2343,7 @@ def _(go):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** The set A (even numbers) and set B (all natural numbers) are shown with an injection f from A to B (inclusion: each even maps to itself in ℕ). There's also an injection g from B to A (doubling: each natural maps to an even). Despite A being a "proper subset" of B, these two injections prove |A| = |B| by the Schröder-Bernstein theorem—both sets have the same infinite cardinality.
+        The set A (even numbers) and set B (all natural numbers) are shown with an injection f from A to B (inclusion: each even maps to itself in ℕ). There's also an injection g from B to A (doubling: each natural maps to an even). Despite A being a "proper subset" of B, these two injections prove |A| = |B| by the Schröder-Bernstein theorem—both sets have the same infinite cardinality.
         """
     )
     return
@@ -2374,8 +2367,7 @@ def _(mo):
         - g(0) = 0.5
         - g(+∞) → 1 (limit)
 
-        By Schröder-Bernstein, |(0, 1)| = |ℝ|. ✓
-
+        By Schröder-Bernstein, |(0, 1)| = |ℝ|.
         **We didn't need to find the explicit bijection!** The theorem guarantees
         one exists, even if we never write it down.
         """
@@ -2460,7 +2452,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** The graph of f(x) = x² (teal curve) intersects the diagonal line y = x (red dashed) at two points: x = 0 and x = 1. These intersection points are the fixed points—values where f(x) = x. At x = 0, we have 0² = 0; at x = 1, we have 1² = 1. Fixed points are equilibrium states: applying the function doesn't change them.
+        The graph of f(x) = x² (teal curve) intersects the diagonal line y = x (red dashed) at two points: x = 0 and x = 1. These intersection points are the fixed points—values where f(x) = x. At x = 0, we have 0² = 0; at x = 1, we have 1² = 1. Fixed points are equilibrium states: applying the function doesn't change them.
         """
     )
     return
@@ -2586,7 +2578,7 @@ def _(go):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** This Hasse diagram displays the power set P({a,b}) ordered by inclusion. At the bottom is ∅ (empty set), at the top is {a,b} (the full set), and in the middle are the singletons {a} and {b}. Lines indicate the subset relation. The meet (greatest lower bound) of {a} and {b} is ∅ (their intersection), while their join (least upper bound) is {a,b} (their union). This is a complete lattice with four elements.
+        This Hasse diagram displays the power set P({a,b}) ordered by inclusion. At the bottom is ∅ (empty set), at the top is {a,b} (the full set), and in the middle are the singletons {a} and {b}. Lines indicate the subset relation. The meet (greatest lower bound) of {a} and {b} is ∅ (their intersection), while their join (least upper bound) is {a,b} (their union). This is a complete lattice with four elements.
         """
     )
     return
@@ -2702,7 +2694,7 @@ def _(go, make_subplots):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** Two "forbidden sublattices" that characterize lattice properties. The pentagon N₅ (left) has elements where the modular law fails—if a lattice contains N₅ as a sublattice, it's not modular. The diamond M₃ (right) has three incomparable middle elements—if a lattice contains M₃, it's not distributive. These small structures act as "obstructions" that reveal what properties a lattice lacks.
+        Two "forbidden sublattices" that characterize lattice properties. The pentagon N₅ (left) has elements where the modular law fails—if a lattice contains N₅ as a sublattice, it's not modular. The diamond M₃ (right) has three incomparable middle elements—if a lattice contains M₃, it's not distributive. These small structures act as "obstructions" that reveal what properties a lattice lacks.
         """
     )
     return
@@ -2862,7 +2854,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** Starting from x₀ = 0.1 on the interval [0, 1], we repeatedly apply f(x) = √x. Each iteration moves us closer to the fixed point at x = 1 (marked with a star). The shrinking circles show the progression: f⁰(x₀), f¹(x₀), f²(x₀), etc. The Knaster-Tarski theorem guarantees that any monotone function on a complete lattice has such a fixed point, and iteration will converge to it.
+        Starting from x₀ = 0.1 on the interval [0, 1], we repeatedly apply f(x) = √x. Each iteration moves us closer to the fixed point at x = 1 (marked with a star). The shrinking circles show the progression: f⁰(x₀), f¹(x₀), f²(x₀), etc. The Knaster-Tarski theorem guarantees that any monotone function on a complete lattice has such a fixed point, and iteration will converge to it.
         """
     )
     return
@@ -2970,11 +2962,11 @@ def _(mo):
 
         | Year | Event |
         |------|-------|
+        | **1872** | Dedekind cuts formalized |
         | **1874** | Cantor proves ℝ is uncountable |
         | **1883** | Transfinite ordinals introduced |
         | **1888** | Dedekind: "Was sind und was sollen die Zahlen?" |
         | **1891** | Cantor's diagonal argument |
-        | **1897** | Dedekind cuts formalized |
         | **1898** | Schröder-Bernstein theorem |
         | **1901** | Russell's paradox discovered |
         | **1904** | Zermelo's well-ordering theorem (using AC) |

@@ -104,7 +104,7 @@ def _(mo):
         **infinitely small but not zero**—small enough to ignore in some contexts, but not so
         small that you can't divide by it. This was mathematically imprecise, but it worked.
 
-        > 📚 **Primary Source**: [Newton's Method of Fluxions (1671)](https://archive.org/details/methodoffluxions00newt)
+        > **Primary Source**: [Newton's Method of Fluxions (1671)](https://archive.org/details/methodoffluxions00newt)
 
         ### Gottfried Wilhelm Leibniz (1646-1716): The Philosopher's Approach
 
@@ -121,7 +121,7 @@ def _(mo):
         His notation suggests the key idea: $\frac{dy}{dx}$ looks like a fraction because it
         *behaves* like one. The "d" stands for an infinitesimally small difference.
 
-        > 📚 **Primary Source**: [Leibniz's Nova Methodus (1684)](https://www.maa.org/press/periodicals/convergence/mathematical-treasure-leibnizs-papers-on-calculus-differential-calculus)
+        > **Primary Source**: [Leibniz's Nova Methodus (1684)](https://old.maa.org/press/periodicals/convergence/mathematical-treasure-leibnizs-papers-on-calculus-differential-calculus)
         """
     )
     return
@@ -144,7 +144,7 @@ def _(mo):
         Today, we recognize both as co-inventors. More importantly, we use **Leibniz's notation**
         because it's simply more intuitive and useful—proof that good notation matters.
 
-        > 📚 **Further Reading**: [Newton's Principia Mathematica (1687)](https://archive.org/details/mathematicalprin00newtuoft)
+        > **Further Reading**: [Newton's Principia Mathematica (1687)](https://archive.org/details/newtonspmathema00newtrich)
 
         ### Making It Rigorous: The Limit
 
@@ -274,7 +274,7 @@ def _(function_dropdown, go, np, sp, Symbol):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** This graph displays the selected function as a curve on the coordinate plane. The horizontal axis represents the input value $x$, and the vertical axis shows the output $f(x)$. Each point on the curve represents an input-output pair.
+        This graph displays the selected function as a curve on the coordinate plane. The horizontal axis represents the input value $x$, and the vertical axis shows the output $f(x)$. Each point on the curve represents an input-output pair.
 
         **Things to notice as you explore:**
         - **$x^2$** is symmetric about the y-axis (even function)
@@ -473,7 +473,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** This visualization demonstrates how secant lines (lines connecting two points on a curve) approach the tangent line as the distance between points shrinks. The blue curve is the parabola $f(x) = x^2$, the teal dashed line is the tangent at the fixed point, and the yellow line is the secant that rotates as you adjust $h$.
+        This visualization demonstrates how secant lines (lines connecting two points on a curve) approach the tangent line as the distance between points shrinks. The blue curve is the parabola $f(x) = x^2$, the teal dashed line is the tangent at the fixed point, and the yellow line is the secant that rotates as you adjust $h$.
 
         **Try it!** Use the slider above to decrease $h$. Watch as:
         1. The **moving point** (yellow) approaches the **fixed point** (red)
@@ -716,6 +716,148 @@ def _(mo):
         r"""
         ---
 
+        ## Another Way to Visualize the Derivative: Zooming In
+
+        There's a beautiful alternative perspective on derivatives: **local linearity**.
+
+        The idea is simple: if you zoom in far enough on any smooth curve at a point,
+        **the curve looks like a straight line**. The slope of that line is the derivative!
+
+        This is why calculus works: smooth functions are "locally linear"—they can be
+        approximated by their tangent line near any point.
+
+        Use the slider below to zoom in on the parabola $f(x) = x^2$ at the point $(1, 1)$.
+        Watch how the curve becomes indistinguishable from a straight line with slope 2.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    zoom_slider = mo.ui.slider(
+        start=1, stop=100, step=1, value=1,
+        label="Zoom level:",
+        show_value=True,
+    )
+    return zoom_slider,
+
+
+@app.cell
+def _(mo, zoom_slider):
+    mo.hstack([
+        mo.md("**Zoom in on the curve:**"),
+        zoom_slider,
+    ], justify="start", gap=1)
+    return
+
+
+@app.cell
+def _(go, np, zoom_slider):
+    def _create_zoom_visualization():
+        """Show how zooming in reveals local linearity."""
+        x0, y0 = 1.0, 1.0  # Point to zoom in on
+        slope = 2.0  # Derivative at x=1
+
+        zoom = zoom_slider.value
+
+        # Window size decreases as zoom increases
+        window = 2.0 / zoom
+
+        # Create x values for the zoomed window
+        x = np.linspace(x0 - window, x0 + window, 500)
+        y_curve = x ** 2  # The actual parabola
+        y_tangent = y0 + slope * (x - x0)  # The tangent line
+
+        fig = go.Figure()
+
+        # Plot the curve
+        fig.add_trace(go.Scatter(
+            x=x, y=y_curve,
+            mode='lines',
+            line={'color': '#00d4ff', 'width': 3},
+            name='f(x) = x²'
+        ))
+
+        # Plot the tangent line
+        fig.add_trace(go.Scatter(
+            x=x, y=y_tangent,
+            mode='lines',
+            line={'color': '#ff6b6b', 'width': 2, 'dash': 'dash'},
+            name=f'Tangent (slope = {slope})'
+        ))
+
+        # Mark the point
+        fig.add_trace(go.Scatter(
+            x=[x0], y=[y0],
+            mode='markers',
+            marker={'color': '#ffe66d', 'size': 12},
+            name='Point (1, 1)'
+        ))
+
+        # Calculate max deviation in window for annotation
+        max_dev = max(abs(y_curve - y_tangent))
+
+        fig.update_layout(
+            title=dict(
+                text=f"Zoom: {zoom}x | Window: ±{window:.4f} | Max deviation from tangent: {max_dev:.6f}",
+                font=dict(color="#eaeaea", size=14),
+            ),
+            xaxis=dict(
+                title="x",
+                range=[x0 - window, x0 + window],
+                color="#a0a0a0",
+                gridcolor="#2a2a3e",
+            ),
+            yaxis=dict(
+                title="y",
+                range=[y0 - window * 1.5, y0 + window * 1.5],
+                color="#a0a0a0",
+                gridcolor="#2a2a3e",
+                scaleanchor="x",
+            ),
+            paper_bgcolor="#1a1a2e",
+            plot_bgcolor="#16213e",
+            legend=dict(
+                font=dict(color="#a0a0a0"),
+                bgcolor="rgba(26, 26, 46, 0.8)",
+            ),
+            height=450,
+        )
+
+        return fig
+
+    _create_zoom_visualization()
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        As you increase the zoom level, the parabola (blue) becomes indistinguishable from its tangent line (red dashed). At 100x zoom, you're looking at a window of ±0.02 around the point, and the curve appears perfectly straight.
+
+        **Key insight:** This is why derivatives are so powerful for approximation. Near $x = 1$:
+
+        $$f(x) \approx f(1) + f'(1)(x - 1) = 1 + 2(x - 1)$$
+
+        This **linear approximation** is the basis for:
+        - Newton's method for finding roots
+        - Error analysis in numerical computing
+        - Taylor series (extending this idea to higher-order approximations)
+
+        The derivative tells us the best linear approximation to a function at a point.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        ---
+
         ## Part VI: The Power Rule
 
         ### Computing Derivatives Efficiently
@@ -848,7 +990,7 @@ def _(go, np, power_slider):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** The blue curve is the original function $f(x) = x^n$, and the red curve is its derivative $f'(x) = nx^{n-1}$. By displaying both on the same axes, you can see how the derivative curve tells you about the slope of the original function at each point.
+        The blue curve is the original function $f(x) = x^n$, and the red curve is its derivative $f'(x) = nx^{n-1}$. By displaying both on the same axes, you can see how the derivative curve tells you about the slope of the original function at each point.
 
         **Observations** (try different values of n):
 
@@ -891,8 +1033,8 @@ def _(mo):
         | **Sine** | $\sin(x)$ | $\cos(x)$ | $(\sin x)' = \cos x$ |
         | **Cosine** | $\cos(x)$ | $-\sin(x)$ | $(\cos x)' = -\sin x$ |
 
-        **Note on $e^x$**: The exponential function $e^x$ is special—it's the only function that equals
-        its own derivative! This is why $e$ (approximately 2.71828) appears throughout mathematics.
+        **Note on $e^x$**: The exponential function $e^x$ is special—it equals its own derivative!
+        (More precisely, all functions of the form $Ce^x$ satisfy $f'(x) = f(x)$.) This is why $e$ (approximately 2.71828) appears throughout mathematics.
 
         ### Product Rule Example
 
@@ -1040,7 +1182,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** This graph displays three functions: the inner function $g(x) = x^2$ (teal), the composite function $f(g(x)) = \sin(x^2)$ (blue), and its derivative computed via the chain rule (red). The chain rule multiplies the derivative of the outer function (evaluated at the inner) by the derivative of the inner function.
+        This graph displays three functions: the inner function $g(x) = x^2$ (teal), the composite function $f(g(x)) = \sin(x^2)$ (blue), and its derivative computed via the chain rule (red). The chain rule multiplies the derivative of the outer function (evaluated at the inner) by the derivative of the inner function.
 
         **Observations from the graph:**
 
@@ -1196,7 +1338,7 @@ def _(go, np, tangent_point):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** The blue curve is $f(x) = x^3 - x$, and the teal dashed line is the tangent line at the point you select with the slider. The yellow dot shows where the tangent touches the curve, and the red stars mark the critical points where the slope equals zero.
+        The blue curve is $f(x) = x^3 - x$, and the teal dashed line is the tangent line at the point you select with the slider. The yellow dot shows where the tangent touches the curve, and the red stars mark the critical points where the slope equals zero.
 
         **Key observations:**
 
@@ -1351,7 +1493,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** This graph plots three related quantities for a ball thrown straight up: position (height) in blue, velocity in red, and acceleration in teal. These are connected by differentiation—velocity is the derivative of position, and acceleration is the derivative of velocity.
+        This graph plots three related quantities for a ball thrown straight up: position (height) in blue, velocity in red, and acceleration in teal. These are connected by differentiation—velocity is the derivative of position, and acceleration is the derivative of velocity.
 
         **Reading the graph:**
 
@@ -1524,7 +1666,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** This visualization displays three functions together: the original function $f(x) = x^3 - 3x$ (blue), its first derivative $f'(x) = 3x^2 - 3$ (red), and its second derivative $f''(x) = 6x$ (teal dashed). The stars mark the critical points where $f'(x) = 0$, with labels showing whether each is a maximum or minimum.
+        This visualization displays three functions together: the original function $f(x) = x^3 - 3x$ (blue), its first derivative $f'(x) = 3x^2 - 3$ (red), and its second derivative $f''(x) = 6x$ (teal dashed). The stars mark the critical points where $f'(x) = 0$, with labels showing whether each is a maximum or minimum.
 
         **Reading the optimization graph:**
 
@@ -1695,7 +1837,7 @@ def _(go, np, rect_slider):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** This visualization demonstrates the Riemann sum approximation of an integral. The blue curve is $f(x) = x^2$, and the teal bars are rectangles whose heights are determined by the function value at their midpoints. The sum of all rectangle areas approximates the area under the curve.
+        This visualization demonstrates the Riemann sum approximation of an integral. The blue curve is $f(x) = x^2$, and the teal bars are rectangles whose heights are determined by the function value at their midpoints. The sum of all rectangle areas approximates the area under the curve.
 
         **Try it!** Increase the number of rectangles and watch as:
         - The Riemann sum gets closer to the exact area (9.0)
@@ -1707,7 +1849,7 @@ def _(mo):
 
         **The exact calculation:**
 
-        The antiderivative of $f(x) = x^2$ is $F(x) = \frac{x^3}{3}$ (verify: $F'(x) = x^2$ ✓)
+        The antiderivative of $f(x) = x^2$ is $F(x) = \frac{x^3}{3}$ (verify: $F'(x) = x^2$)
 
         By the Fundamental Theorem of Calculus:
         $$\begin{aligned}
@@ -1774,8 +1916,8 @@ def _(mo):
 
         ### Primary Sources
         - [Newton's Method of Fluxions (1671)](https://archive.org/details/methodoffluxions00newt)
-        - [Leibniz's Nova Methodus (1684)](https://www.maa.org/press/periodicals/convergence/mathematical-treasure-leibnizs-papers-on-calculus-differential-calculus)
-        - [Newton's Principia (1687)](https://archive.org/details/mathematicalprin00newtuoft)
+        - [Leibniz's Nova Methodus (1684)](https://old.maa.org/press/periodicals/convergence/mathematical-treasure-leibnizs-papers-on-calculus-differential-calculus)
+        - [Newton's Principia (1687)](https://archive.org/details/newtonspmathema00newtrich)
 
         ### Modern Textbooks
         - Stewart, *Calculus: Early Transcendentals* — The standard university textbook

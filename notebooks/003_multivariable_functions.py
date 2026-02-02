@@ -220,7 +220,7 @@ def _(mo):
         r"""
         ### Understanding the Visualization
 
-        **What this shows:** This 3D surface displays a function of two variables. The horizontal $(x, y)$ plane represents all possible inputs, while the height at each point shows the output $f(x, y)$. Colors indicate elevation—purple regions are low values, yellow regions are high values.
+        This 3D surface displays a function of two variables. The horizontal $(x, y)$ plane represents all possible inputs, while the height at each point shows the output $f(x, y)$. Colors indicate elevation—purple regions are low values, yellow regions are high values.
 
         **What you're seeing:**
         - The horizontal plane represents all possible $(x, y)$ inputs
@@ -322,7 +322,7 @@ def _(mo):
         r"""
         ### Reading the Contour Map
 
-        **What this shows:** This is a bird's-eye view of the surface, showing level curves (contour lines) where the function has constant values. Each labeled curve represents all $(x, y)$ points where $f(x, y)$ equals that particular value—like elevation lines on a topographic map.
+        This is a bird's-eye view of the surface, showing level curves (contour lines) where the function has constant values. Each labeled curve represents all $(x, y)$ points where $f(x, y)$ equals that particular value—like elevation lines on a topographic map.
 
         **What the contour map tells us:**
         - **Concentric circles** (paraboloid): The function increases uniformly in all directions
@@ -366,7 +366,7 @@ def _(mo):
         The **partial derivative with respect to $y$**:
         $$\frac{\partial f}{\partial y} = \lim_{h \to 0} \frac{f(x, y+h) - f(x, y)}{h}$$
 
-        The symbol $\partial$ (called "partial" or "del") was introduced by **Adrien-Marie
+        The symbol $\partial$ (called "partial" or "curly d") was introduced by **Adrien-Marie
         Legendre** in 1786, though the concept was developed earlier by Euler and others.
 
         ### Computing Partial Derivatives
@@ -636,7 +636,7 @@ def _(mo):
         r"""
         ### Reading the Gradient Field
 
-        **What this shows:** The red arrows represent the gradient vector $\nabla f$ at each point, overlaid on the contour map. Each arrow points in the direction of steepest ascent (where the function increases fastest), and its length indicates how steep that climb is. Notice how arrows always point perpendicular to the contour lines.
+        The red arrows represent the gradient vector $\nabla f$ at each point, overlaid on the contour map. Each arrow points in the direction of steepest ascent (where the function increases fastest), and its length indicates how steep that climb is. Notice how arrows always point perpendicular to the contour lines.
 
         The red arrows show the gradient $\nabla f = (2x, 2y)$ at various points:
 
@@ -954,7 +954,7 @@ def _(mo):
         r"""
         ### Understanding the Riemann Sum Visualization
 
-        **What this shows:** The cyan boxes approximate the volume under the surface $f(x,y) = x^2 + y^2$. Each box has its base on the $(x, y)$ plane and extends up to the function's value at that point. As you increase the number of divisions, the boxes become smaller and more numerous, fitting the curved surface more accurately.
+        The cyan boxes approximate the volume under the surface $f(x,y) = x^2 + y^2$. Each box has its base on the $(x, y)$ plane and extends up to the function's value at that point. As you increase the number of divisions, the boxes become smaller and more numerous, fitting the curved surface more accurately.
 
         Each box represents a contribution to the volume:
         - **Base area**: $\Delta x \times \Delta y$ (the small rectangle in the $xy$-plane)
@@ -1071,7 +1071,7 @@ def _(mo):
         r"""
         ### Understanding the Heat Distribution
 
-        **What this shows:** This heatmap displays the steady-state temperature distribution on a square metal plate, computed by solving Laplace's equation $\nabla^2 T = 0$. The colors represent temperature: red/yellow regions are hot (near 100°C), while dark/purple regions are cool (near 0°C). Heat has reached equilibrium—no more flow occurs.
+        This heatmap displays the steady-state temperature distribution on a square metal plate, computed by solving Laplace's equation $\nabla^2 T = 0$. The colors represent temperature: red/yellow regions are hot (near 100°C), while dark/purple regions are cool (near 0°C). Heat has reached equilibrium—no more flow occurs.
 
         **Boundary conditions:**
         - **Top edge**: Held at 100°C (red)
@@ -1269,7 +1269,7 @@ def _(mo):
         r"""
         ### Observations on Gradient Descent
 
-        **What this shows:** The animation traces the path of gradient descent as it rolls downhill on the paraboloid surface. The red line shows the algorithm's trajectory, and the cyan dot marks the current position. Starting from your chosen point, each step moves in the direction of steepest descent (opposite the gradient), eventually reaching the minimum at the origin.
+        The animation traces the path of gradient descent as it rolls downhill on the paraboloid surface. The red line shows the algorithm's trajectory, and the cyan dot marks the current position. Starting from your chosen point, each step moves in the direction of steepest descent (opposite the gradient), eventually reaching the minimum at the origin.
 
         **Try different settings:**
         - **Large learning rate** ($\eta > 0.3$): May overshoot and oscillate
@@ -1413,7 +1413,7 @@ def _(mo):
         r"""
         ### Understanding the Area Element
 
-        **What this shows:** This diagram illustrates the polar coordinate grid, where position is described by distance $r$ from the origin and angle $\theta$ from the positive $x$-axis. The highlighted cyan region is a small "area element"—notice it's not a rectangle but a wedge-shaped piece. Its area depends on $r$, which explains the Jacobian factor in polar integration.
+        This diagram illustrates the polar coordinate grid, where position is described by distance $r$ from the origin and angle $\theta$ from the positive $x$-axis. The highlighted cyan region is a small "area element"—notice it's not a rectangle but a wedge-shaped piece. Its area depends on $r$, which explains the Jacobian factor in polar integration.
 
         The cyan region shows a small area element in polar coordinates:
         - **Radial extent**: $dr$ (change in radius)
@@ -1512,7 +1512,7 @@ def _(mo):
         r"""
         ### The Gaussian's Significance
 
-        **What this shows:** This 3D bell-shaped surface is the two-dimensional Gaussian function $e^{-(x^2+y^2)}$. It peaks at the origin (value 1) and decays smoothly toward zero in all directions. The total volume under this surface equals exactly $\pi$—a remarkable result that connects exponentials, geometry, and probability.
+        This 3D bell-shaped surface is the two-dimensional Gaussian function $e^{-(x^2+y^2)}$. It peaks at the origin (value 1) and decays smoothly toward zero in all directions. The total volume under this surface equals exactly $\pi$—a remarkable result that connects exponentials, geometry, and probability.
 
         The Gaussian function $e^{-x^2}$ and its normalized version (the **normal distribution**)
         appear throughout science:

@@ -87,3 +87,5 @@ This project is inspired by:
 ## License
 
 MIT
+
+*Made with AI*

@@ -333,7 +333,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** The six faces of a fair die represent the sample space Ω = {1, 2, 3, 4, 5, 6}. The highlighted faces (2, 4, 6) form the event "roll an even number." Since all outcomes are equally likely, P(even) = 3/6 = 1/2. This visual connects the abstract notion of "event as a subset" to concrete outcomes.
+        The six faces of a fair die represent the sample space Ω = {1, 2, 3, 4, 5, 6}. The highlighted faces (2, 4, 6) form the event "roll an even number." Since all outcomes are equally likely, P(even) = 3/6 = 1/2. This visual connects the abstract notion of "event as a subset" to concrete outcomes.
         """
     )
     return
@@ -469,7 +469,7 @@ def _(go, mo, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** As we flip a coin more and more times, the relative frequency of heads (blue line) converges toward the true probability of 0.5 (red dashed line). Early on, the frequency fluctuates wildly, but by 1000+ flips, it stabilizes near 0.5. The shaded band shows where 95% of random walks would fall—notice how it narrows as sample size grows.
+        As we flip a coin more and more times, the relative frequency of heads (blue line) converges toward the true probability of 0.5 (red dashed line). Early on, the frequency fluctuates wildly, but by 1000+ flips, it stabilizes near 0.5. The shaded band shows where 95% of random walks would fall—notice how it narrows as sample size grows.
         """
     )
     return
@@ -636,7 +636,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** This curve reveals the non-linear relationship between probability and odds. At P = 0.5, odds are 1:1 (even). As probability increases, odds grow exponentially—P = 0.9 corresponds to 9:1 odds, and P = 0.99 corresponds to 99:1 odds. The logarithmic y-axis helps visualize this dramatic growth. Bookmakers and Bayesian statisticians often prefer odds because they're unbounded and easier to update.
+        This curve reveals the non-linear relationship between probability and odds. At P = 0.5, odds are 1:1 (even). As probability increases, odds grow exponentially—P = 0.9 corresponds to 9:1 odds, and P = 0.99 corresponds to 99:1 odds. The logarithmic y-axis helps visualize this dramatic growth. Bookmakers and Bayesian statisticians often prefer odds because they're unbounded and easier to update.
         """
     )
     return
@@ -773,7 +773,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** Two circles that don't overlap represent mutually exclusive events—events that cannot both occur. If you're in circle A, you cannot be in circle B, and vice versa. For such events, we can simply add probabilities: P(A ∪ B) = P(A) + P(B), because there's no overlap to worry about double-counting.
+        Two circles that don't overlap represent mutually exclusive events—events that cannot both occur. If you're in circle A, you cannot be in circle B, and vice versa. For such events, we can simply add probabilities: P(A ∪ B) = P(A) + P(B), because there's no overlap to worry about double-counting.
         """
     )
     return
@@ -789,7 +789,7 @@ def _(mo):
 
         $$P(A \\cup B) = P(A) + P(B) - P(A \\cap B)$$
 
-        ### ⚠️ Misconception #1: Double Counting
+        ### Misconception #1: Double Counting
 
         **Wrong thinking**: "The probability of rolling a 2 OR an even number is 1/6 + 3/6 = 4/6"
 
@@ -865,7 +865,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** When events overlap, we can't simply add probabilities—we'd count the overlap twice. Here, the small circle {2} is entirely contained within the larger circle {2, 4, 6}. If we naively added P({2}) + P({2,4,6}), we'd count "2" twice. The inclusion-exclusion formula corrects this by subtracting the intersection: P(A ∪ B) = P(A) + P(B) − P(A ∩ B).
+        When events overlap, we can't simply add probabilities—we'd count the overlap twice. Here, the small circle {2} is entirely contained within the larger circle {2, 4, 6}. If we naively added P({2}) + P({2,4,6}), we'd count "2" twice. The inclusion-exclusion formula corrects this by subtracting the intersection: P(A ∪ B) = P(A) + P(B) − P(A ∩ B).
         """
     )
     return
@@ -959,7 +959,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** Three overlapping circles form a classic Venn diagram for three events. The inclusion-exclusion formula accounts for all possible overlaps: we add the three individual probabilities, subtract the three pairwise intersections (to correct for double-counting), then add back the triple intersection (which was subtracted too many times). This generalizes to any number of events.
+        Three overlapping circles form a classic Venn diagram for three events. The inclusion-exclusion formula accounts for all possible overlaps: we add the three individual probabilities, subtract the three pairwise intersections (to correct for double-counting), then add back the triple intersection (which was subtracted too many times). This generalizes to any number of events.
         """
     )
     return
@@ -1048,7 +1048,7 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-        ## ⚠️ Misconception #2: The Gambler's Fallacy
+        ## Misconception #2: The Gambler's Fallacy
 
         > *"I've flipped 10 heads in a row. Tails MUST be due!"*
 
@@ -1141,7 +1141,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** This simulation tests the gambler's fallacy. Among thousands of random coin flip sequences, we found cases where 10 consecutive heads occurred, then checked the 11th flip. Despite the "hot streak," the 11th flip is still approximately 50-50—the coin has no memory of previous flips. This demonstrates why the gambler's fallacy is indeed a fallacy.
+        This simulation tests the gambler's fallacy. Among thousands of random coin flip sequences, we found cases where 10 consecutive heads occurred, then checked the 11th flip. Despite the "hot streak," the 11th flip is still approximately 50-50—the coin has no memory of previous flips. This demonstrates why the gambler's fallacy is indeed a fallacy.
         """
     )
     return
@@ -1151,7 +1151,7 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-        ## ⚠️ Misconception #3: Multiplying Non-Independent Events
+        ## Misconception #3: Multiplying Non-Independent Events
 
         > *"Two doctors are each 80% accurate. Together they must be 96% accurate!"*
 
@@ -1264,7 +1264,7 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        **What this shows:** A probability tree traces all possible outcomes of two coin flips. From the start, we branch to H (heads) or T (tails), each with probability 0.5. From each first-flip outcome, we branch again. The four endpoints (HH, HT, TH, TT) each have probability 0.25, found by multiplying along the branches. Trees make sequential probability calculations visual and systematic.
+        A probability tree traces all possible outcomes of two coin flips. From the start, we branch to H (heads) or T (tails), each with probability 0.5. From each first-flip outcome, we branch again. The four endpoints (HH, HT, TH, TT) each have probability 0.25, found by multiplying along the branches. Trees make sequential probability calculations visual and systematic.
         """
     )
     return
@@ -1364,7 +1364,17 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
-        ## ⚠️ Misconception #4: Confusing P(A|B) with P(B|A)
+        The Venn diagram illustrates conditional probability. Circle B (red) represents all cases where event B occurred—this is our new "universe." Circle A (cyan) represents event A. To find P(A|B), we "zoom in" on B and ask: what fraction of B is also in A? The answer is the overlap region (A∩B) divided by all of B.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        ## Misconception #4: Confusing P(A|B) with P(B|A)
 
         > *"The probability of rain given clouds equals the probability of clouds given rain."*
 
@@ -1440,7 +1450,7 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-        ## ⚠️ Misconception #5: Base Rate Neglect
+        ## Misconception #5: Base Rate Neglect
 
         This is perhaps the most important cognitive bias in probability.
 
@@ -1536,6 +1546,16 @@ def _(go):
         showarrow=False
     )
     _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        This treemap breaks down a population of 10,000 by disease status and test results. The key insight is visual: even though the test is 99% accurate, the false positives (99 healthy people testing positive) equal the true positives (99 sick people testing positive) because healthy people vastly outnumber sick people. This is why a positive test only means 50% chance of disease.
+        """
+    )
     return
 
 
@@ -1645,6 +1665,16 @@ def _(go, mo, np):
         height=300,
     )
     _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        This gauge displays the posterior probability—P(disease | positive test)—calculated using Bayes' theorem with the default parameters (1% prevalence, 99% sensitivity, 99% specificity). The needle shows 50%, illustrating that even an excellent test gives only coin-flip confidence when the condition is rare. The colored regions indicate low (red), moderate (yellow), and high (green) confidence zones.
+        """
+    )
     return
 
 
@@ -1765,6 +1795,16 @@ def _(go):
 
 
 @app.cell
+def _(mo):
+    mo.md(
+        r"""
+        This diagram exhaustively shows all three scenarios based on where the car actually is. In each row, you pick Door 1, Monty reveals a goat, and you can either stay or switch. The colors reveal the key insight: switching wins in 2 out of 3 scenarios (when the car is behind Door 2 or 3), while staying wins only when you initially picked correctly (1 out of 3). This is why switching doubles your odds.
+        """
+    )
+    return
+
+
+@app.cell
 def _(go, np):
     # Monty Hall simulation
     np.random.seed(42)
@@ -1819,6 +1859,16 @@ def _(go, np):
         height=400,
     )
     _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        This bar chart displays the results of 10,000 simulated Monty Hall games. The "Stay" strategy wins about 33% of the time, while "Switch" wins about 67%—matching the theoretical predictions. Simulations like this convinced skeptics (including PhD mathematicians!) that switching really does double your chances.
+        """
+    )
     return
 
 
@@ -1916,6 +1966,16 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        This curve plots the probability of at least one shared birthday as group size increases. The steep rise is surprising—with just 23 people (vertical dashed line), there's a 50% chance of a match, and by 57 people it exceeds 99%. The paradox arises because we're counting pairs: 23 people create 253 possible pairs to compare, giving many opportunities for a match.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ## Simpson's Paradox
 
         **The Setup**: A treatment can be better than a control in every subgroup,
@@ -2003,6 +2063,16 @@ def _(go, np):
     _fig.update_xaxes(color="#a0a0a0")
     _fig.update_yaxes(color="#a0a0a0", gridcolor="#2a2a3e", range=[0, 1])
     _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        The left panel shows admission rates by department: women (red) outperform men (blue) in both the easy and hard departments. Yet the right panel shows that overall, men have higher admission rates! The paradox occurs because men apply mostly to the easy department (90% admission), while women apply mostly to the hard department (45% admission). The overall average gets pulled toward each group's most-applied department.
+        """
+    )
     return
 
 
@@ -2132,6 +2202,16 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        This bar chart displays the binomial distribution for n=10 trials with p=0.5 success probability (like flipping a fair coin 10 times). Each bar shows the probability of getting exactly k heads. The distribution is symmetric around the mean (5 heads), with the most likely outcomes clustered near the center and extreme outcomes (0 or 10 heads) being rare.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ## The Geometric Distribution
 
         **Question**: How many trials until the first success?
@@ -2225,6 +2305,16 @@ def _(go, np, stats):
         height=400,
     )
     _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        Four Poisson distributions with different rate parameters λ. When λ is small (λ=1), events are rare and the distribution is right-skewed—0 or 1 event is most likely. As λ increases, the distribution shifts right and becomes more symmetric, approaching a bell curve shape. The mean and variance of a Poisson distribution both equal λ.
+        """
+    )
     return
 
 
@@ -2390,6 +2480,16 @@ def _(go, np, stats):
 def _(mo):
     mo.md(
         r"""
+        The standard normal distribution (bell curve) with the famous 68-95-99.7 rule visualized. The shaded regions show that 68% of data falls within ±1 standard deviation of the mean (green region), 95% within ±2σ (yellow region), and 99.7% within ±3σ. This rule provides a quick way to interpret how unusual any observation is.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ## The Central Limit Theorem in Action
 
         The CLT says: Sum enough random things together, and you get a bell curve.
@@ -2457,6 +2557,16 @@ def _(go, np, stats):
     _fig.update_xaxes(color="#a0a0a0", gridcolor="#2a2a3e")
     _fig.update_yaxes(color="#a0a0a0", gridcolor="#2a2a3e")
     _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        The Central Limit Theorem in action. Each panel shows the distribution of sums of uniform random variables (blue histogram) compared to a standard normal (red curve). With just 1 uniform variable, the distribution is flat. Summing 2 gives a triangle. By n=5, it's clearly bell-shaped, and by n=30, it's virtually indistinguishable from normal—regardless of the original distribution!
+        """
+    )
     return
 
 
@@ -2626,6 +2736,16 @@ def _(go, np):
 def _(mo):
     mo.md(
         r"""
+        Two normal distributions with the same mean (μ=0) but different standard deviations. The left distribution (σ=0.5) is tall and narrow—values cluster tightly around the mean. The right distribution (σ=2) is short and wide—values are more spread out. Variance (σ²) quantifies this spread: higher variance means more uncertainty about where individual values will fall.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ## The St. Petersburg Paradox
 
         **The Game**: Flip a coin until you get tails. If tails appears on flip n,
@@ -2703,6 +2823,16 @@ def _(go, np):
         height=350,
     )
     _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        The Law of Large Numbers demonstrated through die rolls. The blue line tracks the running average after each roll. Early on, it fluctuates wildly—a few lucky 6s or unlucky 1s can swing the average dramatically. But as rolls accumulate, the average converges toward the theoretical expected value of 3.5 (red dashed line). Given enough trials, the sample mean approaches the true mean.
+        """
+    )
     return
 
 
@@ -2805,15 +2935,15 @@ def _(mo):
         r"""
         ## Misconceptions Checklist
 
-        ✓ **Gambler's Fallacy**: Past outcomes don't affect independent future events
+        - **Gambler's Fallacy**: Past outcomes don't affect independent future events
 
-        ✓ **Base Rate Neglect**: Always consider how common the condition is
+        - **Base Rate Neglect**: Always consider how common the condition is
 
-        ✓ **P(A|B) ≠ P(B|A)**: Don't confuse conditional probabilities
+        - **P(A|B) ≠ P(B|A)**: Don't confuse conditional probabilities
 
-        ✓ **Independence Required**: Don't multiply probabilities unless events are independent
+        - **Independence Required**: Don't multiply probabilities unless events are independent
 
-        ✓ **Pairs, Not Individuals**: Birthday paradox - count pairs, not people
+        - **Pairs, Not Individuals**: Birthday paradox - count pairs, not people
         """
     )
     return
