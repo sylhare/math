@@ -145,6 +145,7 @@ def _(go, np):
             steps.append(step)
 
         fig.update_layout(
+            minreducedwidth=300,
             paper_bgcolor='#16213e',
             plot_bgcolor='#1a1a2e',
             font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -313,6 +314,7 @@ def _(go, np):
         fig.frames = frames
 
         fig.update_layout(
+            minreducedwidth=300,
             paper_bgcolor='#16213e',
             plot_bgcolor='#1a1a2e',
             font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -507,6 +509,7 @@ def _(go, np):
         )
 
         fig.update_layout(
+            minreducedwidth=300,
             paper_bgcolor='#16213e',
             plot_bgcolor='#1a1a2e',
             font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -713,6 +716,7 @@ def _(integral_function, lower_bound, upper_bound, go, np, sp, Symbol, integrate
     _title = f"∫ from {_a} to {_b} of {_latex_str} dx = {_result:.4f}" if _result else f"∫ from {_a} to {_b}"
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor='#16213e',
         plot_bgcolor='#1a1a2e',
         font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -938,6 +942,7 @@ def _(go, np):
         exact_area = b**3 / 3
 
         fig.update_layout(
+            minreducedwidth=300,
             paper_bgcolor='#16213e',
             plot_bgcolor='#1a1a2e',
             font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -1039,6 +1044,7 @@ def _(go, np):
     ))
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor='#16213e',
         plot_bgcolor='#1a1a2e',
         font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -1117,6 +1123,7 @@ def _(go, np):
     ))
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor='#16213e',
         plot_bgcolor='#1a1a2e',
         font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -1229,6 +1236,7 @@ def _(go, np, sci_integrate):
     _fig.add_annotation(x=-1.5, y=0.08, text=f"13.5%", showarrow=False, font={'color': '#eaeaea', 'size': 12})
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor='#16213e',
         plot_bgcolor='#1a1a2e',
         font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -1334,6 +1342,7 @@ def _(go, np):
     _volume = np.pi * _r**2 * _h / 3
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor='#16213e',
         plot_bgcolor='#1a1a2e',
         font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -1474,6 +1483,7 @@ def _(go, np, n_points_slider):
     _error = abs(_pi_estimate - np.pi) / np.pi * 100
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor='#16213e',
         plot_bgcolor='#1a1a2e',
         font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},

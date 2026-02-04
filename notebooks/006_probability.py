@@ -315,6 +315,7 @@ def _(go, np):
     )
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(
             text="Sample Space: Rolling a Fair Die",
             font=dict(color="#eaeaea", size=16)
@@ -439,6 +440,7 @@ def _(go, mo, np):
     ))
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(
             text="Law of Large Numbers: Relative Frequency Converges to Probability",
             font=dict(color="#eaeaea", size=16)
@@ -605,6 +607,7 @@ def _(go, np):
     ))
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(
             text="Probability vs Odds: A Non-Linear Relationship",
             font=dict(color="#eaeaea", size=16)
@@ -755,6 +758,7 @@ def _(go, np):
     _fig.add_annotation(x=0, y=-3, text="P(A ∪ B) = P(A) + P(B)", font=dict(size=14, color="#4ecdc4"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Mutually Exclusive Events", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-5, 5]),
         yaxis=dict(visible=False, range=[-4, 3], scaleanchor="x"),
@@ -847,6 +851,7 @@ def _(go, np):
     _fig.add_annotation(x=0.5, y=-3, text="P(A ∪ B) = P(A) + P(B) - P(A∩B) = 1/6 + 3/6 - 1/6 = 3/6", font=dict(size=12, color="#4ecdc4"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Overlapping Events: Don't Double Count!", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-3, 4]),
         yaxis=dict(visible=False, range=[-4, 3], scaleanchor="x"),
@@ -941,6 +946,7 @@ def _(go, np):
                        font=dict(size=11, color="#a0a0a0"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Inclusion-Exclusion: Three Events", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-3, 3]),
         yaxis=dict(visible=False, range=[-3.5, 2.5], scaleanchor="x"),
@@ -1123,6 +1129,7 @@ def _(go, np):
 
     _n_found = np.sum(_ten_heads_mask)
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(
             text=f"After 10 Heads, What's the 11th Flip? (Found {_n_found} such sequences)",
             font=dict(color="#eaeaea", size=14)
@@ -1249,6 +1256,7 @@ def _(go, np):
         _fig.add_annotation(x=5, y=_y, text=f"P={_prob}", font=dict(size=11, color="#a0a0a0"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Tree Diagram: Two Coin Flips", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-1, 6]),
         yaxis=dict(visible=False, range=[-3.5, 3.5]),
@@ -1346,6 +1354,7 @@ def _(go, np):
     _fig.add_annotation(x=0, y=-3.6, text="'Zoom in' on B, then see how much is also A", font=dict(size=12, color="#a0a0a0"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Conditional Probability: Restricting to Where B Occurred", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-4, 4]),
         yaxis=dict(visible=False, range=[-4.5, 3], scaleanchor="x"),
@@ -1530,6 +1539,7 @@ def _(go):
     ))
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(
             text="Base Rate Neglect: Why Positive Test ≠ 99% Chance of Disease",
             font=dict(color="#eaeaea", size=14)
@@ -1660,6 +1670,7 @@ def _(go, mo, np):
     ))
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
         height=300,
@@ -1783,6 +1794,7 @@ def _(go):
                        font=dict(size=14, color="#4ecdc4"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Monty Hall Problem: All Three Scenarios", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-1, 6]),
         yaxis=dict(visible=False, range=[-4.5, 3.5]),
@@ -1848,6 +1860,7 @@ def _(go, np):
                   annotation_text="Expected switch: 66.7%", annotation_position="left")
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(
             text=f"Monty Hall Simulation: {_n_games:,} Games",
             font=dict(color="#eaeaea", size=16)
@@ -1945,6 +1958,7 @@ def _(go, np):
                        arrowhead=2, arrowcolor="#ffd93d", ax=30, ay=-30)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(
             text="Birthday Paradox: Probability of a Shared Birthday",
             font=dict(color="#eaeaea", size=16)
@@ -2050,6 +2064,7 @@ def _(go, np):
     ), row=1, col=2)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(
             text="Simpson's Paradox: Women win in each dept, but lose overall!",
             font=dict(color="#eaeaea", size=14)
@@ -2184,6 +2199,7 @@ def _(go, np):
                   annotation_text=f"Mean = {_mean:.1f}")
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(
             text=f"Binomial Distribution: n={_n}, p={_p}",
             font=dict(color="#eaeaea", size=16)
@@ -2291,6 +2307,7 @@ def _(go, np, stats):
         ))
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(
             text="Poisson Distribution for Different λ Values",
             font=dict(color="#eaeaea", size=16)
@@ -2460,6 +2477,7 @@ def _(go, np, stats):
     _fig.add_annotation(x=2.5, y=0.02, text="99.7%", font=dict(size=10, color="#ff6b6b"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(
             text="Standard Normal Distribution with 68-95-99.7 Rule",
             font=dict(color="#eaeaea", size=16)
@@ -2546,6 +2564,7 @@ def _(go, np, stats):
         ), row=_row, col=_col)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(
             text="Central Limit Theorem: Sum of Uniforms → Normal",
             font=dict(color="#eaeaea", size=16)
@@ -2719,6 +2738,7 @@ def _(go, np):
     _fig.add_vline(x=0, line_dash="dash", line_color="#ffd93d", row=1, col=2)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Same Mean, Different Variance", font=dict(color="#eaeaea", size=16)),
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
@@ -2810,6 +2830,7 @@ def _(go, np):
                   annotation_text="E[X] = 3.5")
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(
             text="Law of Large Numbers: Die Roll Average Converges to E[X]",
             font=dict(color="#eaeaea", size=16)

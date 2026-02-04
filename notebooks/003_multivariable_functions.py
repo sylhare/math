@@ -198,6 +198,7 @@ def _(go, np, surface_selector):
     ])
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text=f"{_title}: f(x,y) = {_formula}", font=dict(color="#eaeaea")),
         scene=dict(
             xaxis=dict(title=dict(text="x", font=dict(color="#a0a0a0")), backgroundcolor="#1a1a2e", gridcolor="#2d3a4f"),
@@ -305,6 +306,7 @@ def _(go, np, surface_selector):
     ])
 
     _fig_contour.update_layout(
+        minreducedwidth=300,
         title=dict(text=_title, font=dict(color="#eaeaea")),
         xaxis=dict(title=dict(text="x", font=dict(color="#a0a0a0")), gridcolor="#2d3a4f", zerolinecolor="#4a5568", tickfont=dict(color="#a0a0a0")),
         yaxis=dict(title=dict(text="y", font=dict(color="#a0a0a0")), gridcolor="#2d3a4f", zerolinecolor="#4a5568", tickfont=dict(color="#a0a0a0"), scaleanchor="x"),
@@ -486,6 +488,7 @@ def _(go, np, point_x_slider, point_y_slider):
     ))
 
     _fig_tangent.update_layout(
+        minreducedwidth=300,
         title=dict(
             text=f"Tangent Plane at ({_x0:.1f}, {_y0:.1f}) | ∂f/∂x = {_fx:.2f}, ∂f/∂y = {_fy:.2f}",
             font=dict(color="#eaeaea"),
@@ -619,6 +622,7 @@ def _(go, np):
                 )
 
     _fig_grad.update_layout(
+        minreducedwidth=300,
         title=dict(text="Gradient Field ∇f for f(x,y) = x² + y²", font=dict(color="#eaeaea")),
         xaxis=dict(title=dict(text="x", font=dict(color="#a0a0a0")), gridcolor="#2d3a4f", zerolinecolor="#4a5568", range=[-2.2, 2.2], tickfont=dict(color="#a0a0a0")),
         yaxis=dict(title=dict(text="y", font=dict(color="#a0a0a0")), gridcolor="#2d3a4f", zerolinecolor="#4a5568", range=[-2.2, 2.2], scaleanchor="x", tickfont=dict(color="#a0a0a0")),
@@ -747,6 +751,7 @@ def _(go, np):
     )
 
     _fig_saddle.update_layout(
+        minreducedwidth=300,
         title=dict(text="Saddle Point: f(x,y) = x² - y² (Rotating Slice)", font=dict(color="#eaeaea")),
         scene=dict(
             xaxis=dict(title=dict(text="x", font=dict(color="#a0a0a0")), backgroundcolor="#1a1a2e", gridcolor="#2d3a4f", range=[-2, 2]),
@@ -929,6 +934,7 @@ def _(go, np, nx_slider, ny_slider):
     _true_value = 32 / 3
 
     _fig_riemann2d.update_layout(
+        minreducedwidth=300,
         title=dict(
             text=f"Double Integral Riemann Sum: {_nx}×{_ny} boxes | Sum = {_volume_sum:.4f} | True = {_true_value:.4f}",
             font=dict(color="#eaeaea"),
@@ -1054,6 +1060,7 @@ def _(go, np):
     ])
 
     _fig_heat.update_layout(
+        minreducedwidth=300,
         title=dict(text="Steady-State Temperature Distribution (Laplace Equation)", font=dict(color="#eaeaea")),
         xaxis=dict(title=dict(text="x", font=dict(color="#a0a0a0")), gridcolor="#2d3a4f", tickfont=dict(color="#a0a0a0")),
         yaxis=dict(title=dict(text="y", font=dict(color="#a0a0a0")), gridcolor="#2d3a4f", scaleanchor="x", tickfont=dict(color="#a0a0a0")),
@@ -1230,6 +1237,7 @@ def _(gd_lr_slider, gd_x0_slider, gd_y0_slider, go, np):
     )
 
     _fig_gd.update_layout(
+        minreducedwidth=300,
         title=dict(
             text=f"Gradient Descent: {len(_path)} steps to reach ({_path[-1, 0]:.3f}, {_path[-1, 1]:.3f})",
             font=dict(color="#eaeaea"),
@@ -1393,6 +1401,7 @@ def _(go, np):
     _fig_polar.add_annotation(x=1.3, y=0.75, text="dA = r dr dθ", font=dict(size=12, color="#00d4ff"), showarrow=False)
 
     _fig_polar.update_layout(
+        minreducedwidth=300,
         title=dict(text="Polar Coordinates: Area Element dA = r dr dθ", font=dict(color="#eaeaea")),
         xaxis=dict(title=dict(text="x", font=dict(color="#a0a0a0")), gridcolor="#2d3a4f", zerolinecolor="#4a5568", range=[-2.2, 2.2], scaleanchor="y", tickfont=dict(color="#a0a0a0")),
         yaxis=dict(title=dict(text="y", font=dict(color="#a0a0a0")), gridcolor="#2d3a4f", zerolinecolor="#4a5568", range=[-2.2, 2.2], tickfont=dict(color="#a0a0a0")),
@@ -1491,6 +1500,7 @@ def _(go, np):
     ])
 
     _fig_gauss.update_layout(
+        minreducedwidth=300,
         title=dict(text="The 2D Gaussian: e^(-(x²+y²)) — Volume Under Surface = π", font=dict(color="#eaeaea")),
         scene=dict(
             xaxis=dict(title=dict(text="x", font=dict(color="#a0a0a0")), backgroundcolor="#1a1a2e", gridcolor="#2d3a4f"),

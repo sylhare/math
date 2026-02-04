@@ -424,6 +424,7 @@ def _(go, np, operation_selector):
     }
 
     _fig_venn.update_layout(
+        minreducedwidth=300,
         title=dict(text=_op_text[_op], font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-2.5, 2.5]),
         yaxis=dict(visible=False, range=[-1.8, 1.8], scaleanchor="x"),
@@ -617,6 +618,7 @@ def _(go, np):
     _fig_trans.add_annotation(x=0, y=-0.4, text="⟹ a R c (by transitivity)", font=dict(size=14, color="#ff6b6b"), showarrow=False)
 
     _fig_trans.update_layout(
+        minreducedwidth=300,
         title=dict(text="Transitivity: If a R b and b R c, then a R c", font=dict(color="#eaeaea")),
         xaxis=dict(visible=False, range=[-2.5, 2.5]),
         yaxis=dict(visible=False, range=[-1, 1.8], scaleanchor="x"),
@@ -758,6 +760,7 @@ def _(go, np):
         )
 
     _fig_equiv.update_layout(
+        minreducedwidth=300,
         title=dict(text="Equivalence Classes for Congruence mod 3 on ℤ", font=dict(color="#eaeaea")),
         xaxis=dict(visible=False, range=[-2, 6.5]),
         yaxis=dict(visible=False, range=[-3.5, 3.5]),
@@ -968,6 +971,7 @@ def _(func_type_selector, go):
     _fig_func.add_annotation(x=_codomain_x, y=3, text="Codomain B", font=dict(size=14, color="#ff6b6b"), showarrow=False)
 
     _fig_func.update_layout(
+        minreducedwidth=300,
         title=dict(text=_desc, font=dict(color="#eaeaea", size=14)),
         xaxis=dict(visible=False, range=[-1, 4]),
         yaxis=dict(visible=False, range=[-3, 4]),
@@ -1081,6 +1085,7 @@ def _(go):
     _fig_card.add_annotation(x=8.5, y=-1, text="...", font=dict(size=18, color="#ff6b6b"), showarrow=False)
 
     _fig_card.update_layout(
+        minreducedwidth=300,
         title=dict(text="Bijection showing |ℕ| = |ℤ|: The integers are countable!", font=dict(color="#eaeaea")),
         xaxis=dict(visible=False, range=[-1.5, 9]),
         yaxis=dict(visible=False, range=[-2, 2]),
@@ -1191,6 +1196,7 @@ def _(go):
         _fig_diag.add_annotation(x=-1, y=-_i, text=f"r{_i} = 0.", font=dict(size=12, color="#a0a0a0"), showarrow=False)
 
     _fig_diag.update_layout(
+        minreducedwidth=300,
         title=dict(text="Cantor's Diagonal Argument: Constructing a number not in any list", font=dict(color="#eaeaea")),
         xaxis=dict(visible=False, range=[-2.5, 6.5]),
         yaxis=dict(visible=False, range=[-9, 1]),
@@ -1357,6 +1363,7 @@ def _(go, np):
     )
 
     _fig_hom.update_layout(
+        minreducedwidth=300,
         title=dict(text="Homomorphism φ: ℤ₆ → ℤ₃ defined by φ(n) = n mod 3", font=dict(color="#eaeaea")),
         xaxis=dict(visible=False, range=[-7, 7]),
         yaxis=dict(visible=False, range=[-3, 4], scaleanchor="x"),
@@ -1476,6 +1483,7 @@ def _(go, np):
     _fig_hasse.add_annotation(x=0, y=3.7, text="Maximum (all divide 12)", font=dict(size=12, color="#ff6b6b"), showarrow=False)
 
     _fig_hasse.update_layout(
+        minreducedwidth=300,
         title=dict(text="Hasse Diagram: Divisibility on {1, 2, 3, 4, 6, 12}", font=dict(color="#eaeaea")),
         xaxis=dict(visible=False, range=[-3, 3]),
         yaxis=dict(visible=False, range=[-1.2, 4.5]),

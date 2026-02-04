@@ -250,6 +250,7 @@ def _(function_dropdown, go, np, sp, Symbol):
     ))
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor='#16213e',
         plot_bgcolor='#1a1a2e',
         font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -447,6 +448,7 @@ def _(go, np):
             steps.append(step)
 
         fig.update_layout(
+            minreducedwidth=300,
             paper_bgcolor='#16213e',
             plot_bgcolor='#1a1a2e',
             font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -658,6 +660,7 @@ def _(go, np):
         fig.frames = frames
 
         fig.update_layout(
+            minreducedwidth=300,
             paper_bgcolor='#16213e',
             plot_bgcolor='#1a1a2e',
             font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -799,6 +802,7 @@ def _(go, np, zoom_slider):
         max_dev = max(abs(y_curve - y_tangent))
 
         fig.update_layout(
+            minreducedwidth=300,
             title=dict(
                 text=f"Zoom: {zoom}x | Window: ±{window:.4f} | Max deviation from tangent: {max_dev:.6f}",
                 font=dict(color="#eaeaea", size=14),
@@ -972,6 +976,7 @@ def _(go, np, power_slider):
     ))
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor='#16213e',
         plot_bgcolor='#1a1a2e',
         font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -1164,6 +1169,7 @@ def _(go, np):
     ))
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor='#16213e',
         plot_bgcolor='#1a1a2e',
         font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -1320,6 +1326,7 @@ def _(go, np, tangent_point):
     ))
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor='#16213e',
         plot_bgcolor='#1a1a2e',
         font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -1475,6 +1482,7 @@ def _(go, np):
     _fig.add_hline(y=0, line_dash="dot", line_color="#a0a0a0", opacity=0.5)
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor='#16213e',
         plot_bgcolor='#1a1a2e',
         font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -1648,6 +1656,7 @@ def _(go, np):
     _fig.add_hline(y=0, line_dash="dot", line_color="#a0a0a0", opacity=0.5)
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor='#16213e',
         plot_bgcolor='#1a1a2e',
         font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
@@ -1818,6 +1827,7 @@ def _(go, np, rect_slider):
     ))
 
     _fig.update_layout(
+        minreducedwidth=300,
         paper_bgcolor='#16213e',
         plot_bgcolor='#1a1a2e',
         font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},

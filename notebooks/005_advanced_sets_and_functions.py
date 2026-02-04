@@ -243,6 +243,7 @@ def _(go, np):
     )
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Von Neumann Ordinals: Building Numbers from Sets", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-4, 5]),
         yaxis=dict(visible=False, range=[-4, 3.5], scaleanchor="x"),
@@ -412,6 +413,7 @@ def _(go, np):
     _fig.add_annotation(x=15, y=1, text="Beyond ω·n", font=dict(size=11, color="#ffd93d"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="The Ordinal Number Line: Counting Beyond Infinity", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-1, 18]),
         yaxis=dict(visible=False, range=[-1.5, 2]),
@@ -515,6 +517,7 @@ def _(go, make_subplots):
     _fig.update_xaxes(visible=False, range=[-1, 12])
     _fig.update_yaxes(visible=False, range=[-1, 1])
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Ordinal Addition is NOT Commutative", font=dict(color="#eaeaea", size=16)),
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
@@ -788,6 +791,7 @@ def _(go):
     _fig.add_annotation(x=11, y=-2, text="...", font=dict(size=14, color="#00d4ff"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Cardinal Addition: ℵ₀ + ℵ₀ = ℵ₀ (Interleaving)", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-3, 14]),
         yaxis=dict(visible=False, range=[-3.5, 3.5]),
@@ -944,6 +948,7 @@ def _(go, np, pairing_step):
     _fig.add_annotation(x=-0.8, y=3, text="n", font=dict(size=14, color="#a0a0a0"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Cantor Pairing: π(m,n) = ½(m+n)(m+n+1) + n", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-1.5, 7]),
         yaxis=dict(visible=False, range=[-1.5, 7], scaleanchor="x"),
@@ -1138,6 +1143,7 @@ def _(go):
     _fig.add_annotation(x=1.5, y=-0.7, text="D is NOT in the range of f!", font=dict(size=12, color="#ff6b6b"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Cantor's Diagonal Argument: Building the 'Missing' Set", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-1, 4]),
         yaxis=dict(visible=False, range=[-1.5, 5]),
@@ -1398,6 +1404,7 @@ def _(go, np):
     _fig.add_annotation(x=-0.25, y=-2.5, text="f(A₁)=b, f(A₂)=y, f(A₃)=r", font=dict(size=11, color="#a0a0a0"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Axiom of Choice: Selecting One Element from Each Set", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-5, 5]),
         yaxis=dict(visible=False, range=[-3, 2]),
@@ -1525,6 +1532,7 @@ def _(go):
     _fig.add_annotation(x=-2, y=-3.2, text="If any one is true,\nall are true", font=dict(size=11, color="#a0a0a0"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="The Equivalence of Choice Principles", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-4, 4]),
         yaxis=dict(visible=False, range=[-4, 2]),
@@ -1796,6 +1804,7 @@ def _(go, np):
     _fig.add_annotation(x=2.5, y=6.5, text="Each diagonal = one integer", font=dict(size=12, color="#00d4ff"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Integers as Equivalence Classes: (a,b) ~ (c,d) iff a+d = b+c", font=dict(color="#eaeaea", size=14)),
         xaxis=dict(visible=False, range=[-1.5, 8]),
         yaxis=dict(visible=False, range=[-1.5, 7], scaleanchor="x"),
@@ -1985,6 +1994,7 @@ def _(cut_value, go, np):
     _fig.add_annotation(x=2.5, y=0.6, text="R (upper)", font=dict(size=12, color="#ff6b6b"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Dedekind Cut: The gap between L and R IS the real number", font=dict(color="#eaeaea", size=14)),
         xaxis=dict(visible=False, range=[-0.8, 4]),
         yaxis=dict(visible=False, range=[-1, 1.5]),
@@ -2091,6 +2101,7 @@ def _(go):
     _fig.add_annotation(x=-3, y=1.5, text="⊂", font=dict(size=30, color="#a0a0a0"), showarrow=False, textangle=90)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="The Number System Tower: Built from ∅", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-4, 4]),
         yaxis=dict(visible=False, range=[-0.8, 4]),
@@ -2212,6 +2223,7 @@ def _(go):
     _fig.add_annotation(x=5.5, y=-1, text="...and 4 more functions (2³ = 8 total)", font=dict(size=11, color="#a0a0a0"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Function Space {0,1}^{a,b,c}: All 8 Functions", font=dict(color="#eaeaea", size=14)),
         xaxis=dict(visible=False, range=[-1, 12]),
         yaxis=dict(visible=False, range=[-2, 4]),
@@ -2328,6 +2340,7 @@ def _(go):
     _fig.add_annotation(x=2, y=-2.7, text="Both injections exist ⟹ |A| = |B|", font=dict(size=11, color="#a0a0a0"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Schröder-Bernstein: Evens ↔ Naturals", font=dict(color="#eaeaea", size=14)),
         xaxis=dict(visible=False, range=[-1, 5]),
         yaxis=dict(visible=False, range=[-3.5, 5]),
@@ -2435,6 +2448,7 @@ def _(go, np):
     _fig.add_annotation(x=1, y=1.15, text="x=1", font=dict(size=11, color="#ffd93d"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Fixed Points: Where f(x) = x", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(title="x", color="#a0a0a0", gridcolor="rgba(255,255,255,0.1)", range=[-0.5, 2]),
         yaxis=dict(title="y", color="#a0a0a0", gridcolor="rgba(255,255,255,0.1)", range=[-0.5, 2.5]),
@@ -2563,6 +2577,7 @@ def _(go):
     _fig.add_annotation(x=2, y=1, text="{a} ∨ {b} = {a,b}\n(union)", font=dict(size=10, color="#00d4ff"), showarrow=False, align="left")
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Power Set Lattice P({a,b})", font=dict(color="#eaeaea", size=16)),
         xaxis=dict(visible=False, range=[-3.5, 3.5]),
         yaxis=dict(visible=False, range=[-0.5, 3]),
@@ -2680,6 +2695,7 @@ def _(go, make_subplots):
     _fig.update_xaxes(visible=False, range=[-1.5, 1.5])
     _fig.update_yaxes(visible=False, range=[-0.5, 3.5])
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Forbidden Sublattices", font=dict(color="#eaeaea", size=16)),
         paper_bgcolor="#1a1a2e",
         plot_bgcolor="#1a1a2e",
@@ -2837,6 +2853,7 @@ def _(go, np):
     _fig.add_annotation(x=0.5, y=0.35, text="Converges to fixed point at x = 1", font=dict(size=11, color="#a0a0a0"), showarrow=False)
 
     _fig.update_layout(
+        minreducedwidth=300,
         title=dict(text="Knaster-Tarski: Monotone Functions on Complete Lattices Have Fixed Points", font=dict(color="#eaeaea", size=14)),
         xaxis=dict(title="[0, 1]", color="#a0a0a0", range=[-0.1, 1.2]),
         yaxis=dict(visible=False, range=[-0.4, 0.8]),
