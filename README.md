@@ -1,6 +1,7 @@
 # Math Explorations
 
-Interactive mathematics explorations using [marimo](https://marimo.io) notebooks.
+Interactive mathematics explorations using [marimo](https://marimo.io) notebooks,
+deployed at [sylhare.github.io/math](https://sylhare.github.io/math/).
 
 ## Overview
 
@@ -8,19 +9,6 @@ This project presents mathematical concepts through:
 - **Historical narrative** — Learn how ideas developed, who discovered them, and why they matter
 - **Animated visualizations** — Interactive Plotly charts that make abstract concepts tangible
 - **Primary sources** — Links to original papers and modern learning resources
-
-## Notebooks
-
-### 001 — Functions and Derivatives
-
-A journey through the birth of calculus:
-- The Great Problem of the 17th Century
-- Newton's Method of Fluxions and Leibniz's Infinitesimals
-- What is a function? Interactive explorer
-- From secant lines to tangent lines: the limit process
-- The Power Rule, Chain Rule, and more
-- Applications: projectile motion, optimization
-- A glimpse of integration: Riemann sums
 
 ## Getting Started
 
@@ -33,7 +21,7 @@ A journey through the birth of calculus:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/math.git
+git clone https://github.com/sylhare/math.git
 cd math
 
 # Install dependencies with uv
