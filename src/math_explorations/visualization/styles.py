@@ -17,12 +17,15 @@ COLORS = {
     "accent2": "#f38181",      # Salmon
     "accent3": "#aa96da",      # Lavender
     "accent4": "#fcbad3",      # Pink
+    "highlight": "#ffd93d",    # Gold - highlights and labels
+    "muted": "#4a5568",        # Dark gray - subtle lines
+    "surface": "#2a2a3e",      # Dark navy - card/surface backgrounds
 }
 
 # Plotly layout template
 DARK_THEME: dict[str, Any] = {
-    "paper_bgcolor": COLORS["paper"],
-    "plot_bgcolor": COLORS["background"],
+    "paper_bgcolor": COLORS["background"],
+    "plot_bgcolor": COLORS["paper"],
     "font": {
         "family": "JetBrains Mono, Fira Code, monospace",
         "size": 14,
@@ -146,7 +149,7 @@ def style_subplot_axes(fig: Any, show_ticklabels: bool = False) -> None:
         zerolinecolor=COLORS["grid"],
         showticklabels=show_ticklabels,
     )
-    for ann in fig["layout"]["annotations"]:
+    for ann in getattr(fig.layout, "annotations", ()):
         ann["font"] = {"color": COLORS["quaternary"], "size": 13}
 
 

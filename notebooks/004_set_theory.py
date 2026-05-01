@@ -137,7 +137,8 @@ def _(mo):
 def _():
     import numpy as np
     import plotly.graph_objects as go
-    return go, np
+    from math_explorations.visualization import COLORS, base_layout, style_subplot_axes
+    return COLORS, base_layout, go, np, style_subplot_axes
 
 
 @app.cell
@@ -358,7 +359,7 @@ def _(mo, operation_selector):
 
 
 @app.cell
-def _(go, np, operation_selector):
+def _(COLORS, base_layout, go, np, operation_selector):
     # Create Venn diagram visualization
     _theta = np.linspace(0, 2*np.pi, 100)
     _r = 1.0
@@ -381,11 +382,11 @@ def _(go, np, operation_selector):
 
     # Define colors based on operation
     _colors = {
-        "union": {"a_only": "#4ecdc4", "b_only": "#4ecdc4", "both": "#4ecdc4"},
-        "intersection": {"a_only": "rgba(100,100,100,0.3)", "b_only": "rgba(100,100,100,0.3)", "both": "#ff6b6b"},
-        "difference": {"a_only": "#4ecdc4", "b_only": "rgba(100,100,100,0.3)", "both": "rgba(100,100,100,0.3)"},
-        "symmetric_difference": {"a_only": "#4ecdc4", "b_only": "#4ecdc4", "both": "rgba(100,100,100,0.3)"},
-        "complement": {"a_only": "rgba(100,100,100,0.3)", "b_only": "#4ecdc4", "both": "rgba(100,100,100,0.3)"},
+        "union": {"a_only": COLORS["tertiary"], "b_only": COLORS["tertiary"], "both": COLORS["tertiary"]},
+        "intersection": {"a_only": "rgba(100,100,100,0.3)", "b_only": "rgba(100,100,100,0.3)", "both": COLORS["secondary"]},
+        "difference": {"a_only": COLORS["tertiary"], "b_only": "rgba(100,100,100,0.3)", "both": "rgba(100,100,100,0.3)"},
+        "symmetric_difference": {"a_only": COLORS["tertiary"], "b_only": COLORS["tertiary"], "both": "rgba(100,100,100,0.3)"},
+        "complement": {"a_only": "rgba(100,100,100,0.3)", "b_only": COLORS["tertiary"], "both": "rgba(100,100,100,0.3)"},
     }
     _c = _colors[_op]
 
@@ -395,7 +396,7 @@ def _(go, np, operation_selector):
         x=_circle_a_x, y=_circle_a_y,
         fill="toself",
         fillcolor=_c["a_only"],
-        line=dict(color="#00d4ff", width=2),
+        line=dict(color=COLORS["primary"], width=2),
         name="A",
         opacity=0.7,
     ))
@@ -405,14 +406,14 @@ def _(go, np, operation_selector):
         x=_circle_b_x, y=_circle_b_y,
         fill="toself",
         fillcolor=_c["b_only"],
-        line=dict(color="#ff6b6b", width=2),
+        line=dict(color=COLORS["secondary"], width=2),
         name="B",
         opacity=0.7,
     ))
 
     # Add labels
-    _fig_venn.add_annotation(x=-0.9, y=0, text="A", font=dict(size=20, color="#00d4ff"), showarrow=False)
-    _fig_venn.add_annotation(x=0.9, y=0, text="B", font=dict(size=20, color="#ff6b6b"), showarrow=False)
+    _fig_venn.add_annotation(x=-0.9, y=0, text="A", font=dict(size=20, color=COLORS["primary"]), showarrow=False)
+    _fig_venn.add_annotation(x=0.9, y=0, text="B", font=dict(size=20, color=COLORS["secondary"]), showarrow=False)
 
     # Operation result text
     _op_text = {
@@ -423,18 +424,15 @@ def _(go, np, operation_selector):
         "complement": "Aᶜ = {x ∈ U : x ∉ A}",
     }
 
-    _fig_venn.update_layout(
-        minreducedwidth=300,
-        title=dict(text=_op_text[_op], font=dict(color="#eaeaea", size=16)),
+    _fig_venn.update_layout(**base_layout(
+        title=dict(text=_op_text[_op], font=dict(color=COLORS["text"], size=16)),
         xaxis=dict(visible=False, range=[-2.5, 2.5]),
         yaxis=dict(visible=False, range=[-1.8, 1.8], scaleanchor="x"),
-        paper_bgcolor="#1a1a2e",
-        plot_bgcolor="#1a1a2e",
+        plot_bgcolor=COLORS["background"],
         height=350,
         showlegend=True,
-        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
-        margin=dict(l=40, r=40, t=50, b=80),
-    )
+        legend=dict(font=dict(color=COLORS["text_secondary"]), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+    ))
     _fig_venn
     return
 
@@ -569,7 +567,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Visualize transitivity with an animated diagram
     # Show how a → b and b → c implies a → c
 
@@ -583,10 +581,10 @@ def _(go, np):
         _fig_trans.add_trace(go.Scatter(
             x=[_x], y=[_y],
             mode="markers+text",
-            marker=dict(size=40, color="#4ecdc4"),
+            marker=dict(size=40, color=COLORS["tertiary"]),
             text=[_name],
             textposition="middle center",
-            textfont=dict(size=20, color="#1a1a2e"),
+            textfont=dict(size=20, color=COLORS["background"]),
             showlegend=False,
         ))
 
@@ -595,37 +593,35 @@ def _(go, np):
         x=_nodes["b"][0] - 0.15, y=_nodes["b"][1] - 0.1,
         ax=_nodes["a"][0] + 0.15, ay=_nodes["a"][1] + 0.1,
         xref="x", yref="y", axref="x", ayref="y",
-        showarrow=True, arrowhead=2, arrowsize=1.5, arrowwidth=3, arrowcolor="#00d4ff",
+        showarrow=True, arrowhead=2, arrowsize=1.5, arrowwidth=3, arrowcolor=COLORS["primary"],
     )
-    _fig_trans.add_annotation(x=-0.9, y=0.65, text="a R b", font=dict(size=14, color="#00d4ff"), showarrow=False)
+    _fig_trans.add_annotation(x=-0.9, y=0.65, text="a R b", font=dict(size=14, color=COLORS["primary"]), showarrow=False)
 
     # Arrow from b to c
     _fig_trans.add_annotation(
         x=_nodes["c"][0] - 0.15, y=_nodes["c"][1] + 0.1,
         ax=_nodes["b"][0] + 0.15, ay=_nodes["b"][1] - 0.1,
         xref="x", yref="y", axref="x", ayref="y",
-        showarrow=True, arrowhead=2, arrowsize=1.5, arrowwidth=3, arrowcolor="#00d4ff",
+        showarrow=True, arrowhead=2, arrowsize=1.5, arrowwidth=3, arrowcolor=COLORS["primary"],
     )
-    _fig_trans.add_annotation(x=0.9, y=0.65, text="b R c", font=dict(size=14, color="#00d4ff"), showarrow=False)
+    _fig_trans.add_annotation(x=0.9, y=0.65, text="b R c", font=dict(size=14, color=COLORS["primary"]), showarrow=False)
 
     # Arrow from a to c (the transitive consequence)
     _fig_trans.add_annotation(
         x=_nodes["c"][0] - 0.15, y=_nodes["c"][1],
         ax=_nodes["a"][0] + 0.15, ay=_nodes["a"][1],
         xref="x", yref="y", axref="x", ayref="y",
-        showarrow=True, arrowhead=2, arrowsize=1.5, arrowwidth=3, arrowcolor="#ff6b6b",
+        showarrow=True, arrowhead=2, arrowsize=1.5, arrowwidth=3, arrowcolor=COLORS["secondary"],
     )
-    _fig_trans.add_annotation(x=0, y=-0.4, text="⟹ a R c (by transitivity)", font=dict(size=14, color="#ff6b6b"), showarrow=False)
+    _fig_trans.add_annotation(x=0, y=-0.4, text="⟹ a R c (by transitivity)", font=dict(size=14, color=COLORS["secondary"]), showarrow=False)
 
-    _fig_trans.update_layout(
-        minreducedwidth=300,
-        title=dict(text="Transitivity: If a R b and b R c, then a R c", font=dict(color="#eaeaea")),
+    _fig_trans.update_layout(**base_layout(
+        title=dict(text="Transitivity: If a R b and b R c, then a R c", font=dict(color=COLORS["text"])),
         xaxis=dict(visible=False, range=[-2.5, 2.5]),
         yaxis=dict(visible=False, range=[-1, 1.8], scaleanchor="x"),
-        paper_bgcolor="#1a1a2e",
-        plot_bgcolor="#1a1a2e",
+        plot_bgcolor=COLORS["background"],
         height=350,
-    )
+    ))
     _fig_trans
     return
 
@@ -718,15 +714,15 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Visualize equivalence classes for mod 3
     _fig_equiv = go.Figure()
 
     # Create three equivalence classes
     _classes = {
-        "[0]": {"elements": [-6, -3, 0, 3, 6, 9], "color": "#4ecdc4", "y": 2},
-        "[1]": {"elements": [-5, -2, 1, 4, 7, 10], "color": "#ff6b6b", "y": 0},
-        "[2]": {"elements": [-4, -1, 2, 5, 8, 11], "color": "#ffd93d", "y": -2},
+        "[0]": {"elements": [-6, -3, 0, 3, 6, 9], "color": COLORS["tertiary"], "y": 2},
+        "[1]": {"elements": [-5, -2, 1, 4, 7, 10], "color": COLORS["secondary"], "y": 0},
+        "[2]": {"elements": [-4, -1, 2, 5, 8, 11], "color": COLORS["highlight"], "y": -2},
     }
 
     for _name, _data in _classes.items():
@@ -738,7 +734,7 @@ def _(go, np):
             marker=dict(size=35, color=_data["color"]),
             text=[str(_e) for _e in _data["elements"]],
             textposition="middle center",
-            textfont=dict(size=12, color="#1a1a2e"),
+            textfont=dict(size=12, color=COLORS["background"]),
             name=_name,
         ))
         # Class label
@@ -759,18 +755,15 @@ def _(go, np):
             fillcolor=f"rgba{tuple(list(int(_data['color'][i:i+2], 16) for i in (1, 3, 5)) + [0.1])}",
         )
 
-    _fig_equiv.update_layout(
-        minreducedwidth=300,
-        title=dict(text="Equivalence Classes for Congruence mod 3 on ℤ", font=dict(color="#eaeaea")),
+    _fig_equiv.update_layout(**base_layout(
+        title=dict(text="Equivalence Classes for Congruence mod 3 on ℤ", font=dict(color=COLORS["text"])),
         xaxis=dict(visible=False, range=[-2, 6.5]),
         yaxis=dict(visible=False, range=[-3.5, 3.5]),
-        paper_bgcolor="#1a1a2e",
-        plot_bgcolor="#1a1a2e",
+        plot_bgcolor=COLORS["background"],
         height=350,
         showlegend=True,
-        legend=dict(font=dict(color="#a0a0a0"), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
-        margin=dict(l=40, r=40, t=50, b=80),
-    )
+        legend=dict(font=dict(color=COLORS["text_secondary"]), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
+    ))
     _fig_equiv
     return
 
@@ -896,7 +889,7 @@ def _(func_type_selector, mo):
 
 
 @app.cell
-def _(func_type_selector, go):
+def _(COLORS, base_layout, func_type_selector, go):
     # Visualize function mappings
     _func_type = func_type_selector.value
 
@@ -934,10 +927,10 @@ def _(func_type_selector, go):
         _fig_func.add_trace(go.Scatter(
             x=[_domain_x], y=[_y],
             mode="markers+text",
-            marker=dict(size=35, color="#4ecdc4"),
+            marker=dict(size=35, color=COLORS["tertiary"]),
             text=[_e],
             textposition="middle center",
-            textfont=dict(size=16, color="#1a1a2e"),
+            textfont=dict(size=16, color=COLORS["background"]),
             showlegend=False,
         ))
 
@@ -946,14 +939,14 @@ def _(func_type_selector, go):
     for _e, _y in _codomain_ys.items():
         # Check if this element is hit
         _hit = any(_m[1] == _e for _m in _mappings)
-        _color = "#ff6b6b" if _hit else "rgba(255, 107, 107, 0.3)"
+        _color = COLORS["secondary"] if _hit else "rgba(255, 107, 107, 0.3)"
         _fig_func.add_trace(go.Scatter(
             x=[_codomain_x], y=[_y],
             mode="markers+text",
             marker=dict(size=35, color=_color),
             text=[_e],
             textposition="middle center",
-            textfont=dict(size=16, color="#1a1a2e" if _hit else "#666666"),
+            textfont=dict(size=16, color=COLORS["background"] if _hit else COLORS["muted"]),
             showlegend=False,
         ))
 
@@ -963,22 +956,20 @@ def _(func_type_selector, go):
             x=_codomain_x - 0.25, y=_codomain_ys[_b],
             ax=_domain_x + 0.25, ay=_domain_ys[_a],
             xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True, arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor="#00d4ff",
+            showarrow=True, arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor=COLORS["primary"],
         )
 
     # Labels
-    _fig_func.add_annotation(x=_domain_x, y=3, text="Domain A", font=dict(size=14, color="#4ecdc4"), showarrow=False)
-    _fig_func.add_annotation(x=_codomain_x, y=3, text="Codomain B", font=dict(size=14, color="#ff6b6b"), showarrow=False)
+    _fig_func.add_annotation(x=_domain_x, y=3, text="Domain A", font=dict(size=14, color=COLORS["tertiary"]), showarrow=False)
+    _fig_func.add_annotation(x=_codomain_x, y=3, text="Codomain B", font=dict(size=14, color=COLORS["secondary"]), showarrow=False)
 
-    _fig_func.update_layout(
-        minreducedwidth=300,
-        title=dict(text=_desc, font=dict(color="#eaeaea", size=14)),
+    _fig_func.update_layout(**base_layout(
+        title=dict(text=_desc, font=dict(color=COLORS["text"], size=14)),
         xaxis=dict(visible=False, range=[-1, 4]),
         yaxis=dict(visible=False, range=[-3, 4]),
-        paper_bgcolor="#1a1a2e",
-        plot_bgcolor="#1a1a2e",
+        plot_bgcolor=COLORS["background"],
         height=400,
-    )
+    ))
     _fig_func
     return
 
@@ -1039,7 +1030,7 @@ def _(mo):
 
 
 @app.cell
-def _(go):
+def _(COLORS, base_layout, go):
     # Visualize the bijection between N and Z
     _fig_card = go.Figure()
 
@@ -1049,10 +1040,10 @@ def _(go):
         _fig_card.add_trace(go.Scatter(
             x=[_i], y=[1],
             mode="markers+text",
-            marker=dict(size=35, color="#4ecdc4"),
+            marker=dict(size=35, color=COLORS["tertiary"]),
             text=[str(_n)],
             textposition="middle center",
-            textfont=dict(size=14, color="#1a1a2e"),
+            textfont=dict(size=14, color=COLORS["background"]),
             showlegend=False,
         ))
 
@@ -1062,10 +1053,10 @@ def _(go):
         _fig_card.add_trace(go.Scatter(
             x=[_i], y=[-1],
             mode="markers+text",
-            marker=dict(size=35, color="#ff6b6b"),
+            marker=dict(size=35, color=COLORS["secondary"]),
             text=[str(_z)],
             textposition="middle center",
-            textfont=dict(size=14, color="#1a1a2e"),
+            textfont=dict(size=14, color=COLORS["background"]),
             showlegend=False,
         ))
 
@@ -1075,24 +1066,22 @@ def _(go):
             x=_i, y=-0.6,
             ax=_i, ay=0.6,
             xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True, arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor="#00d4ff",
+            showarrow=True, arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor=COLORS["primary"],
         )
 
     # Labels
-    _fig_card.add_annotation(x=-1, y=1, text="ℕ:", font=dict(size=18, color="#4ecdc4"), showarrow=False)
-    _fig_card.add_annotation(x=-1, y=-1, text="ℤ:", font=dict(size=18, color="#ff6b6b"), showarrow=False)
-    _fig_card.add_annotation(x=8.5, y=1, text="...", font=dict(size=18, color="#4ecdc4"), showarrow=False)
-    _fig_card.add_annotation(x=8.5, y=-1, text="...", font=dict(size=18, color="#ff6b6b"), showarrow=False)
+    _fig_card.add_annotation(x=-1, y=1, text="ℕ:", font=dict(size=18, color=COLORS["tertiary"]), showarrow=False)
+    _fig_card.add_annotation(x=-1, y=-1, text="ℤ:", font=dict(size=18, color=COLORS["secondary"]), showarrow=False)
+    _fig_card.add_annotation(x=8.5, y=1, text="...", font=dict(size=18, color=COLORS["tertiary"]), showarrow=False)
+    _fig_card.add_annotation(x=8.5, y=-1, text="...", font=dict(size=18, color=COLORS["secondary"]), showarrow=False)
 
-    _fig_card.update_layout(
-        minreducedwidth=300,
-        title=dict(text="Bijection showing |ℕ| = |ℤ|: The integers are countable!", font=dict(color="#eaeaea")),
+    _fig_card.update_layout(**base_layout(
+        title=dict(text="Bijection showing |ℕ| = |ℤ|: The integers are countable!", font=dict(color=COLORS["text"])),
         xaxis=dict(visible=False, range=[-1.5, 9]),
         yaxis=dict(visible=False, range=[-2, 2]),
-        paper_bgcolor="#1a1a2e",
-        plot_bgcolor="#1a1a2e",
+        plot_bgcolor=COLORS["background"],
         height=300,
-    )
+    ))
     _fig_card
     return
 
@@ -1149,7 +1138,7 @@ def _(mo):
 
 
 @app.cell
-def _(go):
+def _(COLORS, base_layout, go):
     # Visualize Cantor's diagonal argument
     _fig_diag = go.Figure()
 
@@ -1168,7 +1157,7 @@ def _(go):
         for _j, _d in enumerate(_row):
             # Highlight diagonal
             _is_diag = _i == _j
-            _color = "#ff6b6b" if _is_diag else "#4ecdc4"
+            _color = COLORS["secondary"] if _is_diag else COLORS["tertiary"]
             _size = 30 if _is_diag else 25
 
             _fig_diag.add_trace(go.Scatter(
@@ -1177,7 +1166,7 @@ def _(go):
                 marker=dict(size=_size, color=_color),
                 text=[str(_d)],
                 textposition="middle center",
-                textfont=dict(size=12, color="#1a1a2e"),
+                textfont=dict(size=12, color=COLORS["background"]),
                 showlegend=False,
             ))
 
@@ -1185,25 +1174,23 @@ def _(go):
     _diagonal = [_numbers[_i][_i] for _i in range(6)]
     _new_digits = [5 if _d != 5 else 6 for _d in _diagonal]
 
-    _fig_diag.add_annotation(x=-1.5, y=-7, text="Diagonal:", font=dict(size=14, color="#ff6b6b"), showarrow=False)
-    _fig_diag.add_annotation(x=2.5, y=-7, text="".join(map(str, _diagonal)), font=dict(size=14, color="#ff6b6b"), showarrow=False)
+    _fig_diag.add_annotation(x=-1.5, y=-7, text="Diagonal:", font=dict(size=14, color=COLORS["secondary"]), showarrow=False)
+    _fig_diag.add_annotation(x=2.5, y=-7, text="".join(map(str, _diagonal)), font=dict(size=14, color=COLORS["secondary"]), showarrow=False)
 
-    _fig_diag.add_annotation(x=-1.5, y=-8, text="New number:", font=dict(size=14, color="#ffd93d"), showarrow=False)
-    _fig_diag.add_annotation(x=2.5, y=-8, text="0." + "".join(map(str, _new_digits)) + "...", font=dict(size=14, color="#ffd93d"), showarrow=False)
+    _fig_diag.add_annotation(x=-1.5, y=-8, text="New number:", font=dict(size=14, color=COLORS["highlight"]), showarrow=False)
+    _fig_diag.add_annotation(x=2.5, y=-8, text="0." + "".join(map(str, _new_digits)) + "...", font=dict(size=14, color=COLORS["highlight"]), showarrow=False)
 
     # Row labels
     for _i in range(6):
-        _fig_diag.add_annotation(x=-1, y=-_i, text=f"r{_i} = 0.", font=dict(size=12, color="#a0a0a0"), showarrow=False)
+        _fig_diag.add_annotation(x=-1, y=-_i, text=f"r{_i} = 0.", font=dict(size=12, color=COLORS["text_secondary"]), showarrow=False)
 
-    _fig_diag.update_layout(
-        minreducedwidth=300,
-        title=dict(text="Cantor's Diagonal Argument: Constructing a number not in any list", font=dict(color="#eaeaea")),
+    _fig_diag.update_layout(**base_layout(
+        title=dict(text="Cantor's Diagonal Argument: Constructing a number not in any list", font=dict(color=COLORS["text"])),
         xaxis=dict(visible=False, range=[-2.5, 6.5]),
         yaxis=dict(visible=False, range=[-9, 1]),
-        paper_bgcolor="#1a1a2e",
-        plot_bgcolor="#1a1a2e",
+        plot_bgcolor=COLORS["background"],
         height=450,
-    )
+    ))
     _fig_diag
     return
 
@@ -1312,7 +1299,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Visualize a homomorphism
     _fig_hom = go.Figure()
 
@@ -1326,10 +1313,10 @@ def _(go, np):
         _fig_hom.add_trace(go.Scatter(
             x=[_x], y=[_y],
             mode="markers+text",
-            marker=dict(size=30, color="#4ecdc4"),
+            marker=dict(size=30, color=COLORS["tertiary"]),
             text=[_e],
             textposition="middle center",
-            textfont=dict(size=14, color="#1a1a2e"),
+            textfont=dict(size=14, color=COLORS["background"]),
             showlegend=False,
         ))
 
@@ -1342,35 +1329,33 @@ def _(go, np):
         _fig_hom.add_trace(go.Scatter(
             x=[_x], y=[_y],
             mode="markers+text",
-            marker=dict(size=35, color="#ff6b6b"),
+            marker=dict(size=35, color=COLORS["secondary"]),
             text=[_e],
             textposition="middle center",
-            textfont=dict(size=14, color="#1a1a2e"),
+            textfont=dict(size=14, color=COLORS["background"]),
             showlegend=False,
         ))
 
     # Labels
-    _fig_hom.add_annotation(x=-4, y=3, text="ℤ₆", font=dict(size=20, color="#4ecdc4"), showarrow=False)
-    _fig_hom.add_annotation(x=4, y=3, text="ℤ₃", font=dict(size=20, color="#ff6b6b"), showarrow=False)
-    _fig_hom.add_annotation(x=0, y=2.5, text="φ(n) = n mod 3", font=dict(size=14, color="#00d4ff"), showarrow=False)
+    _fig_hom.add_annotation(x=-4, y=3, text="ℤ₆", font=dict(size=20, color=COLORS["tertiary"]), showarrow=False)
+    _fig_hom.add_annotation(x=4, y=3, text="ℤ₃", font=dict(size=20, color=COLORS["secondary"]), showarrow=False)
+    _fig_hom.add_annotation(x=0, y=2.5, text="φ(n) = n mod 3", font=dict(size=14, color=COLORS["primary"]), showarrow=False)
 
     # Arrow showing the homomorphism
     _fig_hom.add_annotation(
         x=1.5, y=0,
         ax=-1.5, ay=0,
         xref="x", yref="y", axref="x", ayref="y",
-        showarrow=True, arrowhead=2, arrowsize=2, arrowwidth=3, arrowcolor="#00d4ff",
+        showarrow=True, arrowhead=2, arrowsize=2, arrowwidth=3, arrowcolor=COLORS["primary"],
     )
 
-    _fig_hom.update_layout(
-        minreducedwidth=300,
-        title=dict(text="Homomorphism φ: ℤ₆ → ℤ₃ defined by φ(n) = n mod 3", font=dict(color="#eaeaea")),
+    _fig_hom.update_layout(**base_layout(
+        title=dict(text="Homomorphism φ: ℤ₆ → ℤ₃ defined by φ(n) = n mod 3", font=dict(color=COLORS["text"])),
         xaxis=dict(visible=False, range=[-7, 7]),
         yaxis=dict(visible=False, range=[-3, 4], scaleanchor="x"),
-        paper_bgcolor="#1a1a2e",
-        plot_bgcolor="#1a1a2e",
+        plot_bgcolor=COLORS["background"],
         height=400,
-    )
+    ))
     _fig_hom
     return
 
@@ -1433,7 +1418,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Visualize a Hasse diagram for divisibility on {1,2,3,4,6,12}
     _fig_hasse = go.Figure()
 
@@ -1462,7 +1447,7 @@ def _(go, np):
         _fig_hasse.add_trace(go.Scatter(
             x=[_x0, _x1], y=[_y0, _y1],
             mode="lines",
-            line=dict(color="#4a5568", width=2),
+            line=dict(color=COLORS["muted"], width=2),
             showlegend=False,
         ))
 
@@ -1471,26 +1456,24 @@ def _(go, np):
         _fig_hasse.add_trace(go.Scatter(
             x=[_x], y=[_y],
             mode="markers+text",
-            marker=dict(size=35, color="#4ecdc4"),
+            marker=dict(size=35, color=COLORS["tertiary"]),
             text=[_name],
             textposition="middle center",
-            textfont=dict(size=14, color="#1a1a2e"),
+            textfont=dict(size=14, color=COLORS["background"]),
             showlegend=False,
         ))
 
     # Annotations
-    _fig_hasse.add_annotation(x=0, y=-0.7, text="Minimum (1 divides all)", font=dict(size=12, color="#ff6b6b"), showarrow=False)
-    _fig_hasse.add_annotation(x=0, y=3.7, text="Maximum (all divide 12)", font=dict(size=12, color="#ff6b6b"), showarrow=False)
+    _fig_hasse.add_annotation(x=0, y=-0.7, text="Minimum (1 divides all)", font=dict(size=12, color=COLORS["secondary"]), showarrow=False)
+    _fig_hasse.add_annotation(x=0, y=3.7, text="Maximum (all divide 12)", font=dict(size=12, color=COLORS["secondary"]), showarrow=False)
 
-    _fig_hasse.update_layout(
-        minreducedwidth=300,
-        title=dict(text="Hasse Diagram: Divisibility on {1, 2, 3, 4, 6, 12}", font=dict(color="#eaeaea")),
+    _fig_hasse.update_layout(**base_layout(
+        title=dict(text="Hasse Diagram: Divisibility on {1, 2, 3, 4, 6, 12}", font=dict(color=COLORS["text"])),
         xaxis=dict(visible=False, range=[-3, 3]),
         yaxis=dict(visible=False, range=[-1.2, 4.5]),
-        paper_bgcolor="#1a1a2e",
-        plot_bgcolor="#1a1a2e",
+        plot_bgcolor=COLORS["background"],
         height=400,
-    )
+    ))
     _fig_hasse
     return
 

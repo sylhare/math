@@ -23,7 +23,8 @@ def _():
     import numpy as np
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
-    return go, make_subplots, np
+    from math_explorations.visualization import COLORS, base_layout, style_subplot_axes
+    return COLORS, base_layout, go, make_subplots, np, style_subplot_axes
 
 
 @app.cell
@@ -222,7 +223,7 @@ def _(mo, unit_circle_angle):
 
 
 @app.cell
-def _(go, np, unit_circle_angle):
+def _(COLORS, base_layout, go, np, unit_circle_angle):
     _theta_deg = unit_circle_angle.value
     _theta_rad = np.radians(_theta_deg)
     _cos_val = np.cos(_theta_rad)
@@ -239,7 +240,7 @@ def _(go, np, unit_circle_angle):
     _fig.add_trace(go.Scatter(
         x=_circle_x, y=_circle_y,
         mode='lines',
-        line={'color': '#4ecdc4', 'width': 2},
+        line={'color': COLORS["tertiary"], 'width': 2},
         name='Unit circle',
         hoverinfo='skip'
     ))
@@ -251,7 +252,7 @@ def _(go, np, unit_circle_angle):
         x=_arc_r * np.cos(_arc_theta),
         y=_arc_r * np.sin(_arc_theta),
         mode='lines',
-        line={'color': '#ffe66d', 'width': 2},
+        line={'color': COLORS["quaternary"], 'width': 2},
         name=f'θ = {_theta_deg}°',
         hoverinfo='skip'
     ))
@@ -260,7 +261,7 @@ def _(go, np, unit_circle_angle):
     _fig.add_trace(go.Scatter(
         x=[0, _cos_val], y=[0, _sin_val],
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name='Radius',
         hoverinfo='skip'
     ))
@@ -269,10 +270,10 @@ def _(go, np, unit_circle_angle):
     _fig.add_trace(go.Scatter(
         x=[_cos_val], y=[_sin_val],
         mode='markers+text',
-        marker={'color': '#ff6b6b', 'size': 14},
+        marker={'color': COLORS["secondary"], 'size': 14},
         text=[f'({_cos_val:.3f}, {_sin_val:.3f})'],
         textposition='top right',
-        textfont={'color': '#ff6b6b', 'size': 12},
+        textfont={'color': COLORS["secondary"], 'size': 12},
         name='Point (cos θ, sin θ)',
     ))
 
@@ -281,7 +282,7 @@ def _(go, np, unit_circle_angle):
     _fig.add_trace(go.Scatter(
         x=[_cos_val, _cos_val], y=[0, _sin_val],
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 2, 'dash': 'dash'},
+        line={'color': COLORS["secondary"], 'width': 2, 'dash': 'dash'},
         name=f'sin θ = {_sin_val:.3f}',
     ))
 
@@ -289,33 +290,29 @@ def _(go, np, unit_circle_angle):
     _fig.add_trace(go.Scatter(
         x=[0, _cos_val], y=[_sin_val, _sin_val],
         mode='lines',
-        line={'color': '#95e1d3', 'width': 2, 'dash': 'dash'},
+        line={'color': COLORS["accent1"], 'width': 2, 'dash': 'dash'},
         name=f'cos θ = {_cos_val:.3f}',
     ))
 
     # Axes
-    _fig.add_hline(y=0, line_color='#a0a0a0', line_width=1)
-    _fig.add_vline(x=0, line_color='#a0a0a0', line_width=1)
+    _fig.add_hline(y=0, line_color=COLORS["text_secondary"], line_width=1)
+    _fig.add_vline(x=0, line_color=COLORS["text_secondary"], line_width=1)
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#1a1a2e',
-        plot_bgcolor='#16213e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f'θ = {_theta_deg}° = {_theta_rad:.3f} rad | cos θ = {_cos_val:.3f} | sin θ = {_sin_val:.3f}',
         xaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0',
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
             'title': 'x = cos θ', 'range': [-1.5, 1.5],
             'scaleanchor': 'y', 'scaleratio': 1
         },
         yaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0',
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
             'title': 'y = sin θ', 'range': [-1.5, 1.5]
         },
         showlegend=True,
         legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'font': {'size': 10}},
         height=500,
-    )
+    ))
     _fig
     return
 
@@ -411,7 +408,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Special angles visualization on unit circle
     _special_angles = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330]
 
@@ -425,7 +422,7 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=_circle_x, y=_circle_y,
         mode='lines',
-        line={'color': '#4ecdc4', 'width': 2},
+        line={'color': COLORS["tertiary"], 'width': 2},
         name='Unit circle',
         hoverinfo='skip'
     ))
@@ -440,7 +437,7 @@ def _(go, np):
         _fig.add_trace(go.Scatter(
             x=[_x], y=[_y],
             mode='markers',
-            marker={'color': '#ff6b6b', 'size': 10},
+            marker={'color': COLORS["secondary"], 'size': 10},
             name=f'{_angle}°',
             showlegend=False,
             hovertemplate=f'{_angle}°<br>cos = {_x:.3f}<br>sin = {_y:.3f}<extra></extra>'
@@ -451,31 +448,27 @@ def _(go, np):
         _fig.add_annotation(
             x=_label_r * _x, y=_label_r * _y,
             text=f'{_angle}°',
-            font={'color': '#ffe66d', 'size': 10},
+            font={'color': COLORS["quaternary"], 'size': 10},
             showarrow=False,
         )
 
     # Axes
-    _fig.add_hline(y=0, line_color='#a0a0a0', line_width=1)
-    _fig.add_vline(x=0, line_color='#a0a0a0', line_width=1)
+    _fig.add_hline(y=0, line_color=COLORS["text_secondary"], line_width=1)
+    _fig.add_vline(x=0, line_color=COLORS["text_secondary"], line_width=1)
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#1a1a2e',
-        plot_bgcolor='#16213e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title='Special Angles on the Unit Circle',
         xaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0',
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
             'range': [-1.4, 1.4], 'scaleanchor': 'y'
         },
         yaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0',
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
             'range': [-1.4, 1.4]
         },
         showlegend=False,
         height=500,
-    )
+    ))
     _fig
     return
 
@@ -572,7 +565,7 @@ def _(mo, trig_function_dropdown):
 
 
 @app.cell
-def _(go, np, trig_function_dropdown):
+def _(COLORS, base_layout, go, np, trig_function_dropdown):
     _func_name = trig_function_dropdown.value
 
     _x = np.linspace(-2 * np.pi, 2 * np.pi, 1000)
@@ -597,7 +590,7 @@ def _(go, np, trig_function_dropdown):
     _fig.add_trace(go.Scatter(
         x=_x, y=_y,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name=_label,
     ))
 
@@ -608,45 +601,41 @@ def _(go, np, trig_function_dropdown):
         _fig.add_trace(go.Scatter(
             x=_key_x, y=_key_y,
             mode='markers',
-            marker={'color': '#ff6b6b', 'size': 8},
+            marker={'color': COLORS["secondary"], 'size': 8},
             name='Key points',
         ))
 
-    _fig.add_hline(y=0, line_color='#a0a0a0', line_width=1)
-    _fig.add_vline(x=0, line_color='#a0a0a0', line_width=1)
+    _fig.add_hline(y=0, line_color=COLORS["text_secondary"], line_width=1)
+    _fig.add_vline(x=0, line_color=COLORS["text_secondary"], line_width=1)
 
     # Add vertical asymptotes for tan, cot, sec, csc
     if _func_name in ["tan", "sec"]:
         for _k in range(-2, 3):
             _asymp = np.pi/2 + _k * np.pi
             if -2*np.pi <= _asymp <= 2*np.pi:
-                _fig.add_vline(x=_asymp, line_color='#ff6b6b', line_width=1, line_dash='dash')
+                _fig.add_vline(x=_asymp, line_color=COLORS["secondary"], line_width=1, line_dash='dash')
     elif _func_name in ["cot", "csc"]:
         for _k in range(-2, 3):
             _asymp = _k * np.pi
             if -2*np.pi <= _asymp <= 2*np.pi:
-                _fig.add_vline(x=_asymp, line_color='#ff6b6b', line_width=1, line_dash='dash')
+                _fig.add_vline(x=_asymp, line_color=COLORS["secondary"], line_width=1, line_dash='dash')
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#1a1a2e',
-        plot_bgcolor='#16213e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f'Graph of {_label}',
         xaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'zerolinewidth': 2,
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'zerolinewidth': 2,
             'title': 'x (radians)',
             'tickvals': [-2*np.pi, -3*np.pi/2, -np.pi, -np.pi/2, 0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi],
             'ticktext': ['-2π', '-3π/2', '-π', '-π/2', '0', 'π/2', 'π', '3π/2', '2π'],
         },
         yaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'zerolinewidth': 2,
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'zerolinewidth': 2,
             'title': f'{_label}', 'range': _y_range
         },
         showlegend=True,
         legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.2, 'xanchor': 'center', 'x': 0.5},
         margin={'l': 40, 'r': 40, 't': 50, 'b': 100},
-    )
+    ))
     _fig
     return
 
@@ -718,7 +707,7 @@ def _(amp_slider, freq_slider, mo, phase_slider, shift_slider):
 
 
 @app.cell
-def _(amp_slider, freq_slider, go, np, phase_slider, shift_slider):
+def _(COLORS, amp_slider, base_layout, freq_slider, go, np, phase_slider, shift_slider):
     _A = amp_slider.value
     _B = freq_slider.value
     _C = phase_slider.value
@@ -737,7 +726,7 @@ def _(amp_slider, freq_slider, go, np, phase_slider, shift_slider):
     _fig.add_trace(go.Scatter(
         x=_x, y=_y_base,
         mode='lines',
-        line={'color': '#4ecdc4', 'width': 2, 'dash': 'dash'},
+        line={'color': COLORS["tertiary"], 'width': 2, 'dash': 'dash'},
         name='sin(x) (reference)',
     ))
 
@@ -745,7 +734,7 @@ def _(amp_slider, freq_slider, go, np, phase_slider, shift_slider):
     _fig.add_trace(go.Scatter(
         x=_x, y=_y_transformed,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name=f'y = {_A:.1f}·sin({_B:.1f}x + {_C:.1f}) + {_D:.1f}',
     ))
 
@@ -753,30 +742,26 @@ def _(amp_slider, freq_slider, go, np, phase_slider, shift_slider):
     _fig.add_trace(go.Scatter(
         x=[-2*np.pi, 2*np.pi], y=[_D, _D],
         mode='lines',
-        line={'color': '#ffe66d', 'width': 1, 'dash': 'dot'},
+        line={'color': COLORS["quaternary"], 'width': 1, 'dash': 'dot'},
         name=f'Midline y = {_D:.1f}',
     ))
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#1a1a2e',
-        plot_bgcolor='#16213e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f'Period = {_period:.2f} | Phase shift = {_phase_shift:.2f}',
         xaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0',
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
             'title': 'x',
             'tickvals': [-2*np.pi, -np.pi, 0, np.pi, 2*np.pi],
             'ticktext': ['-2π', '-π', '0', 'π', '2π'],
         },
         yaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0',
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
             'title': 'y', 'range': [-5, 5]
         },
         showlegend=True,
         legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.2, 'xanchor': 'center', 'x': 0.5},
         margin={'l': 40, 'r': 40, 't': 50, 'b': 100},
-    )
+    ))
     _fig
     return
 
@@ -844,7 +829,7 @@ def _(mo, pythag_angle):
 
 
 @app.cell
-def _(go, np, pythag_angle):
+def _(COLORS, base_layout, go, np, pythag_angle):
     _theta_deg = pythag_angle.value
     _theta_rad = np.radians(_theta_deg)
     _cos_val = np.cos(_theta_rad)
@@ -857,7 +842,7 @@ def _(go, np, pythag_angle):
     _fig.add_trace(go.Scatter(
         x=np.cos(_circle_theta), y=np.sin(_circle_theta),
         mode='lines',
-        line={'color': '#4ecdc4', 'width': 2},
+        line={'color': COLORS["tertiary"], 'width': 2},
         name='Unit circle',
         hoverinfo='skip'
     ))
@@ -869,23 +854,23 @@ def _(go, np, pythag_angle):
         mode='lines',
         fill='toself',
         fillcolor='rgba(0, 212, 255, 0.2)',
-        line={'color': '#00d4ff', 'width': 2},
+        line={'color': COLORS["primary"], 'width': 2},
         name='Right triangle',
     ))
 
     # Labels for sides
     _fig.add_annotation(x=_cos_val/2, y=-0.1, text=f'cos θ = {_cos_val:.3f}',
-                        font={'color': '#95e1d3', 'size': 12}, showarrow=False)
+                        font={'color': COLORS["accent1"], 'size': 12}, showarrow=False)
     _fig.add_annotation(x=_cos_val+0.1, y=_sin_val/2, text=f'sin θ = {_sin_val:.3f}',
-                        font={'color': '#ff6b6b', 'size': 12}, showarrow=False)
+                        font={'color': COLORS["secondary"], 'size': 12}, showarrow=False)
     _fig.add_annotation(x=_cos_val/2-0.1, y=_sin_val/2+0.1, text='1',
-                        font={'color': '#ffe66d', 'size': 14}, showarrow=False)
+                        font={'color': COLORS["quaternary"], 'size': 14}, showarrow=False)
 
     # Point on circle
     _fig.add_trace(go.Scatter(
         x=[_cos_val], y=[_sin_val],
         mode='markers',
-        marker={'color': '#ff6b6b', 'size': 12},
+        marker={'color': COLORS["secondary"], 'size': 12},
         showlegend=False,
     ))
 
@@ -894,21 +879,17 @@ def _(go, np, pythag_angle):
     _fig.add_annotation(
         x=0, y=-1.3,
         text=f'cos²θ + sin²θ = {_cos_val:.3f}² + {_sin_val:.3f}² = {_sum:.6f} ≈ 1',
-        font={'color': '#ffe66d', 'size': 14},
+        font={'color': COLORS["quaternary"], 'size': 14},
         showarrow=False
     )
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#1a1a2e',
-        plot_bgcolor='#16213e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f'Pythagorean Identity: sin²θ + cos²θ = 1',
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-1.5, 1.5], 'scaleanchor': 'y'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-1.5, 1.5]},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-1.5, 1.5], 'scaleanchor': 'y'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-1.5, 1.5]},
         showlegend=False,
         height=500,
-    )
+    ))
     _fig
     return
 
@@ -1005,7 +986,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Geometric proof of angle addition
     _alpha = np.pi / 6  # 30 degrees
     _beta = np.pi / 4   # 45 degrees
@@ -1017,7 +998,7 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=np.cos(_circle_theta), y=np.sin(_circle_theta),
         mode='lines',
-        line={'color': '#4ecdc4', 'width': 2},
+        line={'color': COLORS["tertiary"], 'width': 2},
         hoverinfo='skip',
         showlegend=False,
     ))
@@ -1026,7 +1007,7 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=[0, np.cos(_alpha)], y=[0, np.sin(_alpha)],
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name=f'α = 30°',
     ))
 
@@ -1034,7 +1015,7 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=[0, np.cos(_alpha + _beta)], y=[0, np.sin(_alpha + _beta)],
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 3},
+        line={'color': COLORS["secondary"], 'width': 3},
         name=f'α + β = 75°',
     ))
 
@@ -1042,20 +1023,20 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=[np.cos(_alpha)], y=[np.sin(_alpha)],
         mode='markers+text',
-        marker={'color': '#00d4ff', 'size': 10},
+        marker={'color': COLORS["primary"], 'size': 10},
         text=['P(cos α, sin α)'],
         textposition='top right',
-        textfont={'size': 10, 'color': '#00d4ff'},
+        textfont={'size': 10, 'color': COLORS["primary"]},
         showlegend=False,
     ))
 
     _fig.add_trace(go.Scatter(
         x=[np.cos(_alpha + _beta)], y=[np.sin(_alpha + _beta)],
         mode='markers+text',
-        marker={'color': '#ff6b6b', 'size': 10},
+        marker={'color': COLORS["secondary"], 'size': 10},
         text=['Q(cos(α+β), sin(α+β))'],
         textposition='top right',
-        textfont={'size': 10, 'color': '#ff6b6b'},
+        textfont={'size': 10, 'color': COLORS["secondary"]},
         showlegend=False,
     ))
 
@@ -1064,7 +1045,7 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=0.2*np.cos(_arc_alpha), y=0.2*np.sin(_arc_alpha),
         mode='lines',
-        line={'color': '#00d4ff', 'width': 2},
+        line={'color': COLORS["primary"], 'width': 2},
         showlegend=False,
     ))
 
@@ -1072,7 +1053,7 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=0.3*np.cos(_arc_beta), y=0.3*np.sin(_arc_beta),
         mode='lines',
-        line={'color': '#ffe66d', 'width': 2},
+        line={'color': COLORS["quaternary"], 'width': 2},
         name=f'β = 45°',
     ))
 
@@ -1083,21 +1064,17 @@ def _(go, np):
     _fig.add_annotation(
         x=0, y=-1.3,
         text=f'sin(75°) = sin(30°)cos(45°) + cos(30°)sin(45°) = {_sin_sum:.4f}',
-        font={'color': '#ffe66d', 'size': 12},
+        font={'color': COLORS["quaternary"], 'size': 12},
         showarrow=False,
     )
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#1a1a2e',
-        plot_bgcolor='#16213e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title='Angle Addition: sin(α + β) = sin α cos β + cos α sin β',
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-1.5, 1.5], 'scaleanchor': 'y'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-1.5, 1.5]},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-1.5, 1.5], 'scaleanchor': 'y'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-1.5, 1.5]},
         legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'font': {'size': 10}},
         height=500,
-    )
+    ))
     _fig
     return
 
@@ -1216,7 +1193,7 @@ def _(equation_slider, mo):
 
 
 @app.cell
-def _(equation_slider, go, np):
+def _(COLORS, base_layout, equation_slider, go, np):
     _c = equation_slider.value
 
     _x = np.linspace(-2 * np.pi, 4 * np.pi, 1000)
@@ -1228,7 +1205,7 @@ def _(equation_slider, go, np):
     _fig.add_trace(go.Scatter(
         x=_x, y=_y,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name='sin(x)',
     ))
 
@@ -1236,7 +1213,7 @@ def _(equation_slider, go, np):
     _fig.add_trace(go.Scatter(
         x=[-2*np.pi, 4*np.pi], y=[_c, _c],
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 2, 'dash': 'dash'},
+        line={'color': COLORS["secondary"], 'width': 2, 'dash': 'dash'},
         name=f'y = {_c}',
     ))
 
@@ -1261,7 +1238,7 @@ def _(equation_slider, go, np):
             _fig.add_trace(go.Scatter(
                 x=[_sol], y=[_c],
                 mode='markers',
-                marker={'color': '#ffe66d', 'size': 12, 'symbol': 'circle'},
+                marker={'color': COLORS["quaternary"], 'size': 12, 'symbol': 'circle'},
                 showlegend=False,
                 hovertemplate=f'x = {_sol:.3f}<extra></extra>'
             ))
@@ -1273,30 +1250,26 @@ def _(equation_slider, go, np):
     _fig.add_annotation(
         x=np.pi, y=1.3,
         text=_solution_text,
-        font={'color': '#ffe66d', 'size': 14},
+        font={'color': COLORS["quaternary"], 'size': 14},
         showarrow=False,
     )
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#1a1a2e',
-        plot_bgcolor='#16213e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f'Solutions to sin(x) = {_c}',
         xaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0',
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
             'title': 'x (radians)',
             'tickvals': [-2*np.pi, -np.pi, 0, np.pi, 2*np.pi, 3*np.pi, 4*np.pi],
             'ticktext': ['-2π', '-π', '0', 'π', '2π', '3π', '4π'],
         },
         yaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0',
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
             'title': 'y', 'range': [-1.5, 1.5]
         },
         showlegend=True,
         legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.2, 'xanchor': 'center', 'x': 0.5},
         margin={'l': 40, 'r': 40, 't': 50, 'b': 100},
-    )
+    ))
     _fig
     return
 
@@ -1409,7 +1382,7 @@ def _(deriv_point, mo):
 
 
 @app.cell
-def _(deriv_point, go, np):
+def _(COLORS, base_layout, deriv_point, go, np):
     _x0 = deriv_point.value
     _y0 = np.sin(_x0)
     _slope = np.cos(_x0)  # Derivative at x0
@@ -1427,7 +1400,7 @@ def _(deriv_point, go, np):
     _fig.add_trace(go.Scatter(
         x=_x, y=_y,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name='sin(x)',
     ))
 
@@ -1435,7 +1408,7 @@ def _(deriv_point, go, np):
     _fig.add_trace(go.Scatter(
         x=_x_tan, y=_y_tan,
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 2},
+        line={'color': COLORS["secondary"], 'width': 2},
         name=f'Tangent (slope = cos({_x0:.2f}) = {_slope:.3f})',
     ))
 
@@ -1443,30 +1416,26 @@ def _(deriv_point, go, np):
     _fig.add_trace(go.Scatter(
         x=[_x0], y=[_y0],
         mode='markers',
-        marker={'color': '#ffe66d', 'size': 12},
+        marker={'color': COLORS["quaternary"], 'size': 12},
         name=f'({_x0:.2f}, {_y0:.3f})',
     ))
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#1a1a2e',
-        plot_bgcolor='#16213e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f"d/dx[sin x] = cos x | At x = {_x0:.2f}: slope = {_slope:.3f}",
         xaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0',
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
             'title': 'x',
             'tickvals': [-2*np.pi, -np.pi, 0, np.pi, 2*np.pi],
             'ticktext': ['-2π', '-π', '0', 'π', '2π'],
         },
         yaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0',
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
             'title': 'y', 'range': [-2, 2]
         },
         showlegend=True,
         legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.2, 'xanchor': 'center', 'x': 0.5},
         margin={'l': 40, 'r': 40, 't': 50, 'b': 100},
-    )
+    ))
     _fig
     return
 
@@ -1535,7 +1504,7 @@ def _(limit_slider, mo):
 
 
 @app.cell
-def _(go, limit_slider, np):
+def _(COLORS, base_layout, go, limit_slider, np):
     _h = limit_slider.value
 
     _fig = go.Figure()
@@ -1545,7 +1514,7 @@ def _(go, limit_slider, np):
     _fig.add_trace(go.Scatter(
         x=np.cos(_circle_theta), y=np.sin(_circle_theta),
         mode='lines',
-        line={'color': '#4ecdc4', 'width': 2},
+        line={'color': COLORS["tertiary"], 'width': 2},
         name='Unit circle',
         hoverinfo='skip'
     ))
@@ -1555,7 +1524,7 @@ def _(go, limit_slider, np):
     _fig.add_trace(go.Scatter(
         x=np.cos(_arc), y=np.sin(_arc),
         mode='lines',
-        line={'color': '#ffe66d', 'width': 4},
+        line={'color': COLORS["quaternary"], 'width': 4},
         name=f'Arc length = h = {_h:.3f}',
     ))
 
@@ -1563,7 +1532,7 @@ def _(go, limit_slider, np):
     _fig.add_trace(go.Scatter(
         x=[np.cos(_h), np.cos(_h)], y=[0, np.sin(_h)],
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 3},
+        line={'color': COLORS["secondary"], 'width': 3},
         name=f'sin(h) = {np.sin(_h):.4f}',
     ))
 
@@ -1571,7 +1540,7 @@ def _(go, limit_slider, np):
     _fig.add_trace(go.Scatter(
         x=[0, np.cos(_h)], y=[0, np.sin(_h)],
         mode='lines',
-        line={'color': '#00d4ff', 'width': 2},
+        line={'color': COLORS["primary"], 'width': 2},
         showlegend=False,
     ))
 
@@ -1579,7 +1548,7 @@ def _(go, limit_slider, np):
     _fig.add_trace(go.Scatter(
         x=[np.cos(_h)], y=[np.sin(_h)],
         mode='markers',
-        marker={'color': '#ff6b6b', 'size': 10},
+        marker={'color': COLORS["secondary"], 'size': 10},
         showlegend=False,
     ))
 
@@ -1588,21 +1557,17 @@ def _(go, limit_slider, np):
     _fig.add_annotation(
         x=0.5, y=-0.3,
         text=f'sin(h)/h = {np.sin(_h):.4f}/{_h:.3f} = {_ratio:.6f}',
-        font={'color': '#ffe66d', 'size': 14},
+        font={'color': COLORS["quaternary"], 'size': 14},
         showarrow=False,
     )
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#1a1a2e',
-        plot_bgcolor='#16213e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f'As h → 0: sin(h)/h → 1',
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-0.2, 1.3], 'scaleanchor': 'y'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-0.5, 1.1]},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-0.2, 1.3], 'scaleanchor': 'y'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-0.5, 1.1]},
         legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'font': {'size': 10}},
         height=450,
-    )
+    ))
     _fig
     return
 
@@ -1703,7 +1668,7 @@ def _(mo, shm_amp, shm_freq):
 
 
 @app.cell
-def _(go, make_subplots, np, shm_amp, shm_freq):
+def _(COLORS, base_layout, go, make_subplots, np, shm_amp, shm_freq, style_subplot_axes):
     _A = shm_amp.value
     _omega = shm_freq.value
 
@@ -1720,7 +1685,7 @@ def _(go, make_subplots, np, shm_amp, shm_freq):
     _fig.add_trace(go.Scatter(
         x=_t, y=_x,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 2},
+        line={'color': COLORS["primary"], 'width': 2},
         name='x(t) = A cos(ωt)',
     ), row=1, col=1)
 
@@ -1728,7 +1693,7 @@ def _(go, make_subplots, np, shm_amp, shm_freq):
     _fig.add_trace(go.Scatter(
         x=_t, y=_v,
         mode='lines',
-        line={'color': '#4ecdc4', 'width': 2},
+        line={'color': COLORS["tertiary"], 'width': 2},
         name='v(t) = -Aω sin(ωt)',
     ), row=2, col=1)
 
@@ -1736,30 +1701,19 @@ def _(go, make_subplots, np, shm_amp, shm_freq):
     _fig.add_trace(go.Scatter(
         x=_t, y=_a,
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 2},
+        line={'color': COLORS["secondary"], 'width': 2},
         name='a(t) = -Aω² cos(ωt)',
     ), row=3, col=1)
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#1a1a2e',
-        plot_bgcolor='#16213e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f'Simple Harmonic Motion: A = {_A}, ω = {_omega}',
         showlegend=True,
         legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
         height=600,
-    )
+    ))
 
-    for _i in range(1, 4):
-        _fig.update_xaxes(gridcolor='#2d3a4f', zerolinecolor='#a0a0a0', row=_i, col=1)
-        _fig.update_yaxes(gridcolor='#2d3a4f', zerolinecolor='#a0a0a0', row=_i, col=1)
-
+    style_subplot_axes(_fig, show_ticklabels=True)
     _fig.update_xaxes(title_text='Time t', row=3, col=1)
-
-    # Update subplot title colors
-    for _annotation in _fig['layout']['annotations']:
-        _annotation['font'] = {'color': '#eaeaea', 'size': 12}
 
     _fig
     return
@@ -1830,7 +1784,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Fourier series demonstration: square wave approximation
     _t = np.linspace(0, 2 * np.pi, 1000)
 
@@ -1841,12 +1795,12 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=_t, y=_square,
         mode='lines',
-        line={'color': '#4ecdc4', 'width': 2, 'dash': 'dash'},
+        line={'color': COLORS["tertiary"], 'width': 2, 'dash': 'dash'},
         name='Square wave',
     ))
 
     # Fourier approximations
-    _colors = ['#00d4ff', '#ffe66d', '#ff6b6b', '#95e1d3']
+    _colors = [COLORS["primary"], COLORS["quaternary"], COLORS["secondary"], COLORS["accent1"]]
     for _n_terms, _color in zip([1, 3, 5, 15], _colors):
         _approx = np.zeros_like(_t)
         for _k in range(1, 2 * _n_terms, 2):  # Odd harmonics only
@@ -1858,26 +1812,22 @@ def _(go, np):
             name=f'{_n_terms} term(s)',
         ))
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#1a1a2e',
-        plot_bgcolor='#16213e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title='Fourier Series: Approximating a Square Wave with Sines',
         xaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0',
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
             'title': 't',
             'tickvals': [0, np.pi/2, np.pi, 3*np.pi/2, 2*np.pi],
             'ticktext': ['0', 'π/2', 'π', '3π/2', '2π'],
         },
         yaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0',
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
             'title': 'f(t)', 'range': [-1.5, 1.5]
         },
         showlegend=True,
         legend={'bgcolor': 'rgba(22, 33, 62, 0.8)'},
         height=400,
-    )
+    ))
     _fig
     return
 

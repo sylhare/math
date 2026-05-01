@@ -203,7 +203,7 @@ def _(line_intercept, line_slope, mo):
 
 
 @app.cell
-def _(base_layout, go, line_intercept, line_slope, np):
+def _(COLORS, base_layout, go, line_intercept, line_slope, np):
     _m = line_slope.value
     _b = line_intercept.value
 
@@ -220,7 +220,7 @@ def _(base_layout, go, line_intercept, line_slope, np):
     _fig.add_trace(go.Scatter(
         x=_x, y=_y,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name=f'y = {_m:.1f}x + {_b:.1f}',
     ))
 
@@ -228,10 +228,10 @@ def _(base_layout, go, line_intercept, line_slope, np):
     _fig.add_trace(go.Scatter(
         x=[0], y=[_b],
         mode='markers+text',
-        marker={'color': '#ffe66d', 'size': 12},
+        marker={'color': COLORS["quaternary"], 'size': 12},
         text=[f'(0, {_b:.1f})'],
         textposition='middle right',
-        textfont={'color': '#ffe66d', 'size': 11},
+        textfont={'color': COLORS["quaternary"], 'size': 11},
         name='y-intercept',
     ))
 
@@ -240,8 +240,8 @@ def _(base_layout, go, line_intercept, line_slope, np):
     _fig.add_trace(go.Scatter(
         x=[0, _scale * _d[0]], y=[_b, _b + _scale * _d[1]],
         mode='lines+markers',
-        line={'color': '#ff6b6b', 'width': 3},
-        marker={'symbol': 'arrow', 'size': 12, 'angleref': 'previous', 'color': '#ff6b6b'},
+        line={'color': COLORS["secondary"], 'width': 3},
+        marker={'symbol': 'arrow', 'size': 12, 'angleref': 'previous', 'color': COLORS["secondary"]},
         name=f'd = ({_d[0]:.2f}, {_d[1]:.2f})',
     ))
 
@@ -249,14 +249,14 @@ def _(base_layout, go, line_intercept, line_slope, np):
     _fig.add_trace(go.Scatter(
         x=[0, _scale * _n[0]], y=[_b, _b + _scale * _n[1]],
         mode='lines+markers',
-        line={'color': '#4ecdc4', 'width': 3},
-        marker={'symbol': 'arrow', 'size': 12, 'angleref': 'previous', 'color': '#4ecdc4'},
+        line={'color': COLORS["tertiary"], 'width': 3},
+        marker={'symbol': 'arrow', 'size': 12, 'angleref': 'previous', 'color': COLORS["tertiary"]},
         name=f'n = ({_n[0]:.2f}, {_n[1]:.2f})',
     ))
 
     # Axes
-    _fig.add_hline(y=0, line_color='#a0a0a0', line_width=1)
-    _fig.add_vline(x=0, line_color='#a0a0a0', line_width=1)
+    _fig.add_hline(y=0, line_color=COLORS["text_secondary"], line_width=1)
+    _fig.add_vline(x=0, line_color=COLORS["text_secondary"], line_width=1)
 
     # General form text
     _a_coef = -_m
@@ -266,8 +266,8 @@ def _(base_layout, go, line_intercept, line_slope, np):
 
     _fig.update_layout(**base_layout(
         title=f'Slope-intercept: y = {_m:.1f}x + {_b:.1f}  |  General: {_general}  |  Parametric: (0,{_b:.1f}) + t·({_d[0]:.2f},{_d[1]:.2f})',
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-6, 6], 'title': 'x'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-6, 6], 'title': 'y', 'scaleanchor': 'x'},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-6, 6], 'title': 'x'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-6, 6], 'title': 'y', 'scaleanchor': 'x'},
         height=480,
     ))
     _fig
@@ -367,7 +367,7 @@ def _(mo):
 
 
 @app.cell
-def _(base_layout, go, make_subplots, np, style_subplot_axes):
+def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _fig = make_subplots(
         rows=1, cols=3,
         subplot_titles=[
@@ -381,25 +381,25 @@ def _(base_layout, go, make_subplots, np, style_subplot_axes):
     _x = np.linspace(-3, 3, 100)
 
     # Case 1: Intersecting  (L1: y = x, L2: y = -x + 1)
-    _fig.add_trace(go.Scatter(x=_x, y=_x,        mode='lines', line={'color': '#00d4ff', 'width': 3}, name='L₁', showlegend=False), row=1, col=1)
-    _fig.add_trace(go.Scatter(x=_x, y=-_x + 1,   mode='lines', line={'color': '#ff6b6b', 'width': 3}, name='L₂', showlegend=False), row=1, col=1)
-    _fig.add_trace(go.Scatter(x=[0.5], y=[0.5],   mode='markers', marker={'color': '#ffe66d', 'size': 14}, name='vertex', showlegend=False), row=1, col=1)
-    _fig.add_annotation(x=0.5, y=-2.5, text='D = (−1)(1) − (1)(1) = −2', font={'color': '#ffe66d', 'size': 11}, showarrow=False, xref='x1', yref='y1')
+    _fig.add_trace(go.Scatter(x=_x, y=_x,        mode='lines', line={'color': COLORS["primary"], 'width': 3}, name='L₁', showlegend=False), row=1, col=1)
+    _fig.add_trace(go.Scatter(x=_x, y=-_x + 1,   mode='lines', line={'color': COLORS["secondary"], 'width': 3}, name='L₂', showlegend=False), row=1, col=1)
+    _fig.add_trace(go.Scatter(x=[0.5], y=[0.5],   mode='markers', marker={'color': COLORS["quaternary"], 'size': 14}, name='vertex', showlegend=False), row=1, col=1)
+    _fig.add_annotation(x=0.5, y=-2.5, text='D = (−1)(1) − (1)(1) = −2', font={'color': COLORS["quaternary"], 'size': 11}, showarrow=False, xref='x1', yref='y1')
 
     # Case 2: Parallel  (L1: y = x, L2: y = x + 2)
-    _fig.add_trace(go.Scatter(x=_x, y=_x,        mode='lines', line={'color': '#00d4ff', 'width': 3}, showlegend=False), row=1, col=2)
-    _fig.add_trace(go.Scatter(x=_x, y=_x + 2,    mode='lines', line={'color': '#ff6b6b', 'width': 3}, showlegend=False), row=1, col=2)
-    _fig.add_annotation(x=0, y=-2.5, text='D = (−1)(1) − (−1)(1) = 0', font={'color': '#ff6b6b', 'size': 11}, showarrow=False, xref='x2', yref='y2')
+    _fig.add_trace(go.Scatter(x=_x, y=_x,        mode='lines', line={'color': COLORS["primary"], 'width': 3}, showlegend=False), row=1, col=2)
+    _fig.add_trace(go.Scatter(x=_x, y=_x + 2,    mode='lines', line={'color': COLORS["secondary"], 'width': 3}, showlegend=False), row=1, col=2)
+    _fig.add_annotation(x=0, y=-2.5, text='D = (−1)(1) − (−1)(1) = 0', font={'color': COLORS["secondary"], 'size': 11}, showarrow=False, xref='x2', yref='y2')
 
     # Case 3: Coincident  (same line drawn twice, slightly offset for visibility)
-    _fig.add_trace(go.Scatter(x=_x, y=_x,         mode='lines', line={'color': '#00d4ff', 'width': 6}, showlegend=False), row=1, col=3)
-    _fig.add_trace(go.Scatter(x=_x, y=_x,         mode='lines', line={'color': '#ff6b6b', 'width': 2, 'dash': 'dash'}, showlegend=False), row=1, col=3)
-    _fig.add_annotation(x=0, y=-2.5, text='D = 0  and  c₁b₂ = c₂b₁', font={'color': '#4ecdc4', 'size': 11}, showarrow=False, xref='x3', yref='y3')
+    _fig.add_trace(go.Scatter(x=_x, y=_x,         mode='lines', line={'color': COLORS["primary"], 'width': 6}, showlegend=False), row=1, col=3)
+    _fig.add_trace(go.Scatter(x=_x, y=_x,         mode='lines', line={'color': COLORS["secondary"], 'width': 2, 'dash': 'dash'}, showlegend=False), row=1, col=3)
+    _fig.add_annotation(x=0, y=-2.5, text='D = 0  and  c₁b₂ = c₂b₁', font={'color': COLORS["tertiary"], 'size': 11}, showarrow=False, xref='x3', yref='y3')
 
     _fig.update_layout(**base_layout(title='The Three Cases — All Detected by the Determinant D = a₁b₂ − a₂b₁', height=350))
     style_subplot_axes(_fig)
     for _c in range(1, 4):
-        _fig.update_xaxes(range=[-3, 3], zerolinecolor='#a0a0a0', row=1, col=_c)
+        _fig.update_xaxes(range=[-3, 3], zerolinecolor=COLORS["text_secondary"], row=1, col=_c)
         _fig.update_yaxes(range=[-3, 3], scaleanchor=f'x{_c}', row=1, col=_c)
     _fig
     return
@@ -432,7 +432,7 @@ def _(l1_intercept, l1_slope, l2_intercept, l2_slope, mo):
 
 
 @app.cell
-def _(base_layout, go, l1_intercept, l1_slope, l2_intercept, l2_slope, np):
+def _(COLORS, base_layout, go, l1_intercept, l1_slope, l2_intercept, l2_slope, np):
     _m1, _b1 = l1_slope.value, l1_intercept.value
     _m2, _b2 = l2_slope.value, l2_intercept.value
 
@@ -443,13 +443,13 @@ def _(base_layout, go, l1_intercept, l1_slope, l2_intercept, l2_slope, np):
     _fig.add_trace(go.Scatter(
         x=_x, y=_m1 * _x + _b1,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name=f'L₁: y = {_m1:.2f}x + {_b1:.1f}',
     ))
     _fig.add_trace(go.Scatter(
         x=_x, y=_m2 * _x + _b2,
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 3},
+        line={'color': COLORS["secondary"], 'width': 3},
         name=f'L₂: y = {_m2:.2f}x + {_b2:.1f}',
     ))
 
@@ -459,34 +459,34 @@ def _(base_layout, go, l1_intercept, l1_slope, l2_intercept, l2_slope, np):
     if abs(_denom) < _tol:
         if abs(_b1 - _b2) < _tol:
             _status = 'COINCIDENT — infinitely many intersections'
-            _status_color = '#ffe66d'
+            _status_color = COLORS["quaternary"]
         else:
             _status = 'PARALLEL — no intersection'
-            _status_color = '#ff6b6b'
+            _status_color = COLORS["secondary"]
     else:
         _xi = (_b2 - _b1) / _denom
         _yi = _m1 * _xi + _b1
         _fig.add_trace(go.Scatter(
             x=[_xi], y=[_yi],
             mode='markers+text',
-            marker={'color': '#ffe66d', 'size': 14},
+            marker={'color': COLORS["quaternary"], 'size': 14},
             text=[f'  ({_xi:.2f}, {_yi:.2f})'],
             textposition='middle right',
-            textfont={'color': '#ffe66d', 'size': 12},
+            textfont={'color': COLORS["quaternary"], 'size': 12},
             name='Intersection',
         ))
         _D = (-_m1) * 1 - (-_m2) * 1  # det of [[−m1, 1],[−m2, 1]]
         _status = f'Intersection: ({_xi:.2f}, {_yi:.2f})  |  det D = {_D:.2f}'
-        _status_color = '#4ecdc4'
+        _status_color = COLORS["tertiary"]
 
-    _fig.add_hline(y=0, line_color='#a0a0a0', line_width=1)
-    _fig.add_vline(x=0, line_color='#a0a0a0', line_width=1)
+    _fig.add_hline(y=0, line_color=COLORS["text_secondary"], line_width=1)
+    _fig.add_vline(x=0, line_color=COLORS["text_secondary"], line_width=1)
 
     _fig.update_layout(**base_layout(
         title=_status,
         title_font={'color': _status_color},
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-7, 7], 'title': 'x'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-7, 7], 'title': 'y', 'scaleanchor': 'x'},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-7, 7], 'title': 'x'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-7, 7], 'title': 'y', 'scaleanchor': 'x'},
         height=500,
     ))
     _fig
@@ -547,7 +547,7 @@ def _(mo):
 
 
 @app.cell
-def _(base_layout, go, np):
+def _(COLORS, base_layout, go, np):
 
     _u = np.array([3.0, 1.0])
     _v = np.array([1.0, 2.5])
@@ -563,7 +563,7 @@ def _(base_layout, go, np):
         mode='lines',
         fill='toself',
         fillcolor='rgba(0, 212, 255, 0.2)',
-        line={'color': '#00d4ff', 'width': 2},
+        line={'color': COLORS["primary"], 'width': 2},
         name=f'Area = |det| = {abs(_det):.2f}',
         hoverinfo='skip',
     ))
@@ -572,8 +572,8 @@ def _(base_layout, go, np):
     _fig.add_trace(go.Scatter(
         x=[0, _u[0]], y=[0, _u[1]],
         mode='lines+markers',
-        line={'color': '#ff6b6b', 'width': 4},
-        marker={'symbol': 'arrow', 'size': 14, 'angleref': 'previous', 'color': '#ff6b6b'},
+        line={'color': COLORS["secondary"], 'width': 4},
+        marker={'symbol': 'arrow', 'size': 14, 'angleref': 'previous', 'color': COLORS["secondary"]},
         name=f'u = ({_u[0]:.0f}, {_u[1]:.0f})',
     ))
 
@@ -581,8 +581,8 @@ def _(base_layout, go, np):
     _fig.add_trace(go.Scatter(
         x=[0, _v[0]], y=[0, _v[1]],
         mode='lines+markers',
-        line={'color': '#4ecdc4', 'width': 4},
-        marker={'symbol': 'arrow', 'size': 14, 'angleref': 'previous', 'color': '#4ecdc4'},
+        line={'color': COLORS["tertiary"], 'width': 4},
+        marker={'symbol': 'arrow', 'size': 14, 'angleref': 'previous', 'color': COLORS["tertiary"]},
         name=f'v = ({_v[0]:.0f}, {_v[1]:.0f})',
     ))
 
@@ -592,24 +592,24 @@ def _(base_layout, go, np):
     _fig.add_annotation(
         x=_cx, y=_cy,
         text=f'Area = {abs(_det):.2f}',
-        font={'color': '#ffe66d', 'size': 14},
+        font={'color': COLORS["quaternary"], 'size': 14},
         showarrow=False,
     )
 
     _fig.add_annotation(
         x=2.5, y=-0.5,
         text=f'det = ({_u[0]:.0f})({_v[1]:.0f}) − ({_u[1]:.0f})({_v[0]:.0f}) = {_det:.2f}',
-        font={'color': '#ffe66d', 'size': 13},
+        font={'color': COLORS["quaternary"], 'size': 13},
         showarrow=False,
     )
 
-    _fig.add_hline(y=0, line_color='#a0a0a0', line_width=1)
-    _fig.add_vline(x=0, line_color='#a0a0a0', line_width=1)
+    _fig.add_hline(y=0, line_color=COLORS["text_secondary"], line_width=1)
+    _fig.add_vline(x=0, line_color=COLORS["text_secondary"], line_width=1)
 
     _fig.update_layout(**base_layout(
         title='The Determinant as a Parallelogram Area',
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-0.5, 5.5], 'title': 'x', 'scaleanchor': 'y'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-1, 5], 'title': 'y'},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-0.5, 5.5], 'title': 'x', 'scaleanchor': 'y'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-1, 5], 'title': 'y'},
         height=420,
     ))
     _fig
@@ -720,7 +720,7 @@ def _(d1x, d1y, d2x, d2y, mo, p1x, p1y, p2x, p2y):
 
 
 @app.cell
-def _(base_layout, d1x, d1y, d2x, d2y, go, np, p1x, p1y, p2x, p2y):
+def _(COLORS, base_layout, d1x, d1y, d2x, d2y, go, np, p1x, p1y, p2x, p2y):
     _p1 = np.array([p1x.value, p1y.value])
     _d1 = np.array([d1x.value, d1y.value])
     _p2 = np.array([p2x.value, p2y.value])
@@ -735,24 +735,24 @@ def _(base_layout, d1x, d1y, d2x, d2y, go, np, p1x, p1y, p2x, p2y):
     # Lines
     _fig.add_trace(go.Scatter(
         x=_L1[0], y=_L1[1], mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name=f'L₁: ({_p1[0]:.1f},{_p1[1]:.1f}) + t·({_d1[0]:.2f},{_d1[1]:.2f})',
     ))
     _fig.add_trace(go.Scatter(
         x=_L2[0], y=_L2[1], mode='lines',
-        line={'color': '#ff6b6b', 'width': 3},
+        line={'color': COLORS["secondary"], 'width': 3},
         name=f'L₂: ({_p2[0]:.1f},{_p2[1]:.1f}) + s·({_d2[0]:.2f},{_d2[1]:.2f})',
     ))
 
     # Base points
     _fig.add_trace(go.Scatter(
         x=[_p1[0]], y=[_p1[1]], mode='markers',
-        marker={'color': '#00d4ff', 'size': 10, 'symbol': 'square'},
+        marker={'color': COLORS["primary"], 'size': 10, 'symbol': 'square'},
         name='p₁', showlegend=True,
     ))
     _fig.add_trace(go.Scatter(
         x=[_p2[0]], y=[_p2[1]], mode='markers',
-        marker={'color': '#ff6b6b', 'size': 10, 'symbol': 'square'},
+        marker={'color': COLORS["secondary"], 'size': 10, 'symbol': 'square'},
         name='p₂', showlegend=True,
     ))
 
@@ -765,7 +765,7 @@ def _(base_layout, d1x, d1y, d2x, d2y, go, np, p1x, p1y, p2x, p2y):
     _tol = 1e-9
     if abs(_D) < _tol:
         _title = 'PARALLEL lines — no intersection (D = 0)'
-        _title_color = '#ff6b6b'
+        _title_color = COLORS["secondary"]
     else:
         _t_star = (_b_vec[0] * _A[1, 1] - _b_vec[1] * _A[0, 1]) / _D
         _s_star = (_A[0, 0] * _b_vec[1] - _A[1, 0] * _b_vec[0]) / _D
@@ -774,23 +774,23 @@ def _(base_layout, d1x, d1y, d2x, d2y, go, np, p1x, p1y, p2x, p2y):
         _fig.add_trace(go.Scatter(
             x=[_inter[0]], y=[_inter[1]],
             mode='markers+text',
-            marker={'color': '#ffe66d', 'size': 16},
+            marker={'color': COLORS["quaternary"], 'size': 16},
             text=[f'  ({_inter[0]:.2f}, {_inter[1]:.2f})'],
             textposition='middle right',
-            textfont={'color': '#ffe66d', 'size': 12},
+            textfont={'color': COLORS["quaternary"], 'size': 12},
             name=f'Vertex (t={_t_star:.2f}, s={_s_star:.2f})',
         ))
         _title = f'Intersection: ({_inter[0]:.2f}, {_inter[1]:.2f})  |  t = {_t_star:.2f}, s = {_s_star:.2f}  |  D = {_D:.2f}'
-        _title_color = '#4ecdc4'
+        _title_color = COLORS["tertiary"]
 
-    _fig.add_hline(y=0, line_color='#a0a0a0', line_width=1)
-    _fig.add_vline(x=0, line_color='#a0a0a0', line_width=1)
+    _fig.add_hline(y=0, line_color=COLORS["text_secondary"], line_width=1)
+    _fig.add_vline(x=0, line_color=COLORS["text_secondary"], line_width=1)
 
     _fig.update_layout(**base_layout(
         title=_title,
         title_font={'color': _title_color},
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-7, 7], 'title': 'x', 'scaleanchor': 'y'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-7, 7], 'title': 'y'},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-7, 7], 'title': 'x', 'scaleanchor': 'y'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-7, 7], 'title': 'y'},
         height=500,
     ))
     _fig
@@ -863,7 +863,7 @@ def _(mo):
 
 
 @app.cell
-def _(base_layout, go, make_subplots, np, style_subplot_axes):
+def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
 
     _A = np.array([0.0, 0.0])
     _B = np.array([3.0, 1.0])
@@ -875,7 +875,7 @@ def _(base_layout, go, make_subplots, np, style_subplot_axes):
         subplot_titles=["Left Turn (CCW, cross > 0)", "Right Turn (CW, cross < 0)"],
     )
 
-    for _col, (_C, _clr) in enumerate([(_C_ccw, '#4ecdc4'), (_C_cw, '#ff6b6b')], 1):
+    for _col, (_C, _clr) in enumerate([(_C_ccw, COLORS["tertiary"]), (_C_cw, COLORS["secondary"])], 1):
         _cross = (_B[0] - _A[0]) * (_C[1] - _A[1]) - (_B[1] - _A[1]) * (_C[0] - _A[0])
 
         _fig.add_trace(go.Scatter(
@@ -893,7 +893,7 @@ def _(base_layout, go, make_subplots, np, style_subplot_axes):
             _fig.add_annotation(
                 x=_pt[0] + _off[0], y=_pt[1] + _off[1],
                 text=f'<b>{_lbl}</b>',
-                font={'color': '#ffe66d', 'size': 14},
+                font={'color': COLORS["quaternary"], 'size': 14},
                 showarrow=False,
                 xref=f'x{_col}', yref=f'y{_col}',
             )
@@ -909,8 +909,8 @@ def _(base_layout, go, make_subplots, np, style_subplot_axes):
     _fig.update_layout(**base_layout(title='Orientation: Sign of the Cross Product', height=380))
     style_subplot_axes(_fig)
     for _c in range(1, 3):
-        _fig.update_xaxes(zerolinecolor='#a0a0a0', range=[-0.5, 4], row=1, col=_c)
-        _fig.update_yaxes(zerolinecolor='#a0a0a0', range=[-2, 4], row=1, col=_c)
+        _fig.update_xaxes(zerolinecolor=COLORS["text_secondary"], range=[-0.5, 4], row=1, col=_c)
+        _fig.update_yaxes(zerolinecolor=COLORS["text_secondary"], range=[-2, 4], row=1, col=_c)
 
     _fig
     return
@@ -968,7 +968,7 @@ def _(mo, skew_t):
 
 
 @app.cell
-def _(SCENE_THEME, base_layout, go, np, skew_t):
+def _(COLORS, SCENE_THEME, base_layout, go, np, skew_t):
     _sep = skew_t.value  # 0 = intersecting, 1 = fully skew
 
     _t_range = np.linspace(-2, 2, 100)
@@ -989,13 +989,13 @@ def _(SCENE_THEME, base_layout, go, np, skew_t):
     _fig.add_trace(go.Scatter3d(
         x=_L1[0], y=_L1[1], z=_L1[2],
         mode='lines',
-        line={'color': '#00d4ff', 'width': 6},
+        line={'color': COLORS["primary"], 'width': 6},
         name='Line 1',
     ))
     _fig.add_trace(go.Scatter3d(
         x=_L2[0], y=_L2[1], z=_L2[2],
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 6},
+        line={'color': COLORS["secondary"], 'width': 6},
         name='Line 2',
     ))
 
@@ -1015,7 +1015,7 @@ def _(SCENE_THEME, base_layout, go, np, skew_t):
             _fig.add_trace(go.Scatter3d(
                 x=[0], y=[0], z=[0],
                 mode='markers',
-                marker={'color': '#ffe66d', 'size': 10},
+                marker={'color': COLORS["quaternary"], 'size': 10},
                 name='Vertex',
             ))
         else:
@@ -1035,8 +1035,8 @@ def _(SCENE_THEME, base_layout, go, np, skew_t):
                 _fig.add_trace(go.Scatter3d(
                     x=[_q1[0], _q2[0]], y=[_q1[1], _q2[1]], z=[_q1[2], _q2[2]],
                     mode='lines+markers',
-                    line={'color': '#ffe66d', 'width': 4, 'dash': 'dash'},
-                    marker={'color': '#ffe66d', 'size': 8},
+                    line={'color': COLORS["quaternary"], 'width': 4, 'dash': 'dash'},
+                    marker={'color': COLORS["quaternary"], 'size': 8},
                     name=f'Min. distance = {_dist:.3f}',
                 ))
 
@@ -1112,7 +1112,7 @@ def _(mo):
 
 
 @app.cell
-def _(base_layout, go):
+def _(COLORS, base_layout, go):
 
     _vertices = {
         'A': (0, 0), 'B': (2, 0), 'C': (3, 1), 'D': (1, 1),
@@ -1133,7 +1133,7 @@ def _(base_layout, go):
         _fig.add_trace(go.Scatter(
             x=[_x1, _x2], y=[_y1, _y2],
             mode='lines',
-            line={'color': '#4ecdc4', 'width': 2},
+            line={'color': COLORS["tertiary"], 'width': 2},
             showlegend=False,
             hoverinfo='skip',
         ))
@@ -1145,10 +1145,10 @@ def _(base_layout, go):
     _fig.add_trace(go.Scatter(
         x=_vx, y=_vy,
         mode='markers+text',
-        marker={'color': '#ff6b6b', 'size': 14},
+        marker={'color': COLORS["secondary"], 'size': 14},
         text=_vnames,
         textposition='top right',
-        textfont={'color': '#ffe66d', 'size': 13},
+        textfont={'color': COLORS["quaternary"], 'size': 13},
         name='Vertices (V = 8)',
     ))
 
@@ -1158,14 +1158,14 @@ def _(base_layout, go):
     _fig.add_annotation(
         x=1.5, y=-0.5,
         text=f'V = {_V},  E = {_E},  F = {_F}  →  V − E + F = {_V - _E + _F}',
-        font={'color': '#ffe66d', 'size': 14},
+        font={'color': COLORS["quaternary"], 'size': 14},
         showarrow=False,
     )
 
     _fig.update_layout(**base_layout(
         title="Planar Graph: Cube Projection — Euler's Formula V − E + F = 2",
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#2d3a4f', 'range': [-0.5, 4], 'showticklabels': False, 'scaleanchor': 'y'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#2d3a4f', 'range': [-1, 4], 'showticklabels': False},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["grid"], 'range': [-0.5, 4], 'showticklabels': False, 'scaleanchor': 'y'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["grid"], 'range': [-1, 4], 'showticklabels': False},
         height=420,
     ))
     _fig
@@ -1251,7 +1251,7 @@ def _(angle_m1, mo):
 
 
 @app.cell
-def _(angle_m1, base_layout, go, np):
+def _(COLORS, angle_m1, base_layout, go, np):
     _m1 = angle_m1.value
     _m2_perp = -1.0 / _m1 if abs(_m1) > 1e-9 else float('inf')
 
@@ -1270,7 +1270,7 @@ def _(angle_m1, base_layout, go, np):
     # L1
     _fig.add_trace(go.Scatter(
         x=_x, y=_y1,
-        mode='lines', line={'color': '#00d4ff', 'width': 3},
+        mode='lines', line={'color': COLORS["primary"], 'width': 3},
         name=f'L₁: slope = {_m1:.2f}',
     ))
 
@@ -1278,13 +1278,13 @@ def _(angle_m1, base_layout, go, np):
     if abs(_m2_perp) < 100:
         _fig.add_trace(go.Scatter(
             x=_x, y=_m2_perp * _x,
-            mode='lines', line={'color': '#ff6b6b', 'width': 3},
+            mode='lines', line={'color': COLORS["secondary"], 'width': 3},
             name=f'L₂ ⊥ L₁: slope = {_m2_perp:.2f}',
         ))
     else:
         _fig.add_trace(go.Scatter(
             x=[0, 0], y=[-5, 5],
-            mode='lines', line={'color': '#ff6b6b', 'width': 3},
+            mode='lines', line={'color': COLORS["secondary"], 'width': 3},
             name='L₂ ⊥ L₁: vertical',
         ))
 
@@ -1296,15 +1296,15 @@ def _(angle_m1, base_layout, go, np):
     _fig.add_trace(go.Scatter(
         x=[0, _scale * _d1n[0]], y=[0, _scale * _d1n[1]],
         mode='lines+markers',
-        line={'color': '#00d4ff', 'width': 4},
-        marker={'symbol': 'arrow', 'size': 14, 'angleref': 'previous', 'color': '#00d4ff'},
+        line={'color': COLORS["primary"], 'width': 4},
+        marker={'symbol': 'arrow', 'size': 14, 'angleref': 'previous', 'color': COLORS["primary"]},
         name=f'd₁ = ({_d1n[0]:.2f}, {_d1n[1]:.2f})',
     ))
     _fig.add_trace(go.Scatter(
         x=[0, _scale * _d2n[0]], y=[0, _scale * _d2n[1]],
         mode='lines+markers',
-        line={'color': '#ff6b6b', 'width': 4},
-        marker={'symbol': 'arrow', 'size': 14, 'angleref': 'previous', 'color': '#ff6b6b'},
+        line={'color': COLORS["secondary"], 'width': 4},
+        marker={'symbol': 'arrow', 'size': 14, 'angleref': 'previous', 'color': COLORS["secondary"]},
         name=f'd₂ = ({_d2n[0]:.2f}, {_d2n[1]:.2f})',
     ))
 
@@ -1315,7 +1315,7 @@ def _(angle_m1, base_layout, go, np):
     _arc_angles = np.linspace(min(_ang1, _ang2), max(_ang1, _ang2), 40)
     _fig.add_trace(go.Scatter(
         x=_arc_r * np.cos(_arc_angles), y=_arc_r * np.sin(_arc_angles),
-        mode='lines', line={'color': '#ffe66d', 'width': 2},
+        mode='lines', line={'color': COLORS["quaternary"], 'width': 2},
         showlegend=False, hoverinfo='skip',
     ))
 
@@ -1323,17 +1323,17 @@ def _(angle_m1, base_layout, go, np):
     _fig.add_annotation(
         x=0, y=-3.5,
         text=f'd₁·d₂ = {_dot_prod:.3f}  |  angle = {_theta_deg:.1f}°  |  m₁·m₂ = {_m1 * (_m2_perp if abs(_m2_perp) < 100 else 0):.2f}',
-        font={'color': '#ffe66d', 'size': 13},
+        font={'color': COLORS["quaternary"], 'size': 13},
         showarrow=False,
     )
 
-    _fig.add_hline(y=0, line_color='#a0a0a0', line_width=1)
-    _fig.add_vline(x=0, line_color='#a0a0a0', line_width=1)
+    _fig.add_hline(y=0, line_color=COLORS["text_secondary"], line_width=1)
+    _fig.add_vline(x=0, line_color=COLORS["text_secondary"], line_width=1)
 
     _fig.update_layout(**base_layout(
         title=f'Perpendicular lines: d₁ · d₂ = {_dot_prod:.4f} ≈ 0',
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-5, 5], 'title': 'x', 'scaleanchor': 'y'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-5, 5], 'title': 'y'},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-5, 5], 'title': 'x', 'scaleanchor': 'y'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-5, 5], 'title': 'y'},
         height=500,
     ))
     _fig

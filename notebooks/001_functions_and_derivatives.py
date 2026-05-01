@@ -12,7 +12,8 @@ def _():
     import sympy as sp
     from sympy import Symbol, sin, cos, exp, log, sqrt
     import polars as pl
-    return go, mo, np, pl, sp, cos, exp, log, sin, sqrt, Symbol
+    from math_explorations.visualization import COLORS, base_layout
+    return COLORS, base_layout, go, mo, np, pl, sp, cos, exp, log, sin, sqrt, Symbol
 
 
 @app.cell
@@ -228,7 +229,7 @@ def _(function_dropdown, mo):
 
 
 @app.cell
-def _(function_dropdown, go, np, sp, Symbol):
+def _(COLORS, base_layout, function_dropdown, go, np, sp, Symbol):
     # Parse the selected function
     _x = Symbol('x')
     _expr = sp.sympify(function_dropdown.value)
@@ -245,28 +246,22 @@ def _(function_dropdown, go, np, sp, Symbol):
     _fig.add_trace(go.Scatter(
         x=_x_vals, y=_y_vals,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name=f'f(x) = {function_dropdown.value}',
     ))
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#1a1a2e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f'Graph of f(x) = {function_dropdown.value}',
         xaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'zerolinewidth': 2,
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'zerolinewidth': 2,
             'title': 'x', 'range': [-4, 4]
         },
         yaxis={
-            'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'zerolinewidth': 2,
+            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'zerolinewidth': 2,
             'title': 'f(x)', 'range': [-10, 10]
         },
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-    )
+    ))
     _fig
     return
 
@@ -368,7 +363,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     def _create_secant_demo():
         """Create interactive secant-to-tangent visualization."""
         x = np.linspace(-1, 3, 300)
@@ -386,7 +381,7 @@ def _(go, np):
         fig.add_trace(go.Scatter(
             x=x, y=y,
             mode='lines',
-            line={'color': '#00d4ff', 'width': 3},
+            line={'color': COLORS["primary"], 'width': 3},
             name='f(x) = x²',
         ))
 
@@ -396,7 +391,7 @@ def _(go, np):
         fig.add_trace(go.Scatter(
             x=x_tan, y=y_tan,
             mode='lines',
-            line={'color': '#4ecdc4', 'width': 2, 'dash': 'dash'},
+            line={'color': COLORS["tertiary"], 'width': 2, 'dash': 'dash'},
             name=f'Tangent (slope = {true_slope:.1f})',
         ))
 
@@ -410,7 +405,7 @@ def _(go, np):
         fig.add_trace(go.Scatter(
             x=x_tan, y=y_sec,
             mode='lines',
-            line={'color': '#ffe66d', 'width': 2},
+            line={'color': COLORS["quaternary"], 'width': 2},
             name=f'Secant (h = {h:.2f})',
         ))
 
@@ -418,14 +413,14 @@ def _(go, np):
         fig.add_trace(go.Scatter(
             x=[x0], y=[y0],
             mode='markers',
-            marker={'color': '#ff6b6b', 'size': 12},
+            marker={'color': COLORS["secondary"], 'size': 12},
             name='Fixed point (1, 1)',
         ))
 
         fig.add_trace(go.Scatter(
             x=[x1], y=[y1],
             mode='markers',
-            marker={'color': '#ffe66d', 'size': 10},
+            marker={'color': COLORS["quaternary"], 'size': 10},
             name='Moving point',
         ))
 
@@ -447,23 +442,19 @@ def _(go, np):
             }
             steps.append(step)
 
-        fig.update_layout(
-            minreducedwidth=300,
-            paper_bgcolor='#16213e',
-            plot_bgcolor='#1a1a2e',
-            font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+        fig.update_layout(**base_layout(
             title=f"h = {h_values[0]:.2f} | Secant slope = {((x0+h_values[0])**2 - y0)/h_values[0]:.4f} | Tangent slope = {true_slope:.1f}",
-            xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
-            yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y', 'range': [-1, 10]},
+            xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x'},
+            yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y', 'range': [-1, 10]},
             sliders=[{
                 "active": 0,
                 "currentvalue": {"prefix": "h = ", "visible": True},
                 "pad": {"b": 10, "t": 50},
                 "steps": steps,
-                "bgcolor": "#16213e",
-                "font": {"color": "#eaeaea"},
+                "bgcolor": COLORS["paper"],
+                "font": {"color": COLORS["text"]},
             }],
-        )
+        ))
 
         return fig
 
@@ -600,7 +591,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     def _animate_limit():
         """Animate h approaching 0."""
         x = np.linspace(-0.5, 2.5, 300)
@@ -616,26 +607,26 @@ def _(go, np):
         fig = go.Figure()
 
         # Function
-        fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line={'color': '#00d4ff', 'width': 3}, name='f(x) = x²'))
+        fig.add_trace(go.Scatter(x=x, y=y, mode='lines', line={'color': COLORS["primary"], 'width': 3}, name='f(x) = x²'))
 
         # Tangent
         x_line = np.array([-0.5, 2.5])
         y_tan = y0 + true_slope * (x_line - x0)
         fig.add_trace(go.Scatter(x=x_line, y=y_tan, mode='lines',
-                                  line={'color': '#4ecdc4', 'width': 2, 'dash': 'dash'}, name='Tangent'))
+                                  line={'color': COLORS["tertiary"], 'width': 2, 'dash': 'dash'}, name='Tangent'))
 
         # Secant
         h = h_values[0]
         slope = (((x0 + h) ** 2 - y0) / h)
         y_sec = y0 + slope * (x_line - x0)
         fig.add_trace(go.Scatter(x=x_line, y=y_sec, mode='lines',
-                                  line={'color': '#ffe66d', 'width': 3}, name='Secant'))
+                                  line={'color': COLORS["quaternary"], 'width': 3}, name='Secant'))
 
         # Points
         fig.add_trace(go.Scatter(x=[x0], y=[y0], mode='markers',
-                                  marker={'color': '#ff6b6b', 'size': 14}, name='(1, 1)'))
+                                  marker={'color': COLORS["secondary"], 'size': 14}, name='(1, 1)'))
         fig.add_trace(go.Scatter(x=[x0 + h], y=[(x0 + h) ** 2], mode='markers',
-                                  marker={'color': '#ffe66d', 'size': 10}, name='Moving'))
+                                  marker={'color': COLORS["quaternary"], 'size': 10}, name='Moving'))
 
         frames = []
         for i, h in enumerate(h_values):
@@ -659,14 +650,10 @@ def _(go, np):
 
         fig.frames = frames
 
-        fig.update_layout(
-            minreducedwidth=300,
-            paper_bgcolor='#16213e',
-            plot_bgcolor='#1a1a2e',
-            font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+        fig.update_layout(**base_layout(
             title=f"The Limit: h → 0",
-            xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x', 'range': [-0.5, 2.5]},
-            yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y', 'range': [-0.5, 5]},
+            xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x', 'range': [-0.5, 2.5]},
+            yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y', 'range': [-0.5, 5]},
             updatemenus=[{
                 "type": "buttons",
                 "showactive": False,
@@ -679,10 +666,10 @@ def _(go, np):
                     {"label": "⏸ Pause", "method": "animate",
                      "args": [[None], {"frame": {"duration": 0}, "mode": "immediate"}]},
                 ],
-                "font": {"color": "#eaeaea"},
-                "bgcolor": "#16213e",
+                "font": {"color": COLORS["text"]},
+                "bgcolor": COLORS["paper"],
             }],
-        )
+        ))
 
         return fig
 
@@ -756,7 +743,7 @@ def _(mo, zoom_slider):
 
 
 @app.cell
-def _(go, np, zoom_slider):
+def _(COLORS, base_layout, go, np, zoom_slider):
     def _create_zoom_visualization():
         """Show how zooming in reveals local linearity."""
         x0, y0 = 1.0, 1.0  # Point to zoom in on
@@ -778,7 +765,7 @@ def _(go, np, zoom_slider):
         fig.add_trace(go.Scatter(
             x=x, y=y_curve,
             mode='lines',
-            line={'color': '#00d4ff', 'width': 3},
+            line={'color': COLORS["primary"], 'width': 3},
             name='f(x) = x²'
         ))
 
@@ -786,7 +773,7 @@ def _(go, np, zoom_slider):
         fig.add_trace(go.Scatter(
             x=x, y=y_tangent,
             mode='lines',
-            line={'color': '#ff6b6b', 'width': 2, 'dash': 'dash'},
+            line={'color': COLORS["secondary"], 'width': 2, 'dash': 'dash'},
             name=f'Tangent (slope = {slope})'
         ))
 
@@ -794,40 +781,37 @@ def _(go, np, zoom_slider):
         fig.add_trace(go.Scatter(
             x=[x0], y=[y0],
             mode='markers',
-            marker={'color': '#ffe66d', 'size': 12},
+            marker={'color': COLORS["quaternary"], 'size': 12},
             name='Point (1, 1)'
         ))
 
         # Calculate max deviation in window for annotation
         max_dev = max(abs(y_curve - y_tangent))
 
-        fig.update_layout(
-            minreducedwidth=300,
+        fig.update_layout(**base_layout(
             title=dict(
                 text=f"Zoom: {zoom}x | Window: ±{window:.4f} | Max deviation from tangent: {max_dev:.6f}",
-                font=dict(color="#eaeaea", size=14),
+                font=dict(color=COLORS["text"], size=14),
             ),
             xaxis=dict(
                 title="x",
                 range=[x0 - window, x0 + window],
-                color="#a0a0a0",
-                gridcolor="#2a2a3e",
+                color=COLORS["text_secondary"],
+                gridcolor=COLORS["grid"],
             ),
             yaxis=dict(
                 title="y",
                 range=[y0 - window * 1.5, y0 + window * 1.5],
-                color="#a0a0a0",
-                gridcolor="#2a2a3e",
+                color=COLORS["text_secondary"],
+                gridcolor=COLORS["grid"],
                 scaleanchor="x",
             ),
-            paper_bgcolor="#1a1a2e",
-            plot_bgcolor="#16213e",
             legend=dict(
-                font=dict(color="#a0a0a0"),
+                font=dict(color=COLORS["text_secondary"]),
                 bgcolor="rgba(26, 26, 46, 0.8)",
             ),
             height=450,
-        )
+        ))
 
         return fig
 
@@ -948,7 +932,7 @@ def _(mo, power_slider):
 
 
 @app.cell
-def _(go, np, power_slider):
+def _(COLORS, base_layout, go, np, power_slider):
     _n = power_slider.value
     _x = np.linspace(-2, 2, 300)
 
@@ -964,29 +948,23 @@ def _(go, np, power_slider):
     _fig.add_trace(go.Scatter(
         x=_x, y=_y_f,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name=f'f(x) = x^{_n}',
     ))
 
     _fig.add_trace(go.Scatter(
         x=_x, y=_y_fp,
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 3},
+        line={'color': COLORS["secondary"], 'width': 3},
         name=f"f'(x) = {_n}x^{_n-1}",
     ))
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#1a1a2e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f"Power Rule: f(x) = x^{_n}, f'(x) = {_n}x^{_n-1}",
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y', 'range': [-10, 10]},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y', 'range': [-10, 10]},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-    )
+    ))
     _fig
     return
 
@@ -1137,7 +1115,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Chain rule visualization: sin(x²)
     _x = np.linspace(-2.5, 2.5, 400)
 
@@ -1150,36 +1128,30 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=_x, y=np.clip(_inner, -5, 5),
         mode='lines',
-        line={'color': '#95e1d3', 'width': 2},
+        line={'color': COLORS["accent1"], 'width': 2},
         name='g(x) = x² (inner)',
     ))
 
     _fig.add_trace(go.Scatter(
         x=_x, y=_composite,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name='f(g(x)) = sin(x²)',
     ))
 
     _fig.add_trace(go.Scatter(
         x=_x, y=_derivative,
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 3},
+        line={'color': COLORS["secondary"], 'width': 3},
         name="(f∘g)'(x) = 2x·cos(x²)",
     ))
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#1a1a2e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title="Chain Rule: (f∘g)'(x) = f'(g(x)) · g'(x)",
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y', 'range': [-5, 5]},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y', 'range': [-5, 5]},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-    )
+    ))
     _fig
     return
 
@@ -1279,7 +1251,7 @@ def _(mo, tangent_point):
 
 
 @app.cell
-def _(go, np, tangent_point):
+def _(COLORS, base_layout, go, np, tangent_point):
     _x0 = tangent_point.value
     _x = np.linspace(-3, 3, 300)
     _y = _x ** 3 - _x  # f(x) = x³ - x
@@ -1296,21 +1268,21 @@ def _(go, np, tangent_point):
     _fig.add_trace(go.Scatter(
         x=_x, y=_y,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name='f(x) = x³ - x',
     ))
 
     _fig.add_trace(go.Scatter(
         x=_x_tan, y=_y_tan,
         mode='lines',
-        line={'color': '#4ecdc4', 'width': 2, 'dash': 'dash'},
+        line={'color': COLORS["tertiary"], 'width': 2, 'dash': 'dash'},
         name=f'Tangent (slope = {_slope:.2f})',
     ))
 
     _fig.add_trace(go.Scatter(
         x=[_x0], y=[_y0],
         mode='markers',
-        marker={'color': '#ffe66d', 'size': 14},
+        marker={'color': COLORS["quaternary"], 'size': 14},
         name=f'({_x0:.1f}, {_y0:.2f})',
     ))
 
@@ -1321,22 +1293,16 @@ def _(go, np, tangent_point):
     _fig.add_trace(go.Scatter(
         x=_crit_x, y=_crit_y,
         mode='markers',
-        marker={'color': '#f38181', 'size': 10, 'symbol': 'star'},
+        marker={'color': COLORS["accent2"], 'size': 10, 'symbol': 'star'},
         name="Critical points (f'=0)",
     ))
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#1a1a2e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f"Tangent at x = {_x0:.1f} | Slope = {_slope:.2f}",
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x', 'range': [-3, 3]},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y', 'range': [-4, 4]},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x', 'range': [-3, 3]},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y', 'range': [-4, 4]},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-    )
+    ))
     _fig
     return
 
@@ -1430,7 +1396,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Projectile motion animation
     _v0 = 20  # m/s
     _g = 9.8  # m/s²
@@ -1446,7 +1412,7 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=_t, y=_y,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name='Position y(t)',
     ))
 
@@ -1454,7 +1420,7 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=_t, y=_v,
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 3},
+        line={'color': COLORS["secondary"], 'width': 3},
         name='Velocity v(t) = y\'(t)',
     ))
 
@@ -1462,7 +1428,7 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=_t, y=np.full_like(_t, -_g),
         mode='lines',
-        line={'color': '#4ecdc4', 'width': 2, 'dash': 'dash'},
+        line={'color': COLORS["tertiary"], 'width': 2, 'dash': 'dash'},
         name='Acceleration a(t) = y\'\'(t)',
     ))
 
@@ -1472,27 +1438,21 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=[_t_peak], y=[_y_peak],
         mode='markers+text',
-        marker={'color': '#ffe66d', 'size': 12},
+        marker={'color': COLORS["quaternary"], 'size': 12},
         text=['Max height (v=0)'],
         textposition='top center',
-        textfont={'color': '#ffe66d'},
+        textfont={'color': COLORS["quaternary"]},
         name='Peak',
     ))
 
-    _fig.add_hline(y=0, line_dash="dot", line_color="#a0a0a0", opacity=0.5)
+    _fig.add_hline(y=0, line_dash="dot", line_color=COLORS["text_secondary"], opacity=0.5)
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#1a1a2e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f"Projectile Motion: v₀ = {_v0} m/s",
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'Time (s)'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y (m) or v (m/s)'},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'Time (s)'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y (m) or v (m/s)'},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-    )
+    ))
     _fig
     return
 
@@ -1601,7 +1561,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Optimization example: f(x) = x³ - 3x
     _x = np.linspace(-2.5, 2.5, 300)
     _y = _x ** 3 - 3 * _x  # f(x)
@@ -1614,7 +1574,7 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=_x, y=_y,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name='f(x) = x³ - 3x',
     ))
 
@@ -1622,7 +1582,7 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=_x, y=_y_prime,
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 2},
+        line={'color': COLORS["secondary"], 'width': 2},
         name="f'(x) = 3x² - 3",
     ))
 
@@ -1630,7 +1590,7 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=_x, y=_y_double_prime,
         mode='lines',
-        line={'color': '#4ecdc4', 'width': 2, 'dash': 'dash'},
+        line={'color': COLORS["tertiary"], 'width': 2, 'dash': 'dash'},
         name="f''(x) = 6x",
     ))
 
@@ -1642,7 +1602,7 @@ def _(go, np):
     ]
 
     for _xc, _yc, _label in _crit_points:
-        _color = '#f38181' if 'Max' in _label else '#95e1d3'
+        _color = COLORS["accent2"] if 'Max' in _label else COLORS["accent1"]
         _fig.add_trace(go.Scatter(
             x=[_xc], y=[_yc],
             mode='markers+text',
@@ -1653,20 +1613,14 @@ def _(go, np):
             showlegend=False,
         ))
 
-    _fig.add_hline(y=0, line_dash="dot", line_color="#a0a0a0", opacity=0.5)
+    _fig.add_hline(y=0, line_dash="dot", line_color=COLORS["text_secondary"], opacity=0.5)
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#1a1a2e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title="Optimization: Finding Extrema with the Second Derivative Test",
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y', 'range': [-5, 5]},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y', 'range': [-5, 5]},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-    )
+    ))
     _fig
     return
 
@@ -1794,7 +1748,7 @@ def _(mo, rect_slider):
 
 
 @app.cell
-def _(go, np, rect_slider):
+def _(COLORS, base_layout, go, np, rect_slider):
     _n = rect_slider.value
     _a, _b = 0, 3
     _x_curve = np.linspace(_a, _b, 200)
@@ -1813,7 +1767,7 @@ def _(go, np, rect_slider):
         x=_x_bars + _dx / 2,
         y=_heights,
         width=_dx * 0.95,
-        marker_color='#4ecdc4',
+        marker_color=COLORS["tertiary"],
         opacity=0.6,
         name=f'Riemann sum ≈ {_area:.4f}',
     ))
@@ -1822,23 +1776,17 @@ def _(go, np, rect_slider):
     _fig.add_trace(go.Scatter(
         x=_x_curve, y=_y_curve,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name='f(x) = x²',
     ))
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#1a1a2e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f"∫₀³ x² dx: Riemann Sum = {_area:.4f}, Exact = {_true_area:.4f}",
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y'},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y'},
         barmode='overlay',
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-    )
+    ))
     _fig
     return
 

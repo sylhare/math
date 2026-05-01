@@ -22,6 +22,8 @@ def create_timeline(
         x_range: Optional ``(min, max)`` for x-axis (auto-computed if *None*).
         height: Chart height in pixels.
     """
+    if not events:
+        return go.Figure()
     years = [e[0] for e in events]
     has_bce = any(y < 0 for y in years)
 
