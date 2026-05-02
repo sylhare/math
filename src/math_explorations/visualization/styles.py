@@ -17,12 +17,15 @@ COLORS = {
     "accent2": "#f38181",      # Salmon
     "accent3": "#aa96da",      # Lavender
     "accent4": "#fcbad3",      # Pink
+    "highlight": "#ffd93d",    # Gold - highlights and labels
+    "muted": "#4a5568",        # Dark gray - subtle lines
+    "surface": "#2a2a3e",      # Dark navy - card/surface backgrounds
 }
 
 # Plotly layout template
 DARK_THEME: dict[str, Any] = {
-    "paper_bgcolor": COLORS["paper"],
-    "plot_bgcolor": COLORS["background"],
+    "paper_bgcolor": COLORS["background"],
+    "plot_bgcolor": COLORS["paper"],
     "font": {
         "family": "JetBrains Mono, Fira Code, monospace",
         "size": 14,
@@ -109,6 +112,47 @@ def get_color_palette() -> list[str]:
     ]
 
 
+SCENE_THEME: dict[str, Any] = {
+    "bgcolor": COLORS["paper"],
+    "xaxis": {"gridcolor": COLORS["grid"], "color": COLORS["text_secondary"], "showticklabels": False},
+    "yaxis": {"gridcolor": COLORS["grid"], "color": COLORS["text_secondary"], "showticklabels": False},
+    "zaxis": {"gridcolor": COLORS["grid"], "color": COLORS["text_secondary"], "showticklabels": False},
+}
+
+
+def base_layout(**overrides: Any) -> dict[str, Any]:
+    """Return base layout kwargs for responsive, mobile-friendly charts.
+
+    Usage: ``fig.update_layout(**base_layout(title="…", height=400))``
+    """
+    layout: dict[str, Any] = {
+        "minreducedwidth": 300,
+        "paper_bgcolor": COLORS["background"],
+        "plot_bgcolor": COLORS["paper"],
+        "font": {"color": COLORS["text"], "family": "JetBrains Mono, monospace"},
+        "legend": {"bgcolor": "rgba(22, 33, 62, 0.8)", "font": {"size": 12}},
+        "margin": {"l": 20, "r": 20, "t": 50, "b": 40},
+    }
+    layout.update(overrides)
+    return layout
+
+
+def style_subplot_axes(fig: Any, show_ticklabels: bool = False) -> None:
+    """Apply dark theme axes and annotation fonts to all subplots."""
+    fig.update_xaxes(
+        gridcolor=COLORS["grid"],
+        zerolinecolor=COLORS["grid"],
+        showticklabels=show_ticklabels,
+    )
+    fig.update_yaxes(
+        gridcolor=COLORS["grid"],
+        zerolinecolor=COLORS["grid"],
+        showticklabels=show_ticklabels,
+    )
+    for ann in getattr(fig.layout, "annotations", ()):
+        ann["font"] = {"color": COLORS["quaternary"], "size": 13}
+
+
 def get_trace_style(trace_type: str = "function") -> dict[str, Any]:
     """Get consistent trace styling based on type."""
     styles = {
@@ -133,7 +177,7 @@ def get_trace_style(trace_type: str = "function") -> dict[str, Any]:
             "mode": "markers",
         },
         "area": {
-            "fillcolor": f"rgba(0, 212, 255, 0.3)",
+            "fillcolor": "rgba(0, 212, 255, 0.3)",
             "line": {"color": COLORS["primary"], "width": 1},
         },
     }

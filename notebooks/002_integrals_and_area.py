@@ -13,7 +13,8 @@ def _():
     from sympy import Symbol, sin, cos, exp, sqrt, integrate
     import polars as pl
     from scipy import integrate as sci_integrate
-    return go, mo, np, pl, sp, cos, exp, sin, sqrt, Symbol, integrate, sci_integrate
+    from math_explorations.visualization import COLORS, base_layout
+    return COLORS, base_layout, go, mo, np, pl, sp, cos, exp, sin, sqrt, Symbol, integrate, sci_integrate
 
 
 @app.cell
@@ -87,7 +88,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Visualize Archimedes' method of exhaustion for a circle
     def _create_exhaustion_demo():
         """Show polygons approximating a circle."""
@@ -103,7 +104,7 @@ def _(go, np):
         fig.add_trace(go.Scatter(
             x=circle_x, y=circle_y,
             mode='lines',
-            line={'color': '#00d4ff', 'width': 3},
+            line={'color': COLORS["primary"], 'width': 3},
             name='Circle (area = π)',
             fill='toself',
             fillcolor='rgba(0, 212, 255, 0.2)',
@@ -119,7 +120,7 @@ def _(go, np):
         fig.add_trace(go.Scatter(
             x=poly_x, y=poly_y,
             mode='lines',
-            line={'color': '#ff6b6b', 'width': 2},
+            line={'color': COLORS["secondary"], 'width': 2},
             name=f'Inscribed polygon',
             fill='toself',
             fillcolor='rgba(255, 107, 107, 0.3)',
@@ -144,26 +145,20 @@ def _(go, np):
             }
             steps.append(step)
 
-        fig.update_layout(
-            minreducedwidth=300,
-            paper_bgcolor='#16213e',
-            plot_bgcolor='#1a1a2e',
-            font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+        fig.update_layout(**base_layout(
             title=f"n = {n_sides_options[0]} sides | Polygon area = {0.5 * n_sides_options[0] * np.sin(2 * np.pi / n_sides_options[0]):.6f} | π = {np.pi:.6f}",
-            xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'scaleanchor': 'y'},
-            yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0'},
+            xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'scaleanchor': 'y'},
+            yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"]},
             showlegend=True,
-            legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
             sliders=[{
                 "active": 0,
                 "currentvalue": {"prefix": "Sides: ", "visible": True},
                 "pad": {"b": 10, "t": 50},
                 "steps": steps,
-                "bgcolor": "#16213e",
-                "font": {"color": "#eaeaea"},
+                "bgcolor": COLORS["paper"],
+                "font": {"color": COLORS["text"]},
             }],
-        )
+        ))
 
         return fig
 
@@ -245,7 +240,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Animate the Riemann sum converging for x^2
     def _animate_riemann_convergence():
         """Animate Riemann sums converging to the integral."""
@@ -262,7 +257,7 @@ def _(go, np):
         fig.add_trace(go.Scatter(
             x=x_curve, y=y_curve,
             mode='lines',
-            line={'color': '#00d4ff', 'width': 3},
+            line={'color': COLORS["primary"], 'width': 3},
             name='f(x) = x²',
         ))
 
@@ -280,7 +275,7 @@ def _(go, np):
                 x0=x_left[i], x1=x_left[i] + dx,
                 y0=0, y1=heights[i],
                 fillcolor="rgba(78, 205, 196, 0.5)",
-                line=dict(color="#4ecdc4", width=1),
+                line=dict(color=COLORS["tertiary"], width=1),
             )
 
         # Create frames
@@ -300,7 +295,7 @@ def _(go, np):
                     x0=x_left[i], x1=x_left[i] + dx,
                     y0=0, y1=heights[i],
                     fillcolor="rgba(78, 205, 196, 0.5)",
-                    line=dict(color="#4ecdc4", width=1),
+                    line=dict(color=COLORS["tertiary"], width=1),
                 ))
 
             frame = go.Frame(
@@ -313,17 +308,11 @@ def _(go, np):
 
         fig.frames = frames
 
-        fig.update_layout(
-            minreducedwidth=300,
-            paper_bgcolor='#16213e',
-            plot_bgcolor='#1a1a2e',
-            font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+        fig.update_layout(**base_layout(
             title=f"n = {n_values[0]} rectangles | Sum = {np.sum((np.array([a + i * (b-a)/n_values[0] for i in range(n_values[0])]) + (b-a)/n_values[0]) ** 2 * (b-a)/n_values[0]):.4f}",
-            xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x', 'range': [-0.2, 2.5]},
-            yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y', 'range': [-0.2, 5]},
+            xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x', 'range': [-0.2, 2.5]},
+            yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y', 'range': [-0.2, 5]},
             showlegend=True,
-            legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
             updatemenus=[{
                 "type": "buttons",
                 "showactive": False,
@@ -334,8 +323,8 @@ def _(go, np):
                     {"label": "▶ Animate", "method": "animate",
                      "args": [None, {"frame": {"duration": 800}, "transition": {"duration": 300}}]},
                 ],
-                "font": {"color": "#eaeaea"},
-                "bgcolor": "#16213e",
+                "font": {"color": COLORS["text"]},
+                "bgcolor": COLORS["paper"],
             }],
             sliders=[{
                 "active": 0,
@@ -343,9 +332,9 @@ def _(go, np):
                           "label": str(n), "method": "animate"} for n in n_values],
                 "x": 0.05, "len": 0.9,
                 "currentvalue": {"prefix": "Rectangles: ", "visible": True},
-                "bgcolor": "#16213e", "font": {"color": "#eaeaea"},
+                "bgcolor": COLORS["paper"], "font": {"color": COLORS["text"]},
             }],
-        )
+        ))
 
         return fig
 
@@ -465,7 +454,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Visualize the area function and its derivative
     def _visualize_area_function():
         """Show A(x) and its derivative."""
@@ -486,7 +475,7 @@ def _(go, np):
         fig.add_trace(go.Scatter(
             x=x, y=A,
             mode='lines',
-            line={'color': '#00d4ff', 'width': 3},
+            line={'color': COLORS["primary"], 'width': 3},
             name='A(x) = ∫₀ˣ t dt = x²/2',
         ))
 
@@ -494,7 +483,7 @@ def _(go, np):
         fig.add_trace(go.Scatter(
             x=x, y=f,
             mode='lines',
-            line={'color': '#ff6b6b', 'width': 3},
+            line={'color': COLORS["secondary"], 'width': 3},
             name="f(x) = x = A'(x)",
         ))
 
@@ -505,21 +494,15 @@ def _(go, np):
             showarrow=True,
             arrowhead=2,
             ax=50, ay=-50,
-            font={'color': '#eaeaea'},
+            font={'color': COLORS["text"]},
         )
 
-        fig.update_layout(
-            minreducedwidth=300,
-            paper_bgcolor='#16213e',
-            plot_bgcolor='#1a1a2e',
-            font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+        fig.update_layout(**base_layout(
             title="Fundamental Theorem: A'(x) = f(x)",
-            xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
-            yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y'},
+            xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x'},
+            yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y'},
             showlegend=True,
-            legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-        )
+        ))
 
         return fig
 
@@ -657,7 +640,7 @@ def _(integral_function, lower_bound, upper_bound, mo):
 
 
 @app.cell
-def _(integral_function, lower_bound, upper_bound, go, np, sp, Symbol, integrate):
+def _(COLORS, base_layout, integral_function, lower_bound, upper_bound, go, np, sp, Symbol, integrate):
     _x = Symbol('x')
     _expr_str, _latex_str = integral_function.value
     _expr = sp.sympify(_expr_str)
@@ -705,28 +688,22 @@ def _(integral_function, lower_bound, upper_bound, go, np, sp, Symbol, integrate
     _fig.add_trace(go.Scatter(
         x=_x_plot, y=_y_plot,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name=f'f(x) = {_latex_str}',
     ))
 
     # Bounds
-    _fig.add_vline(x=_a, line_dash="dash", line_color="#ff6b6b", annotation_text=f"a = {_a}")
-    _fig.add_vline(x=_b, line_dash="dash", line_color="#ff6b6b", annotation_text=f"b = {_b}")
+    _fig.add_vline(x=_a, line_dash="dash", line_color=COLORS["secondary"], annotation_text=f"a = {_a}")
+    _fig.add_vline(x=_b, line_dash="dash", line_color=COLORS["secondary"], annotation_text=f"b = {_b}")
 
     _title = f"∫ from {_a} to {_b} of {_latex_str} dx = {_result:.4f}" if _result else f"∫ from {_a} to {_b}"
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#1a1a2e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=_title,
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y'},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y'},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-    )
+    ))
     _fig
     return
 
@@ -893,7 +870,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Visualize different numerical integration methods
     def _visualize_methods():
         """Compare rectangle, trapezoid, and Simpson's rule visually."""
@@ -913,7 +890,7 @@ def _(go, np):
         fig.add_trace(go.Scatter(
             x=x_curve, y=y_curve,
             mode='lines',
-            line={'color': '#00d4ff', 'width': 4},
+            line={'color': COLORS["primary"], 'width': 4},
             name='f(x) = x²',
         ))
 
@@ -924,7 +901,7 @@ def _(go, np):
                 y=[0, y_pts[i], y_pts[i+1], 0, 0],
                 fill='toself',
                 fillcolor='rgba(255, 107, 107, 0.3)',
-                line={'color': '#ff6b6b', 'width': 2},
+                line={'color': COLORS["secondary"], 'width': 2},
                 name='Trapezoid' if i == 0 else None,
                 showlegend=(i == 0),
             ))
@@ -933,7 +910,7 @@ def _(go, np):
         fig.add_trace(go.Scatter(
             x=x_pts, y=y_pts,
             mode='markers',
-            marker={'color': '#ffe66d', 'size': 12},
+            marker={'color': COLORS["quaternary"], 'size': 12},
             name='Sample points',
         ))
 
@@ -941,18 +918,12 @@ def _(go, np):
         trap_area = dx * (0.5 * y_pts[0] + np.sum(y_pts[1:-1]) + 0.5 * y_pts[-1])
         exact_area = b**3 / 3
 
-        fig.update_layout(
-            minreducedwidth=300,
-            paper_bgcolor='#16213e',
-            plot_bgcolor='#1a1a2e',
-            font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+        fig.update_layout(**base_layout(
             title=f"Trapezoidal Rule (n={n}): Approx = {trap_area:.4f}, Exact = {exact_area:.4f}",
-            xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
-            yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y'},
+            xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x'},
+            yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y'},
             showlegend=True,
-            legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-        )
+        ))
 
         return fig
 
@@ -1009,7 +980,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Visualize area between curves
     _x = np.linspace(-0.2, 1.3, 200)
     _y1 = _x  # y = x
@@ -1032,29 +1003,23 @@ def _(go, np):
     ))
 
     # Curves
-    _fig.add_trace(go.Scatter(x=_x, y=_y1, mode='lines', line={'color': '#ff6b6b', 'width': 3}, name='y = x'))
-    _fig.add_trace(go.Scatter(x=_x, y=_y2, mode='lines', line={'color': '#00d4ff', 'width': 3}, name='y = x²'))
+    _fig.add_trace(go.Scatter(x=_x, y=_y1, mode='lines', line={'color': COLORS["secondary"], 'width': 3}, name='y = x'))
+    _fig.add_trace(go.Scatter(x=_x, y=_y2, mode='lines', line={'color': COLORS["primary"], 'width': 3}, name='y = x²'))
 
     # Intersection points
     _fig.add_trace(go.Scatter(
         x=[0, 1], y=[0, 1],
         mode='markers',
-        marker={'color': '#ffe66d', 'size': 12},
+        marker={'color': COLORS["quaternary"], 'size': 12},
         name='Intersections',
     ))
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#1a1a2e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title="Area Between y = x and y = x²",
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'y'},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y'},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-    )
+    ))
     _fig
     return
 
@@ -1095,7 +1060,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Visualize work done stretching a spring
     _k = 100  # Spring constant (N/m)
     _d = 0.5  # Stretch distance (m)
@@ -1118,22 +1083,16 @@ def _(go, np):
     _fig.add_trace(go.Scatter(
         x=_x, y=_F,
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 3},
+        line={'color': COLORS["secondary"], 'width': 3},
         name='F(x) = kx',
     ))
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#1a1a2e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f"Work Done Stretching a Spring (k = {_k} N/m)",
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'Displacement x (m)'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'Force F (N)'},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'Displacement x (m)'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'Force F (N)'},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-    )
+    ))
     _fig
     return
 
@@ -1179,7 +1138,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np, sci_integrate):
+def _(COLORS, base_layout, go, np, sci_integrate):
     # Visualize the normal distribution
     _mu = 0
     _sigma = 1
@@ -1201,7 +1160,7 @@ def _(go, np, sci_integrate):
     _fig.add_trace(go.Scatter(
         x=_x, y=_y,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name='Normal PDF',
     ))
 
@@ -1231,22 +1190,16 @@ def _(go, np, sci_integrate):
             showlegend=(_sign == -1),
         ))
 
-    _fig.add_annotation(x=0, y=0.2, text=f"68%", showarrow=False, font={'color': '#eaeaea', 'size': 16})
-    _fig.add_annotation(x=1.5, y=0.08, text=f"13.5%", showarrow=False, font={'color': '#eaeaea', 'size': 12})
-    _fig.add_annotation(x=-1.5, y=0.08, text=f"13.5%", showarrow=False, font={'color': '#eaeaea', 'size': 12})
+    _fig.add_annotation(x=0, y=0.2, text=f"68%", showarrow=False, font={'color': COLORS["text"], 'size': 16})
+    _fig.add_annotation(x=1.5, y=0.08, text=f"13.5%", showarrow=False, font={'color': COLORS["text"], 'size': 12})
+    _fig.add_annotation(x=-1.5, y=0.08, text=f"13.5%", showarrow=False, font={'color': COLORS["text"], 'size': 12})
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#1a1a2e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title="Standard Normal Distribution: The 68-95-99.7 Rule",
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'x (standard deviations from mean)'},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'title': 'Probability density'},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x (standard deviations from mean)'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'Probability density'},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-    )
+    ))
     _fig
     return
 
@@ -1304,7 +1257,7 @@ def _(mo):
 
 
 @app.cell
-def _(go, np):
+def _(COLORS, base_layout, go, np):
     # Visualize volume of revolution
     _h = 3  # height
     _r = 1  # base radius
@@ -1325,7 +1278,7 @@ def _(go, np):
     # Cone surface
     _fig.add_trace(go.Surface(
         x=_X, y=_Y, z=_Z,
-        colorscale=[[0, '#00d4ff'], [1, '#4ecdc4']],
+        colorscale=[[0, COLORS["primary"]], [1, COLORS["tertiary"]]],
         showscale=False,
         opacity=0.8,
         name='Cone',
@@ -1335,28 +1288,22 @@ def _(go, np):
     _fig.add_trace(go.Scatter3d(
         x=_x_line, y=_y_line, z=np.zeros_like(_x_line),
         mode='lines',
-        line={'color': '#ff6b6b', 'width': 6},
+        line={'color': COLORS["secondary"], 'width': 6},
         name='y = (r/h)x',
     ))
 
     _volume = np.pi * _r**2 * _h / 3
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#1a1a2e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f"Cone from y = (r/h)x rotated about x-axis | V = πr²h/3 = {_volume:.3f}",
         scene=dict(
-            xaxis={'backgroundcolor': '#1a1a2e', 'gridcolor': '#2d3a4f', 'title': 'x'},
-            yaxis={'backgroundcolor': '#1a1a2e', 'gridcolor': '#2d3a4f', 'title': 'y'},
-            zaxis={'backgroundcolor': '#1a1a2e', 'gridcolor': '#2d3a4f', 'title': 'z'},
-            bgcolor='#1a1a2e',
+            xaxis={'backgroundcolor': COLORS["background"], 'gridcolor': COLORS["grid"], 'title': 'x'},
+            yaxis={'backgroundcolor': COLORS["background"], 'gridcolor': COLORS["grid"], 'title': 'y'},
+            zaxis={'backgroundcolor': COLORS["background"], 'gridcolor': COLORS["grid"], 'title': 'z'},
+            bgcolor=COLORS["background"],
         ),
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-    )
+    ))
     _fig
     return
 
@@ -1436,7 +1383,7 @@ def _(mo, n_points_slider):
 
 
 @app.cell
-def _(go, np, n_points_slider):
+def _(COLORS, base_layout, go, np, n_points_slider):
     np.random.seed(42)  # For reproducibility
     _n = n_points_slider.value
 
@@ -1460,7 +1407,7 @@ def _(go, np, n_points_slider):
     _fig.add_trace(go.Scatter(
         x=_x[~_inside], y=_y[~_inside],
         mode='markers',
-        marker={'color': '#ff6b6b', 'size': 3, 'opacity': 0.5},
+        marker={'color': COLORS["secondary"], 'size': 3, 'opacity': 0.5},
         name=f'Outside: {_n - _n_inside}',
     ))
 
@@ -1468,7 +1415,7 @@ def _(go, np, n_points_slider):
     _fig.add_trace(go.Scatter(
         x=_x[_inside], y=_y[_inside],
         mode='markers',
-        marker={'color': '#4ecdc4', 'size': 3, 'opacity': 0.5},
+        marker={'color': COLORS["tertiary"], 'size': 3, 'opacity': 0.5},
         name=f'Inside: {_n_inside}',
     ))
 
@@ -1476,24 +1423,18 @@ def _(go, np, n_points_slider):
     _fig.add_trace(go.Scatter(
         x=_circle_x, y=_circle_y,
         mode='lines',
-        line={'color': '#00d4ff', 'width': 3},
+        line={'color': COLORS["primary"], 'width': 3},
         name='Quarter circle',
     ))
 
     _error = abs(_pi_estimate - np.pi) / np.pi * 100
 
-    _fig.update_layout(
-        minreducedwidth=300,
-        paper_bgcolor='#16213e',
-        plot_bgcolor='#1a1a2e',
-        font={'color': '#eaeaea', 'family': 'JetBrains Mono, monospace'},
+    _fig.update_layout(**base_layout(
         title=f"π ≈ 4 × {_n_inside}/{_n} = {_pi_estimate:.6f} | True π = {np.pi:.6f} | Error: {_error:.2f}%",
-        xaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'scaleanchor': 'y', 'range': [-0.05, 1.05]},
-        yaxis={'gridcolor': '#2d3a4f', 'zerolinecolor': '#a0a0a0', 'range': [-0.05, 1.05]},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'scaleanchor': 'y', 'range': [-0.05, 1.05]},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-0.05, 1.05]},
         showlegend=True,
-        legend={'bgcolor': 'rgba(22, 33, 62, 0.8)', 'orientation': 'h', 'yanchor': 'bottom', 'y': -0.15, 'xanchor': 'center', 'x': 0.5},
-        margin={'l': 40, 'r': 40, 't': 50, 'b': 80},
-    )
+    ))
     _fig
     return
 

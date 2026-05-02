@@ -1,6 +1,15 @@
 """Visualization module - Plotly animations and function plots."""
 
-from .styles import DARK_THEME, apply_dark_theme, get_color_palette
+from .styles import (
+    COLORS,
+    DARK_THEME,
+    SCENE_THEME,
+    apply_dark_theme,
+    base_layout,
+    get_color_palette,
+    style_subplot_axes,
+)
+from .charts import create_timeline
 from .function_plots import (
     plot_function,
     plot_derivative_comparison,
@@ -19,9 +28,14 @@ from .animations import (
 )
 
 __all__ = [
+    "COLORS",
     "DARK_THEME",
+    "SCENE_THEME",
     "apply_dark_theme",
+    "base_layout",
     "get_color_palette",
+    "style_subplot_axes",
+    "create_timeline",
     "plot_function",
     "plot_derivative_comparison",
     "plot_tangent_line",
