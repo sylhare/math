@@ -23,8 +23,8 @@ def _():
     import numpy as np
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
-    from math_explorations.visualization import COLORS, base_layout
-    return COLORS, base_layout, go, make_subplots, np
+    from math_explorations.visualization import COLORS, base_layout, plot_venn_diagram, plot_directed_graph
+    return COLORS, base_layout, go, make_subplots, np, plot_venn_diagram, plot_directed_graph
 
 
 @app.cell
@@ -712,32 +712,14 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, plot_venn_diagram):
     # Venn diagram for mutually exclusive events
-    _fig = go.Figure()
+    _sets = [
+        {"center": (-2, 0), "radius": 1.5, "color": "rgba(0, 212, 255, 0.3)", "line_color": COLORS["primary"], "name": ""},
+        {"center": (2, 0), "radius": 1.5, "color": "rgba(255, 107, 107, 0.3)", "line_color": COLORS["secondary"], "name": ""},
+    ]
 
-    # Draw two separate circles (mutually exclusive)
-    _theta = np.linspace(0, 2*np.pi, 100)
-
-    # Circle A
-    _xa = 1.5 * np.cos(_theta) - 2
-    _ya = 1.5 * np.sin(_theta)
-    _fig.add_trace(go.Scatter(
-        x=_xa, y=_ya, fill="toself",
-        fillcolor="rgba(0, 212, 255, 0.3)",
-        line=dict(color=COLORS["primary"], width=2),
-        name="Event A"
-    ))
-
-    # Circle B
-    _xb = 1.5 * np.cos(_theta) + 2
-    _yb = 1.5 * np.sin(_theta)
-    _fig.add_trace(go.Scatter(
-        x=_xb, y=_yb, fill="toself",
-        fillcolor="rgba(255, 107, 107, 0.3)",
-        line=dict(color=COLORS["secondary"], width=2),
-        name="Event B"
-    ))
+    _fig = plot_venn_diagram(_sets, title="Mutually Exclusive Events")
 
     # Labels
     _fig.add_annotation(x=-2, y=0, text="A", font=dict(size=24, color=COLORS["primary"]), showarrow=False)
@@ -749,7 +731,7 @@ def _(COLORS, base_layout, go, np):
         title=dict(text="Mutually Exclusive Events", font=dict(color=COLORS["text"], size=16)),
         xaxis=dict(visible=False, range=[-5, 5]),
         yaxis=dict(visible=False, range=[-4, 3], scaleanchor="x"),
-        showlegend=True,
+        showlegend=False,
         height=350,
     ))
     _fig
@@ -797,35 +779,14 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, plot_venn_diagram):
     # Venn diagram showing overlap (not mutually exclusive)
-    _fig = go.Figure()
+    _sets = [
+        {"center": (0.5, 0), "radius": 1.5, "color": "rgba(255, 107, 107, 0.3)", "line_color": COLORS["secondary"], "name": "Even = {2,4,6}"},
+        {"center": (-0.3, 0), "radius": 0.8, "color": "rgba(0, 212, 255, 0.5)", "line_color": COLORS["primary"], "name": "{2}"},
+    ]
 
-    _theta = np.linspace(0, 2*np.pi, 100)
-
-    # Circle A (roll a 2) - smaller
-    _xa = 0.8 * np.cos(_theta) - 0.3
-    _ya = 0.8 * np.sin(_theta)
-
-    # Circle B (roll even) - larger
-    _xb = 1.5 * np.cos(_theta) + 0.5
-    _yb = 1.5 * np.sin(_theta)
-
-    # Draw B first (so A appears on top)
-    _fig.add_trace(go.Scatter(
-        x=_xb, y=_yb, fill="toself",
-        fillcolor="rgba(255, 107, 107, 0.3)",
-        line=dict(color=COLORS["secondary"], width=2),
-        name="Even = {2,4,6}"
-    ))
-
-    # Draw A (overlapping)
-    _fig.add_trace(go.Scatter(
-        x=_xa, y=_ya, fill="toself",
-        fillcolor="rgba(0, 212, 255, 0.5)",
-        line=dict(color=COLORS["primary"], width=2),
-        name="{2}"
-    ))
+    _fig = plot_venn_diagram(_sets, title="Overlapping Events: Don't Double Count!")
 
     # Labels
     _fig.add_annotation(x=-0.3, y=0, text="2", font=dict(size=20, color=COLORS["primary"]), showarrow=False)
@@ -889,36 +850,18 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, plot_venn_diagram):
     # Three-set Venn diagram with inclusion-exclusion
-    _fig = go.Figure()
+    def _hex_to_rgba(h, alpha=0.2):
+        return f"rgba({int(h[1:3], 16)}, {int(h[3:5], 16)}, {int(h[5:7], 16)}, {alpha})"
 
-    _theta = np.linspace(0, 2*np.pi, 100)
-    _r = 1.2
-
-    # Three circles arranged in a triangle
-    _centers = [
-        (-0.7, 0.5),   # A - top left
-        (0.7, 0.5),    # B - top right
-        (0, -0.7)      # C - bottom
+    _sets = [
+        {"center": (-0.7, 0.5), "radius": 1.2, "color": _hex_to_rgba(COLORS["primary"]), "line_color": COLORS["primary"], "name": "A"},
+        {"center": (0.7, 0.5), "radius": 1.2, "color": _hex_to_rgba(COLORS["secondary"]), "line_color": COLORS["secondary"], "name": "B"},
+        {"center": (0, -0.7), "radius": 1.2, "color": _hex_to_rgba(COLORS["tertiary"]), "line_color": COLORS["tertiary"], "name": "C"},
     ]
-    _colors = [COLORS["primary"], COLORS["secondary"], COLORS["tertiary"]]
-    _names = ["A", "B", "C"]
 
-    for _i, ((_cx, _cy), _color, _name) in enumerate(zip(_centers, _colors, _names)):
-        _x = _r * np.cos(_theta) + _cx
-        _y = _r * np.sin(_theta) + _cy
-        _fig.add_trace(go.Scatter(
-            x=_x, y=_y, fill="toself",
-            fillcolor=f"rgba{tuple(list(int(_color[i:i+2], 16) for i in (1, 3, 5)) + [0.2])}",
-            line=dict(color=_color, width=2),
-            name=_name
-        ))
-        _fig.add_annotation(
-            x=_cx + 0.8 * np.cos(np.pi/2 + _i * 2*np.pi/3),
-            y=_cy + 0.8 * np.sin(np.pi/2 + _i * 2*np.pi/3),
-            text=_name, font=dict(size=20, color=_color), showarrow=False
-        )
+    _fig = plot_venn_diagram(_sets, title="Inclusion-Exclusion: Three Events")
 
     _fig.add_annotation(x=0, y=-2.8, text="P(A∪B∪C) = P(A)+P(B)+P(C) − P(A∩B)−P(A∩C)−P(B∩C) + P(A∩B∩C)",
                        font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
@@ -1159,76 +1102,60 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, plot_directed_graph):
     # Tree diagram for sequential probability
-    _fig = go.Figure()
+    _nodes = {
+        "Start": (0, 0),
+        "H1": (2, 1.5),
+        "T1": (2, -1.5),
+        "HH": (4, 2.5),
+        "HT": (4, 0.5),
+        "TH": (4, -0.5),
+        "TT": (4, -2.5),
+    }
 
-    # Draw tree for two coin flips
-    # Level 0: Start
-    _fig.add_trace(go.Scatter(
-        x=[0], y=[0], mode="markers+text",
-        marker=dict(size=20, color=COLORS["tertiary"]),
-        text=["Start"], textposition="middle left",
-        textfont=dict(color=COLORS["text"], size=12),
-        showlegend=False
-    ))
-
-    # Level 1: First flip
-    _level1_y = [1.5, -1.5]
-    _level1_labels = ["H", "T"]
-    _level1_probs = ["P=0.5", "P=0.5"]
-
-    for _i, (_y, _label, _prob) in enumerate(zip(_level1_y, _level1_labels, _level1_probs)):
-        _color = COLORS["primary"] if _label == "H" else COLORS["secondary"]
-        # Line from start
-        _fig.add_trace(go.Scatter(
-            x=[0, 2], y=[0, _y], mode="lines",
-            line=dict(color=COLORS["muted"], width=2),
-            showlegend=False
-        ))
-        # Node
-        _fig.add_trace(go.Scatter(
-            x=[2], y=[_y], mode="markers+text",
-            marker=dict(size=25, color=_color),
-            text=[_label], textposition="middle center",
-            textfont=dict(color=COLORS["background"], size=14),
-            showlegend=False
-        ))
-        # Probability label on edge
-        _fig.add_annotation(x=1, y=_y/2 + 0.3, text=_prob, font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False)
-
-    # Level 2: Second flip
-    _level2_data = [
-        (2.5, "HH", 0.25, COLORS["primary"]),
-        (0.5, "HT", 0.25, COLORS["tertiary"]),
-        (-0.5, "TH", 0.25, COLORS["tertiary"]),
-        (-2.5, "TT", 0.25, COLORS["secondary"]),
+    _edges = [
+        ("Start", "H1"), ("Start", "T1"),
+        ("H1", "HH"), ("H1", "HT"),
+        ("T1", "TH"), ("T1", "TT")
     ]
 
-    _level1_positions = [(2, 1.5), (2, 1.5), (2, -1.5), (2, -1.5)]
+    _labels = {
+        "Start": "Start",
+        "H1": "H", "T1": "T",
+        "HH": "HH", "HT": "HT", "TH": "TH", "TT": "TT"
+    }
 
-    for (_y, _label, _prob, _color), (_x1, _y1) in zip(_level2_data, _level1_positions):
-        # Line
-        _fig.add_trace(go.Scatter(
-            x=[_x1, 4], y=[_y1, _y], mode="lines",
-            line=dict(color=COLORS["muted"], width=2),
-            showlegend=False
-        ))
-        # Node
-        _fig.add_trace(go.Scatter(
-            x=[4], y=[_y], mode="markers+text",
-            marker=dict(size=30, color=_color),
-            text=[_label], textposition="middle center",
-            textfont=dict(color=COLORS["background"], size=12),
-            showlegend=False
-        ))
-        # Final probability
-        _fig.add_annotation(x=5, y=_y, text=f"P={_prob}", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+    _fig = plot_directed_graph(
+        nodes=_nodes,
+        edges=_edges,
+        node_size=25,
+        node_color=COLORS["primary"],
+        edge_color=COLORS["muted"],
+        text_color=COLORS["background"],
+        title="Tree Diagram: Two Coin Flips",
+        show_arrows=False,
+        node_labels=_labels
+    )
+    
+    # Probabilities on lines
+    _fig.add_annotation(x=1, y=0.75+0.3, text="P=0.5", font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=1, y=-0.75+0.3, text="P=0.5", font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False)
+    
+    _fig.add_annotation(x=3, y=2, text="0.5", font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=3, y=1, text="0.5", font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=3, y=-1, text="0.5", font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=3, y=-2, text="0.5", font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False)
+    
+    _fig.add_annotation(x=5, y=2.5, text="P=0.25", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=5, y=0.5, text="P=0.25", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=5, y=-0.5, text="P=0.25", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=5, y=-2.5, text="P=0.25", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
 
     _fig.update_layout(**base_layout(
         title=dict(text="Tree Diagram: Two Coin Flips", font=dict(color=COLORS["text"], size=16)),
         xaxis=dict(visible=False, range=[-1, 6]),
-        yaxis=dict(visible=False, range=[-3.5, 3.5]),
+        yaxis=dict(visible=False, range=[-3, 3]),
         height=400,
     ))
     _fig
@@ -2245,13 +2172,10 @@ def _(COLORS, base_layout, go, np, stats):
         ))
 
     _fig.update_layout(**base_layout(
-        title=dict(
-            text="Poisson Distribution for Different λ Values",
-            font=dict(color=COLORS["text"], size=16)
-        ),
+        title=dict(text="Poisson Distribution for Different λ Values", font=dict(color=COLORS["text"])),
+        barmode="group",
         xaxis=dict(title="k (number of events)", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
         yaxis=dict(title="P(X = k)", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
-        barmode="overlay",
         height=400,
     ))
     _fig

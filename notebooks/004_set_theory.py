@@ -137,8 +137,8 @@ def _(mo):
 def _():
     import numpy as np
     import plotly.graph_objects as go
-    from math_explorations.visualization import COLORS, base_layout, style_subplot_axes
-    return COLORS, base_layout, go, np, style_subplot_axes
+    from math_explorations.visualization import COLORS, base_layout, style_subplot_axes, plot_directed_graph, plot_venn_diagram
+    return COLORS, base_layout, go, np, plot_directed_graph, plot_venn_diagram, style_subplot_axes
 
 
 @app.cell
@@ -359,63 +359,25 @@ def _(mo, operation_selector):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np, operation_selector):
-    # Create Venn diagram visualization
-    _theta = np.linspace(0, 2*np.pi, 100)
-    _r = 1.0
-
-    # Circle A (left)
-    _ax, _ay = -0.5, 0
-    _circle_a_x = _ax + _r * np.cos(_theta)
-    _circle_a_y = _ay + _r * np.sin(_theta)
-
-    # Circle B (right)
-    _bx, _by = 0.5, 0
-    _circle_b_x = _bx + _r * np.cos(_theta)
-    _circle_b_y = _by + _r * np.sin(_theta)
-
-    # Create figure
-    _fig_venn = go.Figure()
-
+def _(COLORS, base_layout, operation_selector, plot_venn_diagram):
     # Get operation type
     _op = operation_selector.value
 
     # Define colors based on operation
     _colors = {
-        "union": {"a_only": COLORS["tertiary"], "b_only": COLORS["tertiary"], "both": COLORS["tertiary"]},
-        "intersection": {"a_only": "rgba(100,100,100,0.3)", "b_only": "rgba(100,100,100,0.3)", "both": COLORS["secondary"]},
-        "difference": {"a_only": COLORS["tertiary"], "b_only": "rgba(100,100,100,0.3)", "both": "rgba(100,100,100,0.3)"},
-        "symmetric_difference": {"a_only": COLORS["tertiary"], "b_only": COLORS["tertiary"], "both": "rgba(100,100,100,0.3)"},
-        "complement": {"a_only": "rgba(100,100,100,0.3)", "b_only": COLORS["tertiary"], "both": "rgba(100,100,100,0.3)"},
+        "union": {"a": COLORS["tertiary"], "b": COLORS["tertiary"]},
+        "intersection": {"a": "rgba(100,100,100,0.3)", "b": "rgba(100,100,100,0.3)"},
+        "difference": {"a": COLORS["tertiary"], "b": "rgba(100,100,100,0.3)"},
+        "symmetric_difference": {"a": COLORS["tertiary"], "b": COLORS["tertiary"]},
+        "complement": {"a": "rgba(100,100,100,0.3)", "b": COLORS["tertiary"]},
     }
     _c = _colors[_op]
 
-    # Add filled regions (simplified representation)
-    # Circle A
-    _fig_venn.add_trace(go.Scatter(
-        x=_circle_a_x, y=_circle_a_y,
-        fill="toself",
-        fillcolor=_c["a_only"],
-        line=dict(color=COLORS["primary"], width=2),
-        name="A",
-        opacity=0.7,
-    ))
+    _sets = [
+        {"center": (-0.5, 0), "radius": 1.0, "color": _c["a"], "line_color": COLORS["primary"], "name": "A"},
+        {"center": (0.5, 0), "radius": 1.0, "color": _c["b"], "line_color": COLORS["secondary"], "name": "B"},
+    ]
 
-    # Circle B
-    _fig_venn.add_trace(go.Scatter(
-        x=_circle_b_x, y=_circle_b_y,
-        fill="toself",
-        fillcolor=_c["b_only"],
-        line=dict(color=COLORS["secondary"], width=2),
-        name="B",
-        opacity=0.7,
-    ))
-
-    # Add labels
-    _fig_venn.add_annotation(x=-0.9, y=0, text="A", font=dict(size=20, color=COLORS["primary"]), showarrow=False)
-    _fig_venn.add_annotation(x=0.9, y=0, text="B", font=dict(size=20, color=COLORS["secondary"]), showarrow=False)
-
-    # Operation result text
     _op_text = {
         "union": "A ∪ B = {x : x ∈ A or x ∈ B}",
         "intersection": "A ∩ B = {x : x ∈ A and x ∈ B}",
@@ -423,6 +385,8 @@ def _(COLORS, base_layout, go, np, operation_selector):
         "symmetric_difference": "A △ B = {x : x ∈ A xor x ∈ B}",
         "complement": "Aᶜ = {x ∈ U : x ∉ A}",
     }
+
+    _fig_venn = plot_venn_diagram(_sets, title=_op_text[_op])
 
     _fig_venn.update_layout(**base_layout(
         title=dict(text=_op_text[_op], font=dict(color=COLORS["text"], size=16)),
@@ -1418,11 +1382,8 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, plot_directed_graph):
     # Visualize a Hasse diagram for divisibility on {1,2,3,4,6,12}
-    _fig_hasse = go.Figure()
-
-    # Elements and their positions (Hasse diagram layout)
     _elements = {
         "1": (0, 0),
         "2": (-1.5, 1),
@@ -1432,7 +1393,6 @@ def _(COLORS, base_layout, go, np):
         "12": (0, 3),
     }
 
-    # Edges (covering relations in divisibility)
     _edges = [
         ("1", "2"), ("1", "3"),
         ("2", "4"), ("2", "6"),
@@ -1440,28 +1400,16 @@ def _(COLORS, base_layout, go, np):
         ("4", "12"), ("6", "12"),
     ]
 
-    # Draw edges first
-    for _a, _b in _edges:
-        _x0, _y0 = _elements[_a]
-        _x1, _y1 = _elements[_b]
-        _fig_hasse.add_trace(go.Scatter(
-            x=[_x0, _x1], y=[_y0, _y1],
-            mode="lines",
-            line=dict(color=COLORS["muted"], width=2),
-            showlegend=False,
-        ))
-
-    # Draw nodes
-    for _name, (_x, _y) in _elements.items():
-        _fig_hasse.add_trace(go.Scatter(
-            x=[_x], y=[_y],
-            mode="markers+text",
-            marker=dict(size=35, color=COLORS["tertiary"]),
-            text=[_name],
-            textposition="middle center",
-            textfont=dict(size=14, color=COLORS["background"]),
-            showlegend=False,
-        ))
+    _fig_hasse = plot_directed_graph(
+        nodes=_elements,
+        edges=_edges,
+        node_size=35,
+        node_color=COLORS["tertiary"],
+        edge_color=COLORS["muted"],
+        text_color=COLORS["background"],
+        title="Hasse Diagram: Divisibility on {1, 2, 3, 4, 6, 12}",
+        show_arrows=False
+    )
 
     # Annotations
     _fig_hasse.add_annotation(x=0, y=-0.7, text="Minimum (1 divides all)", font=dict(size=12, color=COLORS["secondary"]), showarrow=False)

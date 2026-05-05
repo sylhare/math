@@ -15,6 +15,9 @@ from .function_plots import (
     plot_derivative_comparison,
     plot_tangent_line,
     plot_secant_line,
+    plot_directed_graph,
+    plot_venn_diagram,
+    plot_unit_circle,
 )
 from .animations import (
     create_secant_to_tangent,
@@ -40,6 +43,9 @@ __all__ = [
     "plot_derivative_comparison",
     "plot_tangent_line",
     "plot_secant_line",
+    "plot_directed_graph",
+    "plot_venn_diagram",
+    "plot_unit_circle",
     "create_secant_to_tangent",
     "animate_limit_process",
     "create_tangent_line_plot",

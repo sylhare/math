@@ -1024,11 +1024,9 @@ def _(COLORS, base_layout, go, np):
     _T[:, -1] = np.linspace(0, 100, _n)  # Right edge gradient
 
     # Iterative solution (Laplace equation: ∇²T = 0)
-    for _iter in range(500):
+    for _iter in range(5000):
         _T_old = _T.copy()
-        for _i in range(1, _n-1):
-            for _j in range(1, _n-1):
-                _T[_i, _j] = 0.25 * (_T[_i+1, _j] + _T[_i-1, _j] + _T[_i, _j+1] + _T[_i, _j-1])
+        _T[1:-1, 1:-1] = 0.25 * (_T[2:, 1:-1] + _T[:-2, 1:-1] + _T[1:-1, 2:] + _T[1:-1, :-2])
         # Check for convergence
         if np.max(np.abs(_T - _T_old)) < 1e-6:
             break

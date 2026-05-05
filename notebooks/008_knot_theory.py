@@ -1232,25 +1232,21 @@ def _(COLORS, SCENE_THEME, base_layout, go, knot_selector, np):
     _choice = knot_selector.value
     _t = np.linspace(0, 2 * np.pi, 600)
 
+    def _torus_knot(R, r, p, q, t):
+        return (R + r * np.cos(q * t)) * np.cos(p * t), \
+               (R + r * np.cos(q * t)) * np.sin(p * t), \
+               r * np.sin(q * t)
+
     if _choice == "trefoil":
-        _R, _r, _p, _q = 3, 1, 2, 3
-        _x = (_R + _r * np.cos(_q * _t)) * np.cos(_p * _t)
-        _y = (_R + _r * np.cos(_q * _t)) * np.sin(_p * _t)
-        _z = _r * np.sin(_q * _t)
+        _x, _y, _z = _torus_knot(3, 1, 2, 3, _t)
         _title = "Trefoil Knot T(2,3)"
         _color = COLORS["secondary"]
     elif _choice == "cinquefoil":
-        _R, _r, _p, _q = 3, 1, 2, 5
-        _x = (_R + _r * np.cos(_q * _t)) * np.cos(_p * _t)
-        _y = (_R + _r * np.cos(_q * _t)) * np.sin(_p * _t)
-        _z = _r * np.sin(_q * _t)
+        _x, _y, _z = _torus_knot(3, 1, 2, 5, _t)
         _title = "Cinquefoil T(2,5)"
         _color = COLORS["quaternary"]
     elif _choice == "t34":
-        _R, _r, _p, _q = 3, 1, 3, 4
-        _x = (_R + _r * np.cos(_q * _t)) * np.cos(_p * _t)
-        _y = (_R + _r * np.cos(_q * _t)) * np.sin(_p * _t)
-        _z = _r * np.sin(_q * _t)
+        _x, _y, _z = _torus_knot(3, 1, 3, 4, _t)
         _title = "Torus Knot T(3,4)"
         _color = COLORS["accent1"]
     else:  # figure-8

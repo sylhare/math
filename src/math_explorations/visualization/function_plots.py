@@ -333,12 +333,192 @@ def plot_multiple_functions(
             name=name,
         ))
 
+    fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        **DARK_THEME,
         title=title,
         xaxis_title="x",
         yaxis_title="y",
         showlegend=True,
     )
 
+    return fig
+
+
+def plot_directed_graph(
+    nodes: dict[str, tuple[float, float]],
+    edges: list[tuple[str, str]],
+    node_size: int = 14,
+    node_color: str = None,
+    edge_color: str = None,
+    text_color: str = None,
+    title: str = "Directed Graph",
+    show_arrows: bool = True,
+    node_labels: dict[str, str] | None = None,
+) -> go.Figure:
+    """
+    Generate a directed graph scatter trace plot.
+    
+    Args:
+        nodes: Dictionary of node id to (x, y) coordinates
+        edges: List of (source_id, target_id) tuples
+        node_size: Size of the node markers
+        node_color: Color of the node markers
+        edge_color: Color of the connecting lines/arrows
+        text_color: Color of the node text labels
+        title: Plot title
+        show_arrows: Whether to show directed arrows
+        node_labels: Optional dictionary of node id to display text (if different from id)
+    """
+    if node_color is None: node_color = COLORS["secondary"]
+    if edge_color is None: edge_color = COLORS["tertiary"]
+    if text_color is None: text_color = COLORS["quaternary"]
+    if node_labels is None: node_labels = {k: k for k in nodes.keys()}
+        
+    fig = go.Figure()
+
+    # Edges
+    for start, end in edges:
+        x0, y0 = nodes[start]
+        x1, y1 = nodes[end]
+        
+        # Simple line
+        if not show_arrows:
+            fig.add_trace(go.Scatter(
+                x=[x0, x1], y=[y0, y1],
+                mode='lines',
+                line={'color': edge_color, 'width': 2},
+                showlegend=False,
+                hoverinfo='skip',
+            ))
+        else:
+            # Draw arrow with annotation to prevent head overlapping center
+            dx, dy = x1 - x0, y1 - y0
+            mag = max(np.sqrt(dx**2 + dy**2), 1e-9)
+            ux, uy = dx/mag, dy/mag
+            # Stop arrow head a bit before the exact center of destination node
+            offset = 0.08
+            
+            # Using annotation for the arrow
+            fig.add_annotation(
+                x=x1 - offset*ux, y=y1 - offset*uy, # Head
+                ax=x0 + offset*ux, ay=y0 + offset*uy, # Tail
+                xref="x", yref="y", axref="x", ayref="y",
+                showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2, arrowcolor=edge_color
+            )
+
+    # Nodes
+    node_x = [pos[0] for pos in nodes.values()]
+    node_y = [pos[1] for pos in nodes.values()]
+    labels = [node_labels[k] for k in nodes.keys()]
+
+    fig.add_trace(go.Scatter(
+        x=node_x, y=node_y,
+        mode="markers+text",
+        marker={"color": node_color, "size": node_size},
+        text=labels,
+        textposition="top right",
+        textfont={"color": text_color, "size": 13},
+        name="Nodes",
+        hovertemplate="%{text}<extra></extra>"
+    ))
+
+    fig.update_layout(**DARK_THEME)
+    fig.update_layout(
+        title=title,
+        showlegend=False,
+        hovermode="closest",
+    )
+
+    fig.update_xaxes(showgrid=False, zeroline=False, showticklabels=False)
+    fig.update_yaxes(showgrid=False, zeroline=False, showticklabels=False)
+
+    return fig
+
+
+def plot_venn_diagram(
+    sets: list[dict],
+    title: str = "Venn Diagram",
+) -> go.Figure:
+    """
+    Generate a polar trigonometric Venn Diagram.
+    
+    Args:
+        sets: List of dicts, eg [{"center": (0,0), "radius": 1, "color": "rgba(255,0,0,0.5)", "name": "A"}]
+        title: Plot title
+    """
+    fig = go.Figure()
+
+    theta = np.linspace(0, 2 * np.pi, 200)
+    for s in sets:
+        x = s["radius"] * np.cos(theta) + s["center"][0]
+        y = s["radius"] * np.sin(theta) + s["center"][1]
+        fig.add_trace(go.Scatter(
+            x=x, y=y,
+            mode='lines',
+            fill='toself',
+            fillcolor=s["color"],
+            line={'color': s.get("line_color", "rgba(255,255,255,0.5)"), 'width': 2},
+            name=s["name"],
+            hovertemplate=f"{s['name']}<extra></extra>"
+        ))
+        
+        # Label offset
+        label_y = s["center"][1] + s["radius"] + 0.15
+        fig.add_annotation(
+            x=s["center"][0], y=label_y,
+            text=s["name"],
+            showarrow=False,
+            font={"size": 16, "color": "white"}
+        )
+
+    fig.update_layout(**DARK_THEME)
+    fig.update_layout(
+        title=title,
+        xaxis={"visible": False, "scaleanchor": "y"},
+        yaxis={"visible": False},
+        showlegend=True,
+    )
+    return fig
+
+
+def plot_unit_circle(
+    radius: float = 1.0,
+    title: str = "Unit Circle",
+) -> go.Figure:
+    """
+    Build a standard base visual layout of a unit circle with origin axes.
+    """
+    fig = go.Figure()
+    theta = np.linspace(0, 2 * np.pi, 200)
+    x = radius * np.cos(theta)
+    y = radius * np.sin(theta)
+
+    fig.add_trace(go.Scatter(
+        x=x, y=y,
+        mode="lines",
+        line={"color": COLORS["tertiary"], "width": 2},
+        name="Unit Circle",
+        hoverinfo="skip"
+    ))
+
+    fig.add_hline(y=0, line_color=COLORS["text_secondary"], line_width=1)
+    fig.add_vline(x=0, line_color=COLORS["text_secondary"], line_width=1)
+
+    fig.update_layout(**DARK_THEME)
+    fig.update_layout(
+        title=title,
+        xaxis={
+            "gridcolor": COLORS["grid"],
+            "zerolinecolor": COLORS["text_secondary"],
+            "range": [-radius * 1.5, radius * 1.5],
+            "scaleanchor": "y"
+        },
+        yaxis={
+            "gridcolor": COLORS["grid"],
+            "zerolinecolor": COLORS["text_secondary"],
+            "range": [-radius * 1.5, radius * 1.5]
+        },
+        showlegend=False,
+        height=500,
+    )
     return fig

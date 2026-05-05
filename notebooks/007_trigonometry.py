@@ -23,8 +23,8 @@ def _():
     import numpy as np
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
-    from math_explorations.visualization import COLORS, base_layout, style_subplot_axes
-    return COLORS, base_layout, go, make_subplots, np, style_subplot_axes
+    from math_explorations.visualization import COLORS, base_layout, style_subplot_axes, plot_unit_circle
+    return COLORS, base_layout, go, make_subplots, np, plot_unit_circle, style_subplot_axes
 
 
 @app.cell
@@ -223,27 +223,13 @@ def _(mo, unit_circle_angle):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np, unit_circle_angle):
+def _(COLORS, base_layout, go, np, plot_unit_circle, unit_circle_angle):
     _theta_deg = unit_circle_angle.value
     _theta_rad = np.radians(_theta_deg)
     _cos_val = np.cos(_theta_rad)
     _sin_val = np.sin(_theta_rad)
 
-    # Create unit circle
-    _circle_theta = np.linspace(0, 2 * np.pi, 100)
-    _circle_x = np.cos(_circle_theta)
-    _circle_y = np.sin(_circle_theta)
-
-    _fig = go.Figure()
-
-    # Unit circle
-    _fig.add_trace(go.Scatter(
-        x=_circle_x, y=_circle_y,
-        mode='lines',
-        line={'color': COLORS["tertiary"], 'width': 2},
-        name='Unit circle',
-        hoverinfo='skip'
-    ))
+    _fig = plot_unit_circle()
 
     # Angle arc
     _arc_theta = np.linspace(0, _theta_rad, 50)
@@ -408,24 +394,11 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, go, np, plot_unit_circle):
     # Special angles visualization on unit circle
     _special_angles = [0, 30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330]
 
-    _circle_theta = np.linspace(0, 2 * np.pi, 100)
-    _circle_x = np.cos(_circle_theta)
-    _circle_y = np.sin(_circle_theta)
-
-    _fig = go.Figure()
-
-    # Unit circle
-    _fig.add_trace(go.Scatter(
-        x=_circle_x, y=_circle_y,
-        mode='lines',
-        line={'color': COLORS["tertiary"], 'width': 2},
-        name='Unit circle',
-        hoverinfo='skip'
-    ))
+    _fig = plot_unit_circle()
 
     # Special angles
     for _angle in _special_angles:
@@ -829,23 +802,13 @@ def _(mo, pythag_angle):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np, pythag_angle):
+def _(COLORS, base_layout, go, np, plot_unit_circle, pythag_angle):
     _theta_deg = pythag_angle.value
     _theta_rad = np.radians(_theta_deg)
     _cos_val = np.cos(_theta_rad)
     _sin_val = np.sin(_theta_rad)
 
-    _fig = go.Figure()
-
-    # Unit circle
-    _circle_theta = np.linspace(0, 2 * np.pi, 100)
-    _fig.add_trace(go.Scatter(
-        x=np.cos(_circle_theta), y=np.sin(_circle_theta),
-        mode='lines',
-        line={'color': COLORS["tertiary"], 'width': 2},
-        name='Unit circle',
-        hoverinfo='skip'
-    ))
+    _fig = plot_unit_circle()
 
     # Right triangle
     _fig.add_trace(go.Scatter(
@@ -986,22 +949,12 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, go, np, plot_unit_circle):
     # Geometric proof of angle addition
     _alpha = np.pi / 6  # 30 degrees
     _beta = np.pi / 4   # 45 degrees
 
-    _fig = go.Figure()
-
-    # Unit circle
-    _circle_theta = np.linspace(0, 2 * np.pi, 100)
-    _fig.add_trace(go.Scatter(
-        x=np.cos(_circle_theta), y=np.sin(_circle_theta),
-        mode='lines',
-        line={'color': COLORS["tertiary"], 'width': 2},
-        hoverinfo='skip',
-        showlegend=False,
-    ))
+    _fig = plot_unit_circle()
 
     # Angle alpha
     _fig.add_trace(go.Scatter(
@@ -1504,20 +1457,11 @@ def _(limit_slider, mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, limit_slider, np):
+def _(COLORS, base_layout, go, limit_slider, np, plot_unit_circle):
+    # Visualizing sin(h)/h -> 1
     _h = limit_slider.value
 
-    _fig = go.Figure()
-
-    # Unit circle
-    _circle_theta = np.linspace(0, 2 * np.pi, 100)
-    _fig.add_trace(go.Scatter(
-        x=np.cos(_circle_theta), y=np.sin(_circle_theta),
-        mode='lines',
-        line={'color': COLORS["tertiary"], 'width': 2},
-        name='Unit circle',
-        hoverinfo='skip'
-    ))
+    _fig = plot_unit_circle()
 
     # Arc from 0 to h
     _arc = np.linspace(0, _h, 50)

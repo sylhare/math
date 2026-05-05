@@ -24,9 +24,9 @@ def _():
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
     from math_explorations.visualization import (
-        COLORS, SCENE_THEME, base_layout, create_timeline, style_subplot_axes,
+        COLORS, SCENE_THEME, base_layout, create_timeline, style_subplot_axes, plot_directed_graph,
     )
-    return COLORS, SCENE_THEME, base_layout, create_timeline, go, make_subplots, np, style_subplot_axes
+    return COLORS, SCENE_THEME, base_layout, create_timeline, go, make_subplots, np, plot_directed_graph, style_subplot_axes
 
 
 @app.cell
@@ -1112,45 +1112,32 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go):
+def _(COLORS, base_layout, plot_directed_graph):
 
+    # Schlegel diagram (planar graph of a cube)
     _vertices = {
-        'A': (0, 0), 'B': (2, 0), 'C': (3, 1), 'D': (1, 1),
-        'E': (0, 2), 'F': (2, 2), 'G': (3, 3), 'H': (1, 3),
+        'A': (0, 0), 'B': (3, 0), 'C': (2, 1), 'D': (1, 1),
+        'E': (0, 3), 'F': (3, 3), 'G': (2, 2), 'H': (1, 2),
     }
     _edges = [
-        ('A', 'B'), ('B', 'C'), ('C', 'D'), ('D', 'A'),
-        ('E', 'F'), ('F', 'G'), ('G', 'H'), ('H', 'E'),
-        ('A', 'E'), ('B', 'F'), ('C', 'G'), ('D', 'H'),
+        # Outer square
+        ('A', 'B'), ('B', 'F'), ('F', 'E'), ('E', 'A'),
+        # Inner square
+        ('D', 'C'), ('C', 'G'), ('G', 'H'), ('H', 'D'),
+        # Connecting edges
+        ('A', 'D'), ('B', 'C'), ('F', 'G'), ('E', 'H'),
     ]
 
-    _fig = go.Figure()
-
-    # Edges
-    for _e1, _e2 in _edges:
-        _x1, _y1 = _vertices[_e1]
-        _x2, _y2 = _vertices[_e2]
-        _fig.add_trace(go.Scatter(
-            x=[_x1, _x2], y=[_y1, _y2],
-            mode='lines',
-            line={'color': COLORS["tertiary"], 'width': 2},
-            showlegend=False,
-            hoverinfo='skip',
-        ))
-
-    # Vertices
-    _vx = [v[0] for v in _vertices.values()]
-    _vy = [v[1] for v in _vertices.values()]
-    _vnames = list(_vertices.keys())
-    _fig.add_trace(go.Scatter(
-        x=_vx, y=_vy,
-        mode='markers+text',
-        marker={'color': COLORS["secondary"], 'size': 14},
-        text=_vnames,
-        textposition='top right',
-        textfont={'color': COLORS["quaternary"], 'size': 13},
-        name='Vertices (V = 8)',
-    ))
+    _fig = plot_directed_graph(
+        nodes=_vertices,
+        edges=_edges,
+        node_size=14,
+        node_color=COLORS["secondary"],
+        edge_color=COLORS["tertiary"],
+        text_color=COLORS["quaternary"],
+        title="Planar Graph: Cube Projection — Euler's Formula V − E + F = 2",
+        show_arrows=False
+    )
 
     _V = len(_vertices)
     _E = len(_edges)
@@ -1164,8 +1151,8 @@ def _(COLORS, base_layout, go):
 
     _fig.update_layout(**base_layout(
         title="Planar Graph: Cube Projection — Euler's Formula V − E + F = 2",
-        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["grid"], 'range': [-0.5, 4], 'showticklabels': False, 'scaleanchor': 'y'},
-        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["grid"], 'range': [-1, 4], 'showticklabels': False},
+        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["grid"], 'range': [-0.5, 3.5], 'showticklabels': False, 'scaleanchor': 'y'},
+        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["grid"], 'range': [-1, 3.5], 'showticklabels': False},
         height=420,
     ))
     _fig

@@ -45,7 +45,7 @@ DARK_THEME: dict[str, Any] = {
         "zerolinecolor": COLORS["text_secondary"],
         "zerolinewidth": 2,
         "tickfont": {"color": COLORS["text_secondary"]},
-        "titlefont": {"color": COLORS["text"]},
+        "title": {"font": {"color": COLORS["text"]}},
     },
     "yaxis": {
         "gridcolor": COLORS["grid"],
@@ -53,7 +53,7 @@ DARK_THEME: dict[str, Any] = {
         "zerolinecolor": COLORS["text_secondary"],
         "zerolinewidth": 2,
         "tickfont": {"color": COLORS["text_secondary"]},
-        "titlefont": {"color": COLORS["text"]},
+        "title": {"font": {"color": COLORS["text"]}},
     },
     "legend": {
         "bgcolor": "rgba(22, 33, 62, 0.8)",

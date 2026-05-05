@@ -23,8 +23,8 @@ def _():
     import numpy as np
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
-    from math_explorations.visualization import COLORS, base_layout
-    return COLORS, base_layout, go, make_subplots, np
+    from math_explorations.visualization import COLORS, base_layout, plot_directed_graph
+    return COLORS, base_layout, go, make_subplots, np, plot_directed_graph
 
 
 @app.cell
@@ -2492,11 +2492,8 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go):
+def _(COLORS, base_layout, plot_directed_graph):
     # Visualize the power set lattice P({a,b})
-    _fig = go.Figure()
-
-    # Elements of P({a,b}) with positions
     _elements = {
         "∅": (0, 0),
         "{a}": (-1, 1),
@@ -2504,30 +2501,19 @@ def _(COLORS, base_layout, go):
         "{a,b}": (0, 2),
     }
 
-    # Edges (Hasse diagram)
     _edges = [("∅", "{a}"), ("∅", "{b}"), ("{a}", "{a,b}"), ("{b}", "{a,b}")]
 
-    # Draw edges
-    for _a, _b in _edges:
-        _x0, _y0 = _elements[_a]
-        _x1, _y1 = _elements[_b]
-        _fig.add_trace(go.Scatter(
-            x=[_x0, _x1], y=[_y0, _y1], mode="lines",
-            line=dict(color=COLORS["muted"], width=2),
-            showlegend=False,
-        ))
+    _fig = plot_directed_graph(
+        nodes=_elements,
+        edges=_edges,
+        node_size=40,
+        node_color=COLORS["tertiary"],
+        edge_color=COLORS["muted"],
+        text_color=COLORS["background"],
+        title="Power Set Lattice P({a,b})",
+        show_arrows=False
+    )
 
-    # Draw nodes
-    for _name, (_x, _y) in _elements.items():
-        _fig.add_trace(go.Scatter(
-            x=[_x], y=[_y], mode="markers+text",
-            marker=dict(size=40, color=COLORS["tertiary"]),
-            text=[_name], textposition="middle center",
-            textfont=dict(size=11, color=COLORS["background"]),
-            showlegend=False,
-        ))
-
-    # Annotations for meet and join
     _fig.add_annotation(x=-2, y=1, text="{a} ∧ {b} = ∅\n(intersection)", font=dict(size=10, color=COLORS["secondary"]), showarrow=False, align="left")
     _fig.add_annotation(x=2, y=1, text="{a} ∨ {b} = {a,b}\n(union)", font=dict(size=10, color=COLORS["primary"]), showarrow=False, align="left")
 
@@ -2781,12 +2767,17 @@ def _(COLORS, base_layout, go, np):
     ))
 
     # Show iterations
+    _sizes = [15 - _i for _i in range(len(_points))]
+    _colors = [f"rgba(78, 205, 196, {1 - _i * 0.1})" for _i in range(len(_points))]
+    
+    _fig.add_trace(go.Scatter(
+        x=_points, y=[0] * len(_points),
+        mode="markers",
+        marker=dict(size=_sizes, color=_colors),
+        showlegend=False,
+    ))
+    
     for _i, _p in enumerate(_points):
-        _fig.add_trace(go.Scatter(
-            x=[_p], y=[0], mode="markers",
-            marker=dict(size=15 - _i, color=f"rgba(78, 205, 196, {1 - _i * 0.1})"),
-            showlegend=False,
-        ))
         if _i < 5:
             _fig.add_annotation(x=_p, y=0.15 + 0.1 * (_i % 2), text=f"f^{_i}(x₀)", font=dict(size=9, color=COLORS["text_secondary"]), showarrow=False)
 
