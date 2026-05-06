@@ -122,9 +122,9 @@ def create_secant_to_tangent(
         "font": {"color": COLORS["text"]},
     }]
 
+    fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        **DARK_THEME,
-        title=f"Secant → Tangent at x = {x0}",
+        title={"text": f"Secant → Tangent at x = {x0}"},
         xaxis_title="x",
         yaxis_title="y",
         sliders=sliders,
@@ -235,9 +235,9 @@ def animate_limit_process(
     fig.frames = frames
 
     # Animation controls
+    fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        **DARK_THEME,
-        title=f"The Limit Process: h → 0 at x = {x0}",
+        title={"text": f"The Limit Process: h → 0 at x = {x0}"},
         xaxis_title="x",
         yaxis_title="y",
         updatemenus=[{
@@ -381,9 +381,9 @@ def create_tangent_line_plot(
         }
         steps.append(step)
 
+    fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        **DARK_THEME,
-        title=f"Tangent at x = {initial_x:.2f} | Slope = {f_prime(initial_x):.3f}",
+        title={"text": f"Tangent at x = {initial_x:.2f} | Slope = {f_prime(initial_x):.3f}"},
         xaxis_title="x",
         yaxis_title="y",
         sliders=[{
@@ -469,9 +469,9 @@ def animate_power_rule(
         }
         steps.append(step)
 
+    fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        **DARK_THEME,
-        title="Power Rule: f(x) = x^1, f'(x) = 1",
+        title={"text": "Power Rule: f(x) = x^1, f'(x) = 1"},
         xaxis_title="x",
         yaxis_title="y",
         yaxis_range=[-10, 10],
@@ -565,9 +565,9 @@ def animate_chain_rule(
         name="(f∘g)'(x) = f'(g(x))·g'(x)",
     ))
 
+    fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        **DARK_THEME,
-        title=title,
+        title={"text": title},
         xaxis_title="x",
         yaxis_title="y",
         yaxis_range=[-10, 10],
@@ -659,9 +659,9 @@ def animate_projectile_motion(
 
     fig.frames = frames
 
+    fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        **DARK_THEME,
-        title=f"Projectile Motion: v₀ = {v0} m/s, θ = {angle}°",
+        title={"text": f"Projectile Motion: v₀ = {v0} m/s, θ = {angle}°"},
         xaxis_title="x (m)",
         yaxis_title="y (m)",
         yaxis_scaleanchor="x",
@@ -773,9 +773,9 @@ def create_optimization_plot(
     # Zero line for reference
     fig.add_hline(y=0, line_dash="dot", line_color=COLORS["text_secondary"], opacity=0.5)
 
+    fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        **DARK_THEME,
-        title="Optimization: Finding Extrema with Derivatives",
+        title={"text": "Optimization: Finding Extrema with Derivatives"},
         xaxis_title="x",
         yaxis_title="y",
         showlegend=True,

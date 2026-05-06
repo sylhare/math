@@ -51,9 +51,9 @@ def plot_function(
         hovertemplate=f"{name}: (%{{x:.3f}}, %{{y:.3f}})<extra></extra>",
     ))
 
+    fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        **DARK_THEME,
-        title=title,
+        title={"text": title},
         xaxis_title=x_label,
         yaxis_title=y_label,
         showlegend=True,
@@ -121,9 +121,9 @@ def plot_derivative_comparison(
         hovertemplate=f"{f_prime_name}: (%{{x:.3f}}, %{{y:.3f}})<extra></extra>",
     ))
 
+    fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        **DARK_THEME,
-        title=title,
+        title={"text": title},
         xaxis_title="x",
         yaxis_title="y",
         showlegend=True,
@@ -203,9 +203,9 @@ def plot_tangent_line(
     if not title:
         title = f"Tangent Line at x = {x0} (slope = {slope:.3f})"
 
+    fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        **DARK_THEME,
-        title=title,
+        title={"text": title},
         xaxis_title="x",
         yaxis_title="y",
         showlegend=True,
@@ -283,9 +283,9 @@ def plot_secant_line(
     if not title:
         title = f"Secant Line: slope = {slope:.4f}"
 
+    fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        **DARK_THEME,
-        title=title,
+        title={"text": title},
         xaxis_title="x",
         yaxis_title="y",
         showlegend=True,
@@ -335,7 +335,7 @@ def plot_multiple_functions(
 
     fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        title=title,
+        title={"text": title},
         xaxis_title="x",
         yaxis_title="y",
         showlegend=True,
@@ -424,7 +424,7 @@ def plot_directed_graph(
 
     fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        title=title,
+        title={"text": title},
         showlegend=False,
         hovermode="closest",
     )
@@ -506,7 +506,7 @@ def plot_unit_circle(
 
     fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        title=title,
+        title={"text": title},
         xaxis={
             "gridcolor": COLORS["grid"],
             "zerolinecolor": COLORS["text_secondary"],

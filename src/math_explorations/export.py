@@ -53,7 +53,7 @@ def extract_metadata(notebook_path: Path) -> NotebookMetadata:
     number = number_match.group(1) if number_match else "000"
 
     # Extract title from first markdown heading (# Title)
-    title_match = re.search(r'mo\.md\(\s*r?"""[^"]*?#\s+([^\n]+)', content)
+    title_match = re.search(r'mo\.md\(\s*r?"""[^"]*?#\s+([^\n"]+)', content)
     if title_match:
         title = title_match.group(1).strip()
         # Clean up any trailing asterisks or formatting
