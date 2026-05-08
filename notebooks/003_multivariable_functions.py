@@ -14,6 +14,7 @@ app = marimo.App(width="full")
 @app.cell
 def _():
     import marimo as mo
+
     return (mo,)
 
 
@@ -132,7 +133,9 @@ def _():
     import numpy as np
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
+
     from math_explorations.visualization import COLORS, SCENE_THEME, base_layout, style_subplot_axes
+
     return COLORS, SCENE_THEME, base_layout, go, make_subplots, np, style_subplot_axes
 
 
@@ -183,32 +186,44 @@ def _(COLORS, SCENE_THEME, base_layout, go, np, surface_selector):
         "gaussian": (np.exp(-(_X**2 + _Y**2)), "Gaussian Bell", "e^(-(x²+y²))"),
         "ripples": (np.sin(np.sqrt(_X**2 + _Y**2 + 0.01) * 3), "Circular Ripples", "sin(3√(x²+y²))"),
         "plane": (_X + _Y, "Inclined Plane", "x + y"),
-        "monkey_saddle": (_X**3 - 3*_X*_Y**2, "Monkey Saddle", "x³ - 3xy²"),
+        "monkey_saddle": (_X**3 - 3 * _X * _Y**2, "Monkey Saddle", "x³ - 3xy²"),
     }
 
     _selected = surface_selector.value
     _Z, _title, _formula = _surfaces[_selected]
 
-    _fig = go.Figure(data=[
-        go.Surface(
-            x=_X, y=_Y, z=_Z,
-            colorscale="Viridis",
-            showscale=True,
-            colorbar=dict(title=dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"])), tickfont=dict(color=COLORS["text_secondary"])),
-        )
-    ])
+    _fig = go.Figure(
+        data=[
+            go.Surface(
+                x=_X,
+                y=_Y,
+                z=_Z,
+                colorscale="Viridis",
+                showscale=True,
+                colorbar=dict(
+                    title=dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"])),
+                    tickfont=dict(color=COLORS["text_secondary"]),
+                ),
+            )
+        ]
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text=f"{_title}: f(x,y) = {_formula}", font=dict(color=COLORS["text"])),
-        scene={
-            **SCENE_THEME,
-            'xaxis': {**SCENE_THEME['xaxis'], 'title': dict(text="x", font=dict(color=COLORS["text_secondary"]))},
-            'yaxis': {**SCENE_THEME['yaxis'], 'title': dict(text="y", font=dict(color=COLORS["text_secondary"]))},
-            'zaxis': {**SCENE_THEME['zaxis'], 'title': dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"]))},
-        },
-        height=500,
-        margin=dict(l=0, r=0, t=40, b=0),
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text=f"{_title}: f(x,y) = {_formula}", font=dict(color=COLORS["text"])),
+            scene={
+                **SCENE_THEME,
+                "xaxis": {**SCENE_THEME["xaxis"], "title": dict(text="x", font=dict(color=COLORS["text_secondary"]))},
+                "yaxis": {**SCENE_THEME["yaxis"], "title": dict(text="y", font=dict(color=COLORS["text_secondary"]))},
+                "zaxis": {
+                    **SCENE_THEME["zaxis"],
+                    "title": dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"])),
+                },
+            },
+            height=500,
+            margin=dict(l=0, r=0, t=40, b=0),
+        )
+    )
     _fig
     return
 
@@ -285,30 +300,50 @@ def _(COLORS, base_layout, go, np, surface_selector):
         "gaussian": (np.exp(-(_X**2 + _Y**2)), "Gaussian Contours"),
         "ripples": (np.sin(np.sqrt(_X**2 + _Y**2 + 0.01) * 3), "Ripple Contours"),
         "plane": (_X + _Y, "Plane Contours"),
-        "monkey_saddle": (_X**3 - 3*_X*_Y**2, "Monkey Saddle Contours"),
+        "monkey_saddle": (_X**3 - 3 * _X * _Y**2, "Monkey Saddle Contours"),
     }
 
     _selected = surface_selector.value
     _Z, _title = _surfaces[_selected]
 
-    _fig_contour = go.Figure(data=[
-        go.Contour(
-            x=_x, y=_y, z=_Z,
-            colorscale="Viridis",
-            contours=dict(
-                showlabels=True,
-                labelfont=dict(size=10, color="white"),
-            ),
-            colorbar=dict(title=dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"])), tickfont=dict(color=COLORS["text_secondary"])),
-        )
-    ])
+    _fig_contour = go.Figure(
+        data=[
+            go.Contour(
+                x=_x,
+                y=_y,
+                z=_Z,
+                colorscale="Viridis",
+                contours=dict(
+                    showlabels=True,
+                    labelfont=dict(size=10, color="white"),
+                ),
+                colorbar=dict(
+                    title=dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"])),
+                    tickfont=dict(color=COLORS["text_secondary"]),
+                ),
+            )
+        ]
+    )
 
-    _fig_contour.update_layout(**base_layout(
-        title=dict(text=_title, font=dict(color=COLORS["text"])),
-        xaxis=dict(title=dict(text="x", font=dict(color=COLORS["text_secondary"])), gridcolor=COLORS["grid"], zerolinecolor=COLORS["muted"], tickfont=dict(color=COLORS["text_secondary"])),
-        yaxis=dict(title=dict(text="y", font=dict(color=COLORS["text_secondary"])), gridcolor=COLORS["grid"], zerolinecolor=COLORS["muted"], tickfont=dict(color=COLORS["text_secondary"]), scaleanchor="x"),
-        height=450,
-    ))
+    _fig_contour.update_layout(
+        **base_layout(
+            title=dict(text=_title, font=dict(color=COLORS["text"])),
+            xaxis=dict(
+                title=dict(text="x", font=dict(color=COLORS["text_secondary"])),
+                gridcolor=COLORS["grid"],
+                zerolinecolor=COLORS["muted"],
+                tickfont=dict(color=COLORS["text_secondary"]),
+            ),
+            yaxis=dict(
+                title=dict(text="y", font=dict(color=COLORS["text_secondary"])),
+                gridcolor=COLORS["grid"],
+                zerolinecolor=COLORS["muted"],
+                tickfont=dict(color=COLORS["text_secondary"]),
+                scaleanchor="x",
+            ),
+            height=450,
+        )
+    )
     _fig_contour
     return
 
@@ -405,12 +440,8 @@ def _(mo):
 @app.cell
 def _(mo):
     # Point selector for tangent plane
-    point_x_slider = mo.ui.slider(
-        start=-1.5, stop=1.5, step=0.1, value=0.5, label="x₀"
-    )
-    point_y_slider = mo.ui.slider(
-        start=-1.5, stop=1.5, step=0.1, value=0.5, label="y₀"
-    )
+    point_x_slider = mo.ui.slider(start=-1.5, stop=1.5, step=0.1, value=0.5, label="x₀")
+    point_y_slider = mo.ui.slider(start=-1.5, stop=1.5, step=0.1, value=0.5, label="y₀")
     return point_x_slider, point_y_slider
 
 
@@ -457,47 +488,64 @@ def _(COLORS, SCENE_THEME, base_layout, go, np, point_x_slider, point_y_slider):
     _fig_tangent = go.Figure()
 
     # Surface
-    _fig_tangent.add_trace(go.Surface(
-        x=_X, y=_Y, z=_Z,
-        colorscale="Viridis",
-        opacity=0.8,
-        showscale=False,
-        name="Surface",
-    ))
+    _fig_tangent.add_trace(
+        go.Surface(
+            x=_X,
+            y=_Y,
+            z=_Z,
+            colorscale="Viridis",
+            opacity=0.8,
+            showscale=False,
+            name="Surface",
+        )
+    )
 
     # Tangent plane
-    _fig_tangent.add_trace(go.Surface(
-        x=_Xp, y=_Yp, z=_Zp,
-        colorscale=[[0, COLORS["secondary"]], [1, COLORS["secondary"]]],
-        opacity=0.6,
-        showscale=False,
-        name="Tangent Plane",
-    ))
+    _fig_tangent.add_trace(
+        go.Surface(
+            x=_Xp,
+            y=_Yp,
+            z=_Zp,
+            colorscale=[[0, COLORS["secondary"]], [1, COLORS["secondary"]]],
+            opacity=0.6,
+            showscale=False,
+            name="Tangent Plane",
+        )
+    )
 
     # Point of tangency
-    _fig_tangent.add_trace(go.Scatter3d(
-        x=[_x0], y=[_y0], z=[_z0],
-        mode="markers",
-        marker=dict(size=8, color=COLORS["primary"]),
-        name="Point",
-    ))
+    _fig_tangent.add_trace(
+        go.Scatter3d(
+            x=[_x0],
+            y=[_y0],
+            z=[_z0],
+            mode="markers",
+            marker=dict(size=8, color=COLORS["primary"]),
+            name="Point",
+        )
+    )
 
-    _fig_tangent.update_layout(**base_layout(
-        title=dict(
-            text=f"Tangent Plane at ({_x0:.1f}, {_y0:.1f}) | ∂f/∂x = {_fx:.2f}, ∂f/∂y = {_fy:.2f}",
-            font=dict(color=COLORS["text"]),
-        ),
-        scene={
-            **SCENE_THEME,
-            'xaxis': {**SCENE_THEME['xaxis'], 'title': dict(text="x", font=dict(color=COLORS["text_secondary"]))},
-            'yaxis': {**SCENE_THEME['yaxis'], 'title': dict(text="y", font=dict(color=COLORS["text_secondary"]))},
-            'zaxis': {**SCENE_THEME['zaxis'], 'title': dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"]))},
-            'camera': dict(eye=dict(x=1.5, y=1.5, z=1.2)),
-        },
-        height=500,
-        showlegend=False,
-        margin=dict(l=0, r=0, t=40, b=0),
-    ))
+    _fig_tangent.update_layout(
+        **base_layout(
+            title=dict(
+                text=f"Tangent Plane at ({_x0:.1f}, {_y0:.1f}) | ∂f/∂x = {_fx:.2f}, ∂f/∂y = {_fy:.2f}",
+                font=dict(color=COLORS["text"]),
+            ),
+            scene={
+                **SCENE_THEME,
+                "xaxis": {**SCENE_THEME["xaxis"], "title": dict(text="x", font=dict(color=COLORS["text_secondary"]))},
+                "yaxis": {**SCENE_THEME["yaxis"], "title": dict(text="y", font=dict(color=COLORS["text_secondary"]))},
+                "zaxis": {
+                    **SCENE_THEME["zaxis"],
+                    "title": dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"])),
+                },
+                "camera": dict(eye=dict(x=1.5, y=1.5, z=1.2)),
+            },
+            height=500,
+            showlegend=False,
+            margin=dict(l=0, r=0, t=40, b=0),
+        )
+    )
     _fig_tangent
     return
 
@@ -588,12 +636,16 @@ def _(COLORS, base_layout, go, np):
     _fig_grad = go.Figure()
 
     # Contours
-    _fig_grad.add_trace(go.Contour(
-        x=_x, y=_y, z=_Z,
-        colorscale="Viridis",
-        contours=dict(showlabels=True, labelfont=dict(size=10, color="white")),
-        showscale=False,
-    ))
+    _fig_grad.add_trace(
+        go.Contour(
+            x=_x,
+            y=_y,
+            z=_Z,
+            colorscale="Viridis",
+            contours=dict(showlabels=True, labelfont=dict(size=10, color="white")),
+            showscale=False,
+        )
+    )
 
     # Gradient arrows using annotations (Plotly doesn't have built-in quiver)
     for _i in range(len(_xg)):
@@ -604,8 +656,10 @@ def _(COLORS, base_layout, go, np):
                     y=_Yg[_j, _i] + _V_norm[_j, _i],
                     ax=_Xg[_j, _i],
                     ay=_Yg[_j, _i],
-                    xref="x", yref="y",
-                    axref="x", ayref="y",
+                    xref="x",
+                    yref="y",
+                    axref="x",
+                    ayref="y",
                     showarrow=True,
                     arrowhead=2,
                     arrowsize=1.5,
@@ -613,12 +667,27 @@ def _(COLORS, base_layout, go, np):
                     arrowcolor=COLORS["secondary"],
                 )
 
-    _fig_grad.update_layout(**base_layout(
-        title=dict(text="Gradient Field ∇f for f(x,y) = x² + y²", font=dict(color=COLORS["text"])),
-        xaxis=dict(title=dict(text="x", font=dict(color=COLORS["text_secondary"])), gridcolor=COLORS["grid"], zerolinecolor=COLORS["muted"], range=[-2.2, 2.2], tickfont=dict(color=COLORS["text_secondary"])),
-        yaxis=dict(title=dict(text="y", font=dict(color=COLORS["text_secondary"])), gridcolor=COLORS["grid"], zerolinecolor=COLORS["muted"], range=[-2.2, 2.2], scaleanchor="x", tickfont=dict(color=COLORS["text_secondary"])),
-        height=500,
-    ))
+    _fig_grad.update_layout(
+        **base_layout(
+            title=dict(text="Gradient Field ∇f for f(x,y) = x² + y²", font=dict(color=COLORS["text"])),
+            xaxis=dict(
+                title=dict(text="x", font=dict(color=COLORS["text_secondary"])),
+                gridcolor=COLORS["grid"],
+                zerolinecolor=COLORS["muted"],
+                range=[-2.2, 2.2],
+                tickfont=dict(color=COLORS["text_secondary"]),
+            ),
+            yaxis=dict(
+                title=dict(text="y", font=dict(color=COLORS["text_secondary"])),
+                gridcolor=COLORS["grid"],
+                zerolinecolor=COLORS["muted"],
+                range=[-2.2, 2.2],
+                scaleanchor="x",
+                tickfont=dict(color=COLORS["text_secondary"]),
+            ),
+            height=500,
+        )
+    )
     _fig_grad
     return
 
@@ -704,7 +773,7 @@ def _(COLORS, SCENE_THEME, base_layout, go, np):
 
     # Create slices through the saddle - only animate the slice, not the surface
     _frames = []
-    _angles = np.linspace(0, 2*np.pi, 30)  # Reduced frames for smaller file size
+    _angles = np.linspace(0, 2 * np.pi, 30)  # Reduced frames for smaller file size
 
     for _angle in _angles:
         # Slice along direction at angle
@@ -714,57 +783,84 @@ def _(COLORS, SCENE_THEME, base_layout, go, np):
         _slice_z = _slice_x**2 - _slice_y**2
 
         # Only include the changing traces in frames (not the static surface)
-        _frames.append(go.Frame(
-            data=[
-                go.Scatter3d(
-                    x=_slice_x, y=_slice_y, z=_slice_z,
-                    mode="lines",
-                    line=dict(color=COLORS["primary"], width=6),
-                ),
-            ],
-            traces=[1],  # Only update trace index 1 (the slice)
-            name=str(_angle),
-        ))
+        _frames.append(
+            go.Frame(
+                data=[
+                    go.Scatter3d(
+                        x=_slice_x,
+                        y=_slice_y,
+                        z=_slice_z,
+                        mode="lines",
+                        line=dict(color=COLORS["primary"], width=6),
+                    ),
+                ],
+                traces=[1],  # Only update trace index 1 (the slice)
+                name=str(_angle),
+            )
+        )
 
     _t_init = np.linspace(-2, 2, 50)
     _fig_saddle = go.Figure(
         data=[
             go.Surface(x=_X, y=_Y, z=_Z, colorscale="RdBu", showscale=False, opacity=0.7),
             go.Scatter3d(
-                x=_t_init * np.cos(0), y=_t_init * np.sin(0), z=(_t_init * np.cos(0))**2 - (_t_init * np.sin(0))**2,
-                mode="lines", line=dict(color=COLORS["primary"], width=6),
+                x=_t_init * np.cos(0),
+                y=_t_init * np.sin(0),
+                z=(_t_init * np.cos(0)) ** 2 - (_t_init * np.sin(0)) ** 2,
+                mode="lines",
+                line=dict(color=COLORS["primary"], width=6),
             ),
             go.Scatter3d(x=[0], y=[0], z=[0], mode="markers", marker=dict(size=8, color=COLORS["highlight"])),
         ],
         frames=_frames,
     )
 
-    _fig_saddle.update_layout(**base_layout(
-        title=dict(text="Saddle Point: f(x,y) = x² - y² (Rotating Slice)", font=dict(color=COLORS["text"])),
-        scene={
-            **SCENE_THEME,
-            'xaxis': {**SCENE_THEME['xaxis'], 'title': dict(text="x", font=dict(color=COLORS["text_secondary"])), 'range': [-2, 2]},
-            'yaxis': {**SCENE_THEME['yaxis'], 'title': dict(text="y", font=dict(color=COLORS["text_secondary"])), 'range': [-2, 2]},
-            'zaxis': {**SCENE_THEME['zaxis'], 'title': dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"])), 'range': [-4, 4]},
-            'camera': dict(eye=dict(x=1.5, y=1.5, z=1.0)),
-        },
-        height=500,
-        updatemenus=[
-            dict(
-                type="buttons",
-                showactive=False,
-                y=0,
-                x=0.1,
-                xanchor="right",
-                buttons=[
-                    dict(label="▶ Play", method="animate",
-                         args=[None, dict(frame=dict(duration=50, redraw=True), fromcurrent=True)]),
-                    dict(label="⏸ Pause", method="animate",
-                         args=[[None], dict(frame=dict(duration=0, redraw=False), mode="immediate")]),
-                ],
-            )
-        ],
-    ))
+    _fig_saddle.update_layout(
+        **base_layout(
+            title=dict(text="Saddle Point: f(x,y) = x² - y² (Rotating Slice)", font=dict(color=COLORS["text"])),
+            scene={
+                **SCENE_THEME,
+                "xaxis": {
+                    **SCENE_THEME["xaxis"],
+                    "title": dict(text="x", font=dict(color=COLORS["text_secondary"])),
+                    "range": [-2, 2],
+                },
+                "yaxis": {
+                    **SCENE_THEME["yaxis"],
+                    "title": dict(text="y", font=dict(color=COLORS["text_secondary"])),
+                    "range": [-2, 2],
+                },
+                "zaxis": {
+                    **SCENE_THEME["zaxis"],
+                    "title": dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"])),
+                    "range": [-4, 4],
+                },
+                "camera": dict(eye=dict(x=1.5, y=1.5, z=1.0)),
+            },
+            height=500,
+            updatemenus=[
+                dict(
+                    type="buttons",
+                    showactive=False,
+                    y=0,
+                    x=0.1,
+                    xanchor="right",
+                    buttons=[
+                        dict(
+                            label="▶ Play",
+                            method="animate",
+                            args=[None, dict(frame=dict(duration=50, redraw=True), fromcurrent=True)],
+                        ),
+                        dict(
+                            label="⏸ Pause",
+                            method="animate",
+                            args=[[None], dict(frame=dict(duration=0, redraw=False), mode="immediate")],
+                        ),
+                    ],
+                )
+            ],
+        )
+    )
     _fig_saddle
     return
 
@@ -884,12 +980,16 @@ def _(COLORS, SCENE_THEME, base_layout, go, np, nx_slider, ny_slider):
     _X_fine, _Y_fine = np.meshgrid(_x_fine, _y_fine)
     _Z_fine = _X_fine**2 + _Y_fine**2
 
-    _fig_riemann2d.add_trace(go.Surface(
-        x=_X_fine, y=_Y_fine, z=_Z_fine,
-        colorscale="Viridis",
-        opacity=0.3,
-        showscale=False,
-    ))
+    _fig_riemann2d.add_trace(
+        go.Surface(
+            x=_X_fine,
+            y=_Y_fine,
+            z=_Z_fine,
+            colorscale="Viridis",
+            opacity=0.3,
+            showscale=False,
+        )
+    )
 
     # Riemann boxes
     _volume_sum = 0
@@ -906,35 +1006,51 @@ def _(COLORS, SCENE_THEME, base_layout, go, np, nx_slider, ny_slider):
             _y0, _y1 = _c + _j * _dy, _c + (_j + 1) * _dy
 
             # Top face of box
-            _fig_riemann2d.add_trace(go.Mesh3d(
-                x=[_x0, _x1, _x1, _x0],
-                y=[_y0, _y0, _y1, _y1],
-                z=[_zij, _zij, _zij, _zij],
-                color=COLORS["primary"],
-                opacity=0.7,
-                showscale=False,
-            ))
+            _fig_riemann2d.add_trace(
+                go.Mesh3d(
+                    x=[_x0, _x1, _x1, _x0],
+                    y=[_y0, _y0, _y1, _y1],
+                    z=[_zij, _zij, _zij, _zij],
+                    color=COLORS["primary"],
+                    opacity=0.7,
+                    showscale=False,
+                )
+            )
 
     # True integral value: ∫∫ (x² + y²) dA over [0,2]x[0,2]
     # = ∫₀² ∫₀² (x² + y²) dy dx = ∫₀² [x²y + y³/3]₀² dx
     # = ∫₀² (2x² + 8/3) dx = [2x³/3 + 8x/3]₀² = 16/3 + 16/3 = 32/3
     _true_value = 32 / 3
 
-    _fig_riemann2d.update_layout(**base_layout(
-        title=dict(
-            text=f"Double Integral Riemann Sum: {_nx}×{_ny} boxes | Sum = {_volume_sum:.4f} | True = {_true_value:.4f}",
-            font=dict(color=COLORS["text"]),
-        ),
-        scene={
-            **SCENE_THEME,
-            'xaxis': {**SCENE_THEME['xaxis'], 'title': dict(text="x", font=dict(color=COLORS["text_secondary"])), 'range': [0, 2.2]},
-            'yaxis': {**SCENE_THEME['yaxis'], 'title': dict(text="y", font=dict(color=COLORS["text_secondary"])), 'range': [0, 2.2]},
-            'zaxis': {**SCENE_THEME['zaxis'], 'title': dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"])), 'range': [0, 10]},
-            'camera': dict(eye=dict(x=1.5, y=1.5, z=1.0)),
-        },
-        height=500,
-        showlegend=False,
-    ))
+    _fig_riemann2d.update_layout(
+        **base_layout(
+            title=dict(
+                text=f"Double Integral Riemann Sum: {_nx}×{_ny} boxes | Sum = {_volume_sum:.4f} | True = {_true_value:.4f}",
+                font=dict(color=COLORS["text"]),
+            ),
+            scene={
+                **SCENE_THEME,
+                "xaxis": {
+                    **SCENE_THEME["xaxis"],
+                    "title": dict(text="x", font=dict(color=COLORS["text_secondary"])),
+                    "range": [0, 2.2],
+                },
+                "yaxis": {
+                    **SCENE_THEME["yaxis"],
+                    "title": dict(text="y", font=dict(color=COLORS["text_secondary"])),
+                    "range": [0, 2.2],
+                },
+                "zaxis": {
+                    **SCENE_THEME["zaxis"],
+                    "title": dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"])),
+                    "range": [0, 10],
+                },
+                "camera": dict(eye=dict(x=1.5, y=1.5, z=1.0)),
+            },
+            height=500,
+            showlegend=False,
+        )
+    )
     _fig_riemann2d
     return
 
@@ -1019,7 +1135,7 @@ def _(COLORS, base_layout, go, np):
 
     # Boundary conditions
     _T[0, :] = 100  # Top edge hot
-    _T[-1, :] = 0   # Bottom edge cold
+    _T[-1, :] = 0  # Bottom edge cold
     _T[:, 0] = np.linspace(0, 100, _n)  # Left edge gradient
     _T[:, -1] = np.linspace(0, 100, _n)  # Right edge gradient
 
@@ -1034,20 +1150,40 @@ def _(COLORS, base_layout, go, np):
     _x = np.linspace(0, 1, _n)
     _y = np.linspace(0, 1, _n)
 
-    _fig_heat = go.Figure(data=[
-        go.Heatmap(
-            x=_x, y=_y, z=_T,
-            colorscale="Thermal",
-            colorbar=dict(title=dict(text="T (°C)", font=dict(color=COLORS["text_secondary"])), tickfont=dict(color=COLORS["text_secondary"])),
-        )
-    ])
+    _fig_heat = go.Figure(
+        data=[
+            go.Heatmap(
+                x=_x,
+                y=_y,
+                z=_T,
+                colorscale="Thermal",
+                colorbar=dict(
+                    title=dict(text="T (°C)", font=dict(color=COLORS["text_secondary"])),
+                    tickfont=dict(color=COLORS["text_secondary"]),
+                ),
+            )
+        ]
+    )
 
-    _fig_heat.update_layout(**base_layout(
-        title=dict(text="Steady-State Temperature Distribution (Laplace Equation)", font=dict(color=COLORS["text"])),
-        xaxis=dict(title=dict(text="x", font=dict(color=COLORS["text_secondary"])), gridcolor=COLORS["grid"], tickfont=dict(color=COLORS["text_secondary"])),
-        yaxis=dict(title=dict(text="y", font=dict(color=COLORS["text_secondary"])), gridcolor=COLORS["grid"], scaleanchor="x", tickfont=dict(color=COLORS["text_secondary"])),
-        height=450,
-    ))
+    _fig_heat.update_layout(
+        **base_layout(
+            title=dict(
+                text="Steady-State Temperature Distribution (Laplace Equation)", font=dict(color=COLORS["text"])
+            ),
+            xaxis=dict(
+                title=dict(text="x", font=dict(color=COLORS["text_secondary"])),
+                gridcolor=COLORS["grid"],
+                tickfont=dict(color=COLORS["text_secondary"]),
+            ),
+            yaxis=dict(
+                title=dict(text="y", font=dict(color=COLORS["text_secondary"])),
+                gridcolor=COLORS["grid"],
+                scaleanchor="x",
+                tickfont=dict(color=COLORS["text_secondary"]),
+            ),
+            height=450,
+        )
+    )
     _fig_heat
     return
 
@@ -1164,7 +1300,7 @@ def _(COLORS, SCENE_THEME, base_layout, gd_lr_slider, gd_x0_slider, gd_y0_slider
             break
 
     _path = np.array(_path)
-    _z_path = _path[:, 0]**2 + _path[:, 1]**2
+    _z_path = _path[:, 0] ** 2 + _path[:, 1] ** 2
 
     # Surface - reduced resolution for smaller file size
     _xs = np.linspace(-2, 2, 30)
@@ -1180,35 +1316,45 @@ def _(COLORS, SCENE_THEME, base_layout, gd_lr_slider, gd_x0_slider, gd_y0_slider
         _step_indices.append(len(_path) - 1)
 
     for _k in _step_indices[1:]:  # Skip first (it's the initial state)
-        _frames.append(go.Frame(
-            data=[
-                go.Scatter3d(
-                    x=_path[:_k+1, 0], y=_path[:_k+1, 1], z=_z_path[:_k+1],
-                    mode="lines+markers",
-                    line=dict(color=COLORS["secondary"], width=4),
-                    marker=dict(size=4, color=COLORS["secondary"]),
-                ),
-                go.Scatter3d(
-                    x=[_path[_k, 0]], y=[_path[_k, 1]], z=[_z_path[_k]],
-                    mode="markers",
-                    marker=dict(size=8, color=COLORS["primary"]),
-                ),
-            ],
-            traces=[1, 2],  # Only update trace indices 1 and 2 (path and current point)
-            name=str(_k),
-        ))
+        _frames.append(
+            go.Frame(
+                data=[
+                    go.Scatter3d(
+                        x=_path[: _k + 1, 0],
+                        y=_path[: _k + 1, 1],
+                        z=_z_path[: _k + 1],
+                        mode="lines+markers",
+                        line=dict(color=COLORS["secondary"], width=4),
+                        marker=dict(size=4, color=COLORS["secondary"]),
+                    ),
+                    go.Scatter3d(
+                        x=[_path[_k, 0]],
+                        y=[_path[_k, 1]],
+                        z=[_z_path[_k]],
+                        mode="markers",
+                        marker=dict(size=8, color=COLORS["primary"]),
+                    ),
+                ],
+                traces=[1, 2],  # Only update trace indices 1 and 2 (path and current point)
+                name=str(_k),
+            )
+        )
 
     _fig_gd = go.Figure(
         data=[
             go.Surface(x=_Xs, y=_Ys, z=_Zs, colorscale="Viridis", opacity=0.6, showscale=False),
             go.Scatter3d(
-                x=[_path[0, 0]], y=[_path[0, 1]], z=[_z_path[0]],
+                x=[_path[0, 0]],
+                y=[_path[0, 1]],
+                z=[_z_path[0]],
                 mode="lines+markers",
                 line=dict(color=COLORS["secondary"], width=4),
                 marker=dict(size=4, color=COLORS["secondary"]),
             ),
             go.Scatter3d(
-                x=[_path[0, 0]], y=[_path[0, 1]], z=[_z_path[0]],
+                x=[_path[0, 0]],
+                y=[_path[0, 1]],
+                z=[_z_path[0]],
                 mode="markers",
                 marker=dict(size=8, color=COLORS["primary"]),
             ),
@@ -1216,35 +1362,55 @@ def _(COLORS, SCENE_THEME, base_layout, gd_lr_slider, gd_x0_slider, gd_y0_slider
         frames=_frames,
     )
 
-    _fig_gd.update_layout(**base_layout(
-        title=dict(
-            text=f"Gradient Descent: {len(_path)} steps to reach ({_path[-1, 0]:.3f}, {_path[-1, 1]:.3f})",
-            font=dict(color=COLORS["text"]),
-        ),
-        scene={
-            **SCENE_THEME,
-            'xaxis': {**SCENE_THEME['xaxis'], 'title': dict(text="x", font=dict(color=COLORS["text_secondary"])), 'range': [-2, 2]},
-            'yaxis': {**SCENE_THEME['yaxis'], 'title': dict(text="y", font=dict(color=COLORS["text_secondary"])), 'range': [-2, 2]},
-            'zaxis': {**SCENE_THEME['zaxis'], 'title': dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"])), 'range': [0, 8]},
-            'camera': dict(eye=dict(x=1.5, y=1.5, z=1.0)),
-        },
-        height=500,
-        updatemenus=[
-            dict(
-                type="buttons",
-                showactive=False,
-                y=0,
-                x=0.1,
-                xanchor="right",
-                buttons=[
-                    dict(label="▶ Descend", method="animate",
-                         args=[None, dict(frame=dict(duration=100, redraw=True), fromcurrent=True)]),
-                    dict(label="⏸ Pause", method="animate",
-                         args=[[None], dict(frame=dict(duration=0, redraw=False), mode="immediate")]),
-                ],
-            )
-        ],
-    ))
+    _fig_gd.update_layout(
+        **base_layout(
+            title=dict(
+                text=f"Gradient Descent: {len(_path)} steps to reach ({_path[-1, 0]:.3f}, {_path[-1, 1]:.3f})",
+                font=dict(color=COLORS["text"]),
+            ),
+            scene={
+                **SCENE_THEME,
+                "xaxis": {
+                    **SCENE_THEME["xaxis"],
+                    "title": dict(text="x", font=dict(color=COLORS["text_secondary"])),
+                    "range": [-2, 2],
+                },
+                "yaxis": {
+                    **SCENE_THEME["yaxis"],
+                    "title": dict(text="y", font=dict(color=COLORS["text_secondary"])),
+                    "range": [-2, 2],
+                },
+                "zaxis": {
+                    **SCENE_THEME["zaxis"],
+                    "title": dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"])),
+                    "range": [0, 8],
+                },
+                "camera": dict(eye=dict(x=1.5, y=1.5, z=1.0)),
+            },
+            height=500,
+            updatemenus=[
+                dict(
+                    type="buttons",
+                    showactive=False,
+                    y=0,
+                    x=0.1,
+                    xanchor="right",
+                    buttons=[
+                        dict(
+                            label="▶ Descend",
+                            method="animate",
+                            args=[None, dict(frame=dict(duration=100, redraw=True), fromcurrent=True)],
+                        ),
+                        dict(
+                            label="⏸ Pause",
+                            method="animate",
+                            args=[[None], dict(frame=dict(duration=0, redraw=False), mode="immediate")],
+                        ),
+                    ],
+                )
+            ],
+        )
+    )
     _fig_gd
     return
 
@@ -1327,33 +1493,41 @@ def _(COLORS, base_layout, go, np):
 
     # Polar grid lines
     _r_lines = np.linspace(0.2, 2, 10)
-    _theta_lines = np.linspace(0, 2*np.pi, 13)
+    _theta_lines = np.linspace(0, 2 * np.pi, 13)
 
     # Radial lines
     for _theta in _theta_lines[:-1]:
         _r = np.linspace(0, 2, 50)
         _px = _r * np.cos(_theta)
         _py = _r * np.sin(_theta)
-        _fig_polar.add_trace(go.Scatter(
-            x=_px, y=_py, mode="lines",
-            line=dict(color=COLORS["muted"], width=1),
-            showlegend=False,
-        ))
+        _fig_polar.add_trace(
+            go.Scatter(
+                x=_px,
+                y=_py,
+                mode="lines",
+                line=dict(color=COLORS["muted"], width=1),
+                showlegend=False,
+            )
+        )
 
     # Circular arcs
     for _r in _r_lines:
-        _theta = np.linspace(0, 2*np.pi, 100)
+        _theta = np.linspace(0, 2 * np.pi, 100)
         _cx = _r * np.cos(_theta)
         _cy = _r * np.sin(_theta)
-        _fig_polar.add_trace(go.Scatter(
-            x=_cx, y=_cy, mode="lines",
-            line=dict(color=COLORS["muted"], width=1),
-            showlegend=False,
-        ))
+        _fig_polar.add_trace(
+            go.Scatter(
+                x=_cx,
+                y=_cy,
+                mode="lines",
+                line=dict(color=COLORS["muted"], width=1),
+                showlegend=False,
+            )
+        )
 
     # Highlight a small area element
     _r1, _r2 = 1.0, 1.2
-    _t1, _t2 = np.pi/6, np.pi/4
+    _t1, _t2 = np.pi / 6, np.pi / 4
 
     # Area element boundary
     _t_arc = np.linspace(_t1, _t2, 20)
@@ -1365,28 +1539,59 @@ def _(COLORS, base_layout, go, np):
     _element_x = list(_inner_arc_x) + list(_outer_arc_x[::-1]) + [_inner_arc_x[0]]
     _element_y = list(_inner_arc_y) + list(_outer_arc_y[::-1]) + [_inner_arc_y[0]]
 
-    _fig_polar.add_trace(go.Scatter(
-        x=_element_x, y=_element_y,
-        fill="toself",
-        fillcolor="rgba(0, 212, 255, 0.5)",
-        line=dict(color=COLORS["primary"], width=2),
-        name="Area element r·dr·dθ",
-    ))
+    _fig_polar.add_trace(
+        go.Scatter(
+            x=_element_x,
+            y=_element_y,
+            fill="toself",
+            fillcolor="rgba(0, 212, 255, 0.5)",
+            line=dict(color=COLORS["primary"], width=2),
+            name="Area element r·dr·dθ",
+        )
+    )
 
     # Labels
-    _fig_polar.add_annotation(x=1.5, y=0.5, text="r", font=dict(size=14, color=COLORS["text_secondary"]), showarrow=False)
-    _fig_polar.add_annotation(x=0.5, y=0.5, text="θ", font=dict(size=14, color=COLORS["text_secondary"]), showarrow=False)
-    _fig_polar.add_annotation(x=1.3, y=0.75, text="dA = r dr dθ", font=dict(size=12, color=COLORS["primary"]), showarrow=False)
+    _fig_polar.add_annotation(
+        x=1.5, y=0.5, text="r", font=dict(size=14, color=COLORS["text_secondary"]), showarrow=False
+    )
+    _fig_polar.add_annotation(
+        x=0.5, y=0.5, text="θ", font=dict(size=14, color=COLORS["text_secondary"]), showarrow=False
+    )
+    _fig_polar.add_annotation(
+        x=1.3, y=0.75, text="dA = r dr dθ", font=dict(size=12, color=COLORS["primary"]), showarrow=False
+    )
 
-    _fig_polar.update_layout(**base_layout(
-        title=dict(text="Polar Coordinates: Area Element dA = r dr dθ", font=dict(color=COLORS["text"])),
-        xaxis=dict(title=dict(text="x", font=dict(color=COLORS["text_secondary"])), gridcolor=COLORS["grid"], zerolinecolor=COLORS["muted"], range=[-2.2, 2.2], scaleanchor="y", tickfont=dict(color=COLORS["text_secondary"])),
-        yaxis=dict(title=dict(text="y", font=dict(color=COLORS["text_secondary"])), gridcolor=COLORS["grid"], zerolinecolor=COLORS["muted"], range=[-2.2, 2.2], tickfont=dict(color=COLORS["text_secondary"])),
-        height=450,
-        showlegend=True,
-        legend=dict(font=dict(color=COLORS["text_secondary"]), orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5),
-        margin=dict(l=40, r=40, t=50, b=80),
-    ))
+    _fig_polar.update_layout(
+        **base_layout(
+            title=dict(text="Polar Coordinates: Area Element dA = r dr dθ", font=dict(color=COLORS["text"])),
+            xaxis=dict(
+                title=dict(text="x", font=dict(color=COLORS["text_secondary"])),
+                gridcolor=COLORS["grid"],
+                zerolinecolor=COLORS["muted"],
+                range=[-2.2, 2.2],
+                scaleanchor="y",
+                tickfont=dict(color=COLORS["text_secondary"]),
+            ),
+            yaxis=dict(
+                title=dict(text="y", font=dict(color=COLORS["text_secondary"])),
+                gridcolor=COLORS["grid"],
+                zerolinecolor=COLORS["muted"],
+                range=[-2.2, 2.2],
+                tickfont=dict(color=COLORS["text_secondary"]),
+            ),
+            height=450,
+            showlegend=True,
+            legend=dict(
+                font=dict(color=COLORS["text_secondary"]),
+                orientation="h",
+                yanchor="bottom",
+                y=-0.15,
+                xanchor="center",
+                x=0.5,
+            ),
+            margin=dict(l=40, r=40, t=50, b=80),
+        )
+    )
     _fig_polar
     return
 
@@ -1465,26 +1670,40 @@ def _(COLORS, SCENE_THEME, base_layout, go, np):
     _X, _Y = np.meshgrid(_x, _y)
     _Z = np.exp(-(_X**2 + _Y**2))
 
-    _fig_gauss = go.Figure(data=[
-        go.Surface(
-            x=_X, y=_Y, z=_Z,
-            colorscale="Plasma",
-            showscale=True,
-            colorbar=dict(title=dict(text="e^(-(x²+y²))", font=dict(color=COLORS["text_secondary"])), tickfont=dict(color=COLORS["text_secondary"])),
-        )
-    ])
+    _fig_gauss = go.Figure(
+        data=[
+            go.Surface(
+                x=_X,
+                y=_Y,
+                z=_Z,
+                colorscale="Plasma",
+                showscale=True,
+                colorbar=dict(
+                    title=dict(text="e^(-(x²+y²))", font=dict(color=COLORS["text_secondary"])),
+                    tickfont=dict(color=COLORS["text_secondary"]),
+                ),
+            )
+        ]
+    )
 
-    _fig_gauss.update_layout(**base_layout(
-        title=dict(text="The 2D Gaussian: e^(-(x²+y²)) — Volume Under Surface = π", font=dict(color=COLORS["text"])),
-        scene={
-            **SCENE_THEME,
-            'xaxis': {**SCENE_THEME['xaxis'], 'title': dict(text="x", font=dict(color=COLORS["text_secondary"]))},
-            'yaxis': {**SCENE_THEME['yaxis'], 'title': dict(text="y", font=dict(color=COLORS["text_secondary"]))},
-            'zaxis': {**SCENE_THEME['zaxis'], 'title': dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"]))},
-        },
-        height=500,
-        margin=dict(l=0, r=0, t=40, b=0),
-    ))
+    _fig_gauss.update_layout(
+        **base_layout(
+            title=dict(
+                text="The 2D Gaussian: e^(-(x²+y²)) — Volume Under Surface = π", font=dict(color=COLORS["text"])
+            ),
+            scene={
+                **SCENE_THEME,
+                "xaxis": {**SCENE_THEME["xaxis"], "title": dict(text="x", font=dict(color=COLORS["text_secondary"]))},
+                "yaxis": {**SCENE_THEME["yaxis"], "title": dict(text="y", font=dict(color=COLORS["text_secondary"]))},
+                "zaxis": {
+                    **SCENE_THEME["zaxis"],
+                    "title": dict(text="f(x,y)", font=dict(color=COLORS["text_secondary"])),
+                },
+            },
+            height=500,
+            margin=dict(l=0, r=0, t=40, b=0),
+        )
+    )
     _fig_gauss
     return
 

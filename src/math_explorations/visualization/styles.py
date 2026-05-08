@@ -9,17 +9,17 @@ COLORS = {
     "text": "#eaeaea",
     "text_secondary": "#a0a0a0",
     "grid": "#2d3a4f",
-    "primary": "#00d4ff",      # Cyan - main function
-    "secondary": "#ff6b6b",    # Coral - derivative
-    "tertiary": "#4ecdc4",     # Teal - tangent lines
-    "quaternary": "#ffe66d",   # Yellow - points of interest
-    "accent1": "#95e1d3",      # Mint
-    "accent2": "#f38181",      # Salmon
-    "accent3": "#aa96da",      # Lavender
-    "accent4": "#fcbad3",      # Pink
-    "highlight": "#ffd93d",    # Gold - highlights and labels
-    "muted": "#4a5568",        # Dark gray - subtle lines
-    "surface": "#2a2a3e",      # Dark navy - card/surface backgrounds
+    "primary": "#00d4ff",  # Cyan - main function
+    "secondary": "#ff6b6b",  # Coral - derivative
+    "tertiary": "#4ecdc4",  # Teal - tangent lines
+    "quaternary": "#ffe66d",  # Yellow - points of interest
+    "accent1": "#95e1d3",  # Mint
+    "accent2": "#f38181",  # Salmon
+    "accent3": "#aa96da",  # Lavender
+    "accent4": "#fcbad3",  # Pink
+    "highlight": "#ffd93d",  # Gold - highlights and labels
+    "muted": "#4a5568",  # Dark gray - subtle lines
+    "surface": "#2a2a3e",  # Dark navy - card/surface backgrounds
 }
 
 # Plotly layout template

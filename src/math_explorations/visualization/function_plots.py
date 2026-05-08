@@ -1,9 +1,11 @@
 """Function visualization utilities."""
 
-from typing import Callable
+from collections.abc import Callable
+
 import numpy as np
 import plotly.graph_objects as go
-from .styles import DARK_THEME, COLORS, get_trace_style
+
+from .styles import COLORS, DARK_THEME, get_trace_style
 
 
 def plot_function(
@@ -42,14 +44,16 @@ def plot_function(
     fig = go.Figure()
 
     style = get_trace_style("function")
-    fig.add_trace(go.Scatter(
-        x=x,
-        y=y,
-        mode=style["mode"],
-        line=style["line"],
-        name=name,
-        hovertemplate=f"{name}: (%{{x:.3f}}, %{{y:.3f}})<extra></extra>",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y,
+            mode=style["mode"],
+            line=style["line"],
+            name=name,
+            hovertemplate=f"{name}: (%{{x:.3f}}, %{{y:.3f}})<extra></extra>",
+        )
+    )
 
     fig.update_layout(**DARK_THEME)
     fig.update_layout(
@@ -102,24 +106,28 @@ def plot_derivative_comparison(
     fig = go.Figure()
 
     # Original function
-    fig.add_trace(go.Scatter(
-        x=x,
-        y=y,
-        mode="lines",
-        line={"color": COLORS["primary"], "width": 3},
-        name=f_name,
-        hovertemplate=f"{f_name}: (%{{x:.3f}}, %{{y:.3f}})<extra></extra>",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y,
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 3},
+            name=f_name,
+            hovertemplate=f"{f_name}: (%{{x:.3f}}, %{{y:.3f}})<extra></extra>",
+        )
+    )
 
     # Derivative
-    fig.add_trace(go.Scatter(
-        x=x,
-        y=y_prime,
-        mode="lines",
-        line={"color": COLORS["secondary"], "width": 3},
-        name=f_prime_name,
-        hovertemplate=f"{f_prime_name}: (%{{x:.3f}}, %{{y:.3f}})<extra></extra>",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y_prime,
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 3},
+            name=f_prime_name,
+            hovertemplate=f"{f_prime_name}: (%{{x:.3f}}, %{{y:.3f}})<extra></extra>",
+        )
+    )
 
     fig.update_layout(**DARK_THEME)
     fig.update_layout(
@@ -173,32 +181,38 @@ def plot_tangent_line(
     fig = go.Figure()
 
     # Function
-    fig.add_trace(go.Scatter(
-        x=x,
-        y=y,
-        mode="lines",
-        line={"color": COLORS["primary"], "width": 3},
-        name="f(x)",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y,
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 3},
+            name="f(x)",
+        )
+    )
 
     # Tangent line
-    fig.add_trace(go.Scatter(
-        x=x_tangent,
-        y=y_tangent,
-        mode="lines",
-        line={"color": COLORS["tertiary"], "width": 2, "dash": "dash"},
-        name=f"Tangent at x={x0}",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=x_tangent,
+            y=y_tangent,
+            mode="lines",
+            line={"color": COLORS["tertiary"], "width": 2, "dash": "dash"},
+            name=f"Tangent at x={x0}",
+        )
+    )
 
     # Point of tangency
-    fig.add_trace(go.Scatter(
-        x=[x0],
-        y=[y0],
-        mode="markers",
-        marker={"color": COLORS["quaternary"], "size": 12, "symbol": "circle"},
-        name=f"({x0:.2f}, {y0:.2f})",
-        hovertemplate=f"Point: ({x0:.3f}, {y0:.3f})<br>Slope: {slope:.3f}<extra></extra>",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=[x0],
+            y=[y0],
+            mode="markers",
+            marker={"color": COLORS["quaternary"], "size": 12, "symbol": "circle"},
+            name=f"({x0:.2f}, {y0:.2f})",
+            hovertemplate=f"Point: ({x0:.3f}, {y0:.3f})<br>Slope: {slope:.3f}<extra></extra>",
+        )
+    )
 
     if not title:
         title = f"Tangent Line at x = {x0} (slope = {slope:.3f})"
@@ -253,32 +267,38 @@ def plot_secant_line(
     fig = go.Figure()
 
     # Function
-    fig.add_trace(go.Scatter(
-        x=x,
-        y=y,
-        mode="lines",
-        line={"color": COLORS["primary"], "width": 3},
-        name="f(x)",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=x,
+            y=y,
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 3},
+            name="f(x)",
+        )
+    )
 
     # Secant line
-    fig.add_trace(go.Scatter(
-        x=x_secant,
-        y=y_secant,
-        mode="lines",
-        line={"color": COLORS["quaternary"], "width": 2, "dash": "dot"},
-        name="Secant line",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=x_secant,
+            y=y_secant,
+            mode="lines",
+            line={"color": COLORS["quaternary"], "width": 2, "dash": "dot"},
+            name="Secant line",
+        )
+    )
 
     # Points
-    fig.add_trace(go.Scatter(
-        x=[x0, x1],
-        y=[y0, y1],
-        mode="markers",
-        marker={"color": COLORS["secondary"], "size": 10},
-        name="Endpoints",
-        hovertemplate="(%{x:.3f}, %{y:.3f})<extra></extra>",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=[x0, x1],
+            y=[y0, y1],
+            mode="markers",
+            marker={"color": COLORS["secondary"], "size": 10},
+            name="Endpoints",
+            hovertemplate="(%{x:.3f}, %{y:.3f})<extra></extra>",
+        )
+    )
 
     if not title:
         title = f"Secant Line: slope = {slope:.4f}"
@@ -314,8 +334,12 @@ def plot_multiple_functions(
     """
     x = np.linspace(x_range[0], x_range[1], num_points)
     colors = [
-        COLORS["primary"], COLORS["secondary"], COLORS["tertiary"],
-        COLORS["quaternary"], COLORS["accent1"], COLORS["accent2"],
+        COLORS["primary"],
+        COLORS["secondary"],
+        COLORS["tertiary"],
+        COLORS["quaternary"],
+        COLORS["accent1"],
+        COLORS["accent2"],
     ]
 
     fig = go.Figure()
@@ -325,13 +349,15 @@ def plot_multiple_functions(
             y = np.array([f(xi) for xi in x])
             y = np.where(np.abs(y) > 1e10, np.nan, y)
 
-        fig.add_trace(go.Scatter(
-            x=x,
-            y=y,
-            mode="lines",
-            line={"color": colors[i % len(colors)], "width": 3},
-            name=name,
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=x,
+                y=y,
+                mode="lines",
+                line={"color": colors[i % len(colors)], "width": 3},
+                name=name,
+            )
+        )
 
     fig.update_layout(**DARK_THEME)
     fig.update_layout(
@@ -348,16 +374,16 @@ def plot_directed_graph(
     nodes: dict[str, tuple[float, float]],
     edges: list[tuple[str, str]],
     node_size: int = 14,
-    node_color: str = None,
-    edge_color: str = None,
-    text_color: str = None,
+    node_color: str | None = None,
+    edge_color: str | None = None,
+    text_color: str | None = None,
     title: str = "Directed Graph",
     show_arrows: bool = True,
     node_labels: dict[str, str] | None = None,
 ) -> go.Figure:
     """
     Generate a directed graph scatter trace plot.
-    
+
     Args:
         nodes: Dictionary of node id to (x, y) coordinates
         edges: List of (source_id, target_id) tuples
@@ -369,58 +395,77 @@ def plot_directed_graph(
         show_arrows: Whether to show directed arrows
         node_labels: Optional dictionary of node id to display text (if different from id)
     """
-    if node_color is None: node_color = COLORS["secondary"]
-    if edge_color is None: edge_color = COLORS["tertiary"]
-    if text_color is None: text_color = COLORS["quaternary"]
-    if node_labels is None: node_labels = {k: k for k in nodes.keys()}
-        
+    if node_color is None:
+        node_color = COLORS["secondary"]
+    if edge_color is None:
+        edge_color = COLORS["tertiary"]
+    if text_color is None:
+        text_color = COLORS["quaternary"]
+    if node_labels is None:
+        node_labels = {k: k for k in nodes}
+
     fig = go.Figure()
 
     # Edges
     for start, end in edges:
         x0, y0 = nodes[start]
         x1, y1 = nodes[end]
-        
+
         # Simple line
         if not show_arrows:
-            fig.add_trace(go.Scatter(
-                x=[x0, x1], y=[y0, y1],
-                mode='lines',
-                line={'color': edge_color, 'width': 2},
-                showlegend=False,
-                hoverinfo='skip',
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=[x0, x1],
+                    y=[y0, y1],
+                    mode="lines",
+                    line={"color": edge_color, "width": 2},
+                    showlegend=False,
+                    hoverinfo="skip",
+                )
+            )
         else:
             # Draw arrow with annotation to prevent head overlapping center
             dx, dy = x1 - x0, y1 - y0
             mag = max(np.sqrt(dx**2 + dy**2), 1e-9)
-            ux, uy = dx/mag, dy/mag
+            ux, uy = dx / mag, dy / mag
             # Stop arrow head a bit before the exact center of destination node
             offset = 0.08
-            
+
             # Using annotation for the arrow
             fig.add_annotation(
-                x=x1 - offset*ux, y=y1 - offset*uy, # Head
-                ax=x0 + offset*ux, ay=y0 + offset*uy, # Tail
-                xref="x", yref="y", axref="x", ayref="y",
-                showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=2, arrowcolor=edge_color
+                x=x1 - offset * ux,
+                y=y1 - offset * uy,  # Head
+                ax=x0 + offset * ux,
+                ay=y0 + offset * uy,  # Tail
+                xref="x",
+                yref="y",
+                axref="x",
+                ayref="y",
+                showarrow=True,
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=2,
+                arrowcolor=edge_color,
             )
 
     # Nodes
     node_x = [pos[0] for pos in nodes.values()]
     node_y = [pos[1] for pos in nodes.values()]
-    labels = [node_labels[k] for k in nodes.keys()]
+    labels = [node_labels[k] for k in nodes]
 
-    fig.add_trace(go.Scatter(
-        x=node_x, y=node_y,
-        mode="markers+text",
-        marker={"color": node_color, "size": node_size},
-        text=labels,
-        textposition="top right",
-        textfont={"color": text_color, "size": 13},
-        name="Nodes",
-        hovertemplate="%{text}<extra></extra>"
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=node_x,
+            y=node_y,
+            mode="markers+text",
+            marker={"color": node_color, "size": node_size},
+            text=labels,
+            textposition="top right",
+            textfont={"color": text_color, "size": 13},
+            name="Nodes",
+            hovertemplate="%{text}<extra></extra>",
+        )
+    )
 
     fig.update_layout(**DARK_THEME)
     fig.update_layout(
@@ -441,7 +486,7 @@ def plot_venn_diagram(
 ) -> go.Figure:
     """
     Generate a polar trigonometric Venn Diagram.
-    
+
     Args:
         sets: List of dicts, eg [{"center": (0,0), "radius": 1, "color": "rgba(255,0,0,0.5)", "name": "A"}]
         title: Plot title
@@ -452,23 +497,23 @@ def plot_venn_diagram(
     for s in sets:
         x = s["radius"] * np.cos(theta) + s["center"][0]
         y = s["radius"] * np.sin(theta) + s["center"][1]
-        fig.add_trace(go.Scatter(
-            x=x, y=y,
-            mode='lines',
-            fill='toself',
-            fillcolor=s["color"],
-            line={'color': s.get("line_color", "rgba(255,255,255,0.5)"), 'width': 2},
-            name=s["name"],
-            hovertemplate=f"{s['name']}<extra></extra>"
-        ))
-        
+        fig.add_trace(
+            go.Scatter(
+                x=x,
+                y=y,
+                mode="lines",
+                fill="toself",
+                fillcolor=s["color"],
+                line={"color": s.get("line_color", "rgba(255,255,255,0.5)"), "width": 2},
+                name=s["name"],
+                hovertemplate=f"{s['name']}<extra></extra>",
+            )
+        )
+
         # Label offset
         label_y = s["center"][1] + s["radius"] + 0.15
         fig.add_annotation(
-            x=s["center"][0], y=label_y,
-            text=s["name"],
-            showarrow=False,
-            font={"size": 16, "color": "white"}
+            x=s["center"][0], y=label_y, text=s["name"], showarrow=False, font={"size": 16, "color": "white"}
         )
 
     fig.update_layout(**DARK_THEME)
@@ -493,13 +538,11 @@ def plot_unit_circle(
     x = radius * np.cos(theta)
     y = radius * np.sin(theta)
 
-    fig.add_trace(go.Scatter(
-        x=x, y=y,
-        mode="lines",
-        line={"color": COLORS["tertiary"], "width": 2},
-        name="Unit Circle",
-        hoverinfo="skip"
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=x, y=y, mode="lines", line={"color": COLORS["tertiary"], "width": 2}, name="Unit Circle", hoverinfo="skip"
+        )
+    )
 
     fig.add_hline(y=0, line_color=COLORS["text_secondary"], line_width=1)
     fig.add_vline(x=0, line_color=COLORS["text_secondary"], line_width=1)
@@ -511,12 +554,12 @@ def plot_unit_circle(
             "gridcolor": COLORS["grid"],
             "zerolinecolor": COLORS["text_secondary"],
             "range": [-radius * 1.5, radius * 1.5],
-            "scaleanchor": "y"
+            "scaleanchor": "y",
         },
         yaxis={
             "gridcolor": COLORS["grid"],
             "zerolinecolor": COLORS["text_secondary"],
-            "range": [-radius * 1.5, radius * 1.5]
+            "range": [-radius * 1.5, radius * 1.5],
         },
         showlegend=False,
         height=500,

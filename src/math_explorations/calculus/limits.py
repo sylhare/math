@@ -1,17 +1,13 @@
 """Limit calculations for derivative foundations."""
 
-from typing import Callable
-import numpy as np
+from collections.abc import Callable
+
 import sympy as sp
-from sympy import Symbol, Expr, limit as sp_limit, oo, latex
+from sympy import Expr, Symbol, latex
+from sympy import limit as sp_limit
 
 
-def limit(
-    expr: Expr | str,
-    var: Symbol | str,
-    point: float | Expr,
-    direction: str = "+-"
-) -> Expr:
+def limit(expr: Expr | str, var: Symbol | str, point: float | Expr, direction: str = "+-") -> Expr:
     """
     Compute the limit of an expression.
 
@@ -33,9 +29,7 @@ def limit(
 
 
 def limit_definition_derivative(
-    expr: Expr | str,
-    var: Symbol | str = "x",
-    point: Symbol | str | float | None = None
+    expr: Expr | str, var: Symbol | str = "x", point: Symbol | str | float | None = None
 ) -> Expr:
     """
     Compute derivative using limit definition: lim[h→0] (f(x+h) - f(x))/h
@@ -69,11 +63,7 @@ def limit_definition_derivative(
     return deriv
 
 
-def secant_slope(
-    f: Callable[[float], float],
-    x: float,
-    h: float
-) -> float:
+def secant_slope(f: Callable[[float], float], x: float, h: float) -> float:
     """
     Calculate the slope of a secant line.
 
@@ -90,11 +80,7 @@ def secant_slope(
     return (f(x + h) - f(x)) / h
 
 
-def tangent_slope(
-    f: Callable[[float], float],
-    x: float,
-    h: float = 1e-8
-) -> float:
+def tangent_slope(f: Callable[[float], float], x: float, h: float = 1e-8) -> float:
     """
     Approximate the slope of the tangent line using central difference.
 
@@ -109,11 +95,7 @@ def tangent_slope(
     return (f(x + h) - f(x - h)) / (2 * h)
 
 
-def secant_slopes_sequence(
-    f: Callable[[float], float],
-    x: float,
-    h_values: list[float] | None = None
-) -> list[dict]:
+def secant_slopes_sequence(f: Callable[[float], float], x: float, h_values: list[float] | None = None) -> list[dict]:
     """
     Generate a sequence of secant slopes approaching the tangent.
 
@@ -136,14 +118,16 @@ def secant_slopes_sequence(
         y2 = f(x2)
         slope = (y2 - y1) / h
 
-        results.append({
-            "h": h,
-            "slope": slope,
-            "x1": x,
-            "x2": x2,
-            "y1": y1,
-            "y2": y2,
-        })
+        results.append(
+            {
+                "h": h,
+                "slope": slope,
+                "x1": x,
+                "x2": x2,
+                "y1": y1,
+                "y2": y2,
+            }
+        )
 
     return results
 
@@ -181,11 +165,7 @@ def difference_quotient_expression(expr: Expr | str, var: Symbol | str = "x") ->
     }
 
 
-def numerical_limit_table(
-    f: Callable[[float], float],
-    x: float,
-    approaching: str = "both"
-) -> list[dict]:
+def numerical_limit_table(f: Callable[[float], float], x: float, approaching: str = "both") -> list[dict]:
     """
     Create a table showing function values approaching a limit.
 

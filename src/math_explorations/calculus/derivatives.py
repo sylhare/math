@@ -1,8 +1,9 @@
 """Symbolic derivative computations using SymPy."""
 
-from typing import Callable
+from collections.abc import Callable
+
 import sympy as sp
-from sympy import Symbol, Expr, diff, simplify, latex, lambdify
+from sympy import Expr, Symbol, diff, lambdify, latex, simplify
 
 
 def derivative(expr: Expr | str, var: Symbol | str = "x") -> Expr:
@@ -64,11 +65,7 @@ def partial_derivative(expr: Expr | str, *vars: Symbol | str) -> Expr:
     return simplify(result)
 
 
-def derivative_at_point(
-    expr: Expr | str,
-    var: Symbol | str = "x",
-    point: float = 0.0
-) -> float:
+def derivative_at_point(expr: Expr | str, var: Symbol | str = "x", point: float = 0.0) -> float:
     """
     Evaluate the derivative at a specific point.
 
@@ -108,11 +105,13 @@ def symbolic_derivative_steps(expr: Expr | str, var: Symbol | str = "x") -> list
     steps = []
 
     # Initial expression
-    steps.append({
-        "rule": "Original function",
-        "expression": expr,
-        "latex": latex(expr),
-    })
+    steps.append(
+        {
+            "rule": "Original function",
+            "expression": expr,
+            "latex": latex(expr),
+        }
+    )
 
     # Compute derivative
     deriv = diff(expr, var)
@@ -120,20 +119,24 @@ def symbolic_derivative_steps(expr: Expr | str, var: Symbol | str = "x") -> list
     # Identify the rule used (simplified detection)
     rule_name = _identify_rule(expr, var)
 
-    steps.append({
-        "rule": rule_name,
-        "expression": deriv,
-        "latex": latex(deriv),
-    })
+    steps.append(
+        {
+            "rule": rule_name,
+            "expression": deriv,
+            "latex": latex(deriv),
+        }
+    )
 
     # Simplified form
     simplified = simplify(deriv)
     if simplified != deriv:
-        steps.append({
-            "rule": "Simplify",
-            "expression": simplified,
-            "latex": latex(simplified),
-        })
+        steps.append(
+            {
+                "rule": "Simplify",
+                "expression": simplified,
+                "latex": latex(simplified),
+            }
+        )
 
     return steps
 
