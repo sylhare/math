@@ -2,9 +2,9 @@
 
 from .derivatives import (
     derivative,
+    derivative_at_point,
     nth_derivative,
     partial_derivative,
-    derivative_at_point,
     symbolic_derivative_steps,
 )
 from .limits import (
@@ -16,12 +16,12 @@ from .limits import (
 
 __all__ = [
     "derivative",
-    "nth_derivative",
-    "partial_derivative",
     "derivative_at_point",
-    "symbolic_derivative_steps",
     "limit",
     "limit_definition_derivative",
+    "nth_derivative",
+    "partial_derivative",
     "secant_slope",
+    "symbolic_derivative_steps",
     "tangent_slope",
 ]

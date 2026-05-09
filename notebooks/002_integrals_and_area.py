@@ -9,11 +9,13 @@ def _():
     import marimo as mo
     import numpy as np
     import plotly.graph_objects as go
-    import sympy as sp
-    from sympy import Symbol, sin, cos, exp, sqrt, integrate
     import polars as pl
+    import sympy as sp
     from scipy import integrate as sci_integrate
+    from sympy import Symbol, cos, exp, integrate, sin, sqrt
+
     from math_explorations.visualization import COLORS, base_layout
+
     return COLORS, base_layout, go, mo, np, pl, sp, cos, exp, sin, sqrt, Symbol, integrate, sci_integrate
 
 
@@ -101,14 +103,17 @@ def _(COLORS, base_layout, go, np):
         fig = go.Figure()
 
         # Circle
-        fig.add_trace(go.Scatter(
-            x=circle_x, y=circle_y,
-            mode='lines',
-            line={'color': COLORS["primary"], 'width': 3},
-            name='Circle (area = π)',
-            fill='toself',
-            fillcolor='rgba(0, 212, 255, 0.2)',
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=circle_x,
+                y=circle_y,
+                mode="lines",
+                line={"color": COLORS["primary"], "width": 3},
+                name="Circle (area = π)",
+                fill="toself",
+                fillcolor="rgba(0, 212, 255, 0.2)",
+            )
+        )
 
         # Initial inscribed polygon
         n = n_sides_options[0]
@@ -117,14 +122,17 @@ def _(COLORS, base_layout, go, np):
         poly_y = np.sin(angles)
         area = 0.5 * n * np.sin(2 * np.pi / n)
 
-        fig.add_trace(go.Scatter(
-            x=poly_x, y=poly_y,
-            mode='lines',
-            line={'color': COLORS["secondary"], 'width': 2},
-            name=f'Inscribed polygon',
-            fill='toself',
-            fillcolor='rgba(255, 107, 107, 0.3)',
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=poly_x,
+                y=poly_y,
+                mode="lines",
+                line={"color": COLORS["secondary"], "width": 2},
+                name="Inscribed polygon",
+                fill="toself",
+                fillcolor="rgba(255, 107, 107, 0.3)",
+            )
+        )
 
         # Create slider steps
         steps = []
@@ -139,26 +147,30 @@ def _(COLORS, base_layout, go, np):
                 "method": "update",
                 "args": [
                     {"x": [circle_x, poly_x], "y": [circle_y, poly_y]},
-                    {"title": f"n = {n} sides | Polygon area = {area:.6f} | π = {np.pi:.6f} | Error: {error:.2f}%"}
+                    {"title": f"n = {n} sides | Polygon area = {area:.6f} | π = {np.pi:.6f} | Error: {error:.2f}%"},
                 ],
                 "label": str(n),
             }
             steps.append(step)
 
-        fig.update_layout(**base_layout(
-            title=f"n = {n_sides_options[0]} sides | Polygon area = {0.5 * n_sides_options[0] * np.sin(2 * np.pi / n_sides_options[0]):.6f} | π = {np.pi:.6f}",
-            xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'scaleanchor': 'y'},
-            yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"]},
-            showlegend=True,
-            sliders=[{
-                "active": 0,
-                "currentvalue": {"prefix": "Sides: ", "visible": True},
-                "pad": {"b": 10, "t": 50},
-                "steps": steps,
-                "bgcolor": COLORS["paper"],
-                "font": {"color": COLORS["text"]},
-            }],
-        ))
+        fig.update_layout(
+            **base_layout(
+                title=f"n = {n_sides_options[0]} sides | Polygon area = {0.5 * n_sides_options[0] * np.sin(2 * np.pi / n_sides_options[0]):.6f} | π = {np.pi:.6f}",
+                xaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "scaleanchor": "y"},
+                yaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"]},
+                showlegend=True,
+                sliders=[
+                    {
+                        "active": 0,
+                        "currentvalue": {"prefix": "Sides: ", "visible": True},
+                        "pad": {"b": 10, "t": 50},
+                        "steps": steps,
+                        "bgcolor": COLORS["paper"],
+                        "font": {"color": COLORS["text"]},
+                    }
+                ],
+            )
+        )
 
         return fig
 
@@ -246,7 +258,7 @@ def _(COLORS, base_layout, go, np):
         """Animate Riemann sums converging to the integral."""
         a, b = 0, 2
         x_curve = np.linspace(a, b, 200)
-        y_curve = x_curve ** 2
+        y_curve = x_curve**2
         true_area = b**3 / 3
 
         n_values = [2, 4, 8, 16, 32, 64]
@@ -254,12 +266,15 @@ def _(COLORS, base_layout, go, np):
         fig = go.Figure()
 
         # Function curve
-        fig.add_trace(go.Scatter(
-            x=x_curve, y=y_curve,
-            mode='lines',
-            line={'color': COLORS["primary"], 'width': 3},
-            name='f(x) = x²',
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=x_curve,
+                y=y_curve,
+                mode="lines",
+                line={"color": COLORS["primary"], "width": 3},
+                name="f(x) = x²",
+            )
+        )
 
         # Initial rectangles
         n = n_values[0]
@@ -272,8 +287,10 @@ def _(COLORS, base_layout, go, np):
         for i in range(n):
             fig.add_shape(
                 type="rect",
-                x0=x_left[i], x1=x_left[i] + dx,
-                y0=0, y1=heights[i],
+                x0=x_left[i],
+                x1=x_left[i] + dx,
+                y0=0,
+                y1=heights[i],
                 fillcolor="rgba(78, 205, 196, 0.5)",
                 line=dict(color=COLORS["tertiary"], width=1),
             )
@@ -290,51 +307,84 @@ def _(COLORS, base_layout, go, np):
             # Create shapes for this frame
             shapes = []
             for i in range(n):
-                shapes.append(dict(
-                    type="rect",
-                    x0=x_left[i], x1=x_left[i] + dx,
-                    y0=0, y1=heights[i],
-                    fillcolor="rgba(78, 205, 196, 0.5)",
-                    line=dict(color=COLORS["tertiary"], width=1),
-                ))
+                shapes.append(
+                    dict(
+                        type="rect",
+                        x0=x_left[i],
+                        x1=x_left[i] + dx,
+                        y0=0,
+                        y1=heights[i],
+                        fillcolor="rgba(78, 205, 196, 0.5)",
+                        line=dict(color=COLORS["tertiary"], width=1),
+                    )
+                )
 
             frame = go.Frame(
                 data=[go.Scatter(x=x_curve, y=y_curve)],
-                layout={"shapes": shapes,
-                        "title": f"n = {n} rectangles | Sum = {area:.4f} | True = {true_area:.4f} | Error: {error:.1f}%"},
+                layout={
+                    "shapes": shapes,
+                    "title": f"n = {n} rectangles | Sum = {area:.4f} | True = {true_area:.4f} | Error: {error:.1f}%",
+                },
                 name=str(n),
             )
             frames.append(frame)
 
         fig.frames = frames
 
-        fig.update_layout(**base_layout(
-            title=f"n = {n_values[0]} rectangles | Sum = {np.sum((np.array([a + i * (b-a)/n_values[0] for i in range(n_values[0])]) + (b-a)/n_values[0]) ** 2 * (b-a)/n_values[0]):.4f}",
-            xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x', 'range': [-0.2, 2.5]},
-            yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y', 'range': [-0.2, 5]},
-            showlegend=True,
-            updatemenus=[{
-                "type": "buttons",
-                "showactive": False,
-                "y": 1.15,
-                "x": 0.5,
-                "xanchor": "center",
-                "buttons": [
-                    {"label": "▶ Animate", "method": "animate",
-                     "args": [None, {"frame": {"duration": 800}, "transition": {"duration": 300}}]},
+        fig.update_layout(
+            **base_layout(
+                title=f"n = {n_values[0]} rectangles | Sum = {np.sum((np.array([a + i * (b - a) / n_values[0] for i in range(n_values[0])]) + (b - a) / n_values[0]) ** 2 * (b - a) / n_values[0]):.4f}",
+                xaxis={
+                    "gridcolor": COLORS["grid"],
+                    "zerolinecolor": COLORS["text_secondary"],
+                    "title": "x",
+                    "range": [-0.2, 2.5],
+                },
+                yaxis={
+                    "gridcolor": COLORS["grid"],
+                    "zerolinecolor": COLORS["text_secondary"],
+                    "title": "y",
+                    "range": [-0.2, 5],
+                },
+                showlegend=True,
+                updatemenus=[
+                    {
+                        "type": "buttons",
+                        "showactive": False,
+                        "y": 1.15,
+                        "x": 0.5,
+                        "xanchor": "center",
+                        "buttons": [
+                            {
+                                "label": "▶ Animate",
+                                "method": "animate",
+                                "args": [None, {"frame": {"duration": 800}, "transition": {"duration": 300}}],
+                            },
+                        ],
+                        "font": {"color": COLORS["text"]},
+                        "bgcolor": COLORS["paper"],
+                    }
                 ],
-                "font": {"color": COLORS["text"]},
-                "bgcolor": COLORS["paper"],
-            }],
-            sliders=[{
-                "active": 0,
-                "steps": [{"args": [[str(n)], {"frame": {"duration": 0}, "mode": "immediate"}],
-                          "label": str(n), "method": "animate"} for n in n_values],
-                "x": 0.05, "len": 0.9,
-                "currentvalue": {"prefix": "Rectangles: ", "visible": True},
-                "bgcolor": COLORS["paper"], "font": {"color": COLORS["text"]},
-            }],
-        ))
+                sliders=[
+                    {
+                        "active": 0,
+                        "steps": [
+                            {
+                                "args": [[str(n)], {"frame": {"duration": 0}, "mode": "immediate"}],
+                                "label": str(n),
+                                "method": "animate",
+                            }
+                            for n in n_values
+                        ],
+                        "x": 0.05,
+                        "len": 0.9,
+                        "currentvalue": {"prefix": "Rectangles: ", "visible": True},
+                        "bgcolor": COLORS["paper"],
+                        "font": {"color": COLORS["text"]},
+                    }
+                ],
+            )
+        )
 
         return fig
 
@@ -472,37 +522,47 @@ def _(COLORS, base_layout, go, np):
         fig = go.Figure()
 
         # Area function
-        fig.add_trace(go.Scatter(
-            x=x, y=A,
-            mode='lines',
-            line={'color': COLORS["primary"], 'width': 3},
-            name='A(x) = ∫₀ˣ t dt = x²/2',
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=x,
+                y=A,
+                mode="lines",
+                line={"color": COLORS["primary"], "width": 3},
+                name="A(x) = ∫₀ˣ t dt = x²/2",
+            )
+        )
 
         # Original function (which equals A'(x))
-        fig.add_trace(go.Scatter(
-            x=x, y=f,
-            mode='lines',
-            line={'color': COLORS["secondary"], 'width': 3},
-            name="f(x) = x = A'(x)",
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=x,
+                y=f,
+                mode="lines",
+                line={"color": COLORS["secondary"], "width": 3},
+                name="f(x) = x = A'(x)",
+            )
+        )
 
         # Add annotation
         fig.add_annotation(
-            x=2, y=2,
+            x=2,
+            y=2,
             text="The derivative of the area<br>equals the original function!",
             showarrow=True,
             arrowhead=2,
-            ax=50, ay=-50,
-            font={'color': COLORS["text"]},
+            ax=50,
+            ay=-50,
+            font={"color": COLORS["text"]},
         )
 
-        fig.update_layout(**base_layout(
-            title="Fundamental Theorem: A'(x) = f(x)",
-            xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x'},
-            yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y'},
-            showlegend=True,
-        ))
+        fig.update_layout(
+            **base_layout(
+                title="Fundamental Theorem: A'(x) = f(x)",
+                xaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "title": "x"},
+                yaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "title": "y"},
+                showlegend=True,
+            )
+        )
 
         return fig
 
@@ -633,18 +693,20 @@ def _(mo):
 
 @app.cell
 def _(integral_function, lower_bound, upper_bound, mo):
-    mo.hstack([
-        mo.vstack([integral_function, lower_bound, upper_bound]),
-    ])
+    mo.hstack(
+        [
+            mo.vstack([integral_function, lower_bound, upper_bound]),
+        ]
+    )
     return
 
 
 @app.cell
 def _(COLORS, base_layout, integral_function, lower_bound, upper_bound, go, np, sp, Symbol, integrate):
-    _x = Symbol('x')
+    _x = Symbol("x")
     _expr_str, _latex_str = integral_function.value
     _expr = sp.sympify(_expr_str)
-    _f = sp.lambdify(_x, _expr, modules=['numpy'])
+    _f = sp.lambdify(_x, _expr, modules=["numpy"])
 
     _a = lower_bound.value
     _b = upper_bound.value
@@ -661,36 +723,41 @@ def _(COLORS, base_layout, integral_function, lower_bound, upper_bound, go, np, 
 
     # Generate plot data
     _x_plot = np.linspace(min(_a, _b) - 0.5, max(_a, _b) + 0.5, 300)
-    with np.errstate(divide='ignore', invalid='ignore'):
+    with np.errstate(divide="ignore", invalid="ignore"):
         _y_plot = _f(_x_plot)
         _y_plot = np.where(np.abs(_y_plot) > 100, np.nan, _y_plot)
 
     # Area region
     _x_fill = np.linspace(_a, _b, 100)
-    with np.errstate(divide='ignore', invalid='ignore'):
+    with np.errstate(divide="ignore", invalid="ignore"):
         _y_fill = _f(_x_fill)
         _y_fill = np.where(np.abs(_y_fill) > 100, np.nan, _y_fill)
 
     _fig = go.Figure()
 
     # Filled area
-    _fig.add_trace(go.Scatter(
-        x=np.concatenate([_x_fill, _x_fill[::-1]]),
-        y=np.concatenate([_y_fill, np.zeros_like(_y_fill)]),
-        fill='toself',
-        fillcolor='rgba(78, 205, 196, 0.4)',
-        line={'color': 'rgba(78, 205, 196, 0)'},
-        name=f'Area = {_result:.4f}' if _result else 'Area',
-        hoverinfo='skip',
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=np.concatenate([_x_fill, _x_fill[::-1]]),
+            y=np.concatenate([_y_fill, np.zeros_like(_y_fill)]),
+            fill="toself",
+            fillcolor="rgba(78, 205, 196, 0.4)",
+            line={"color": "rgba(78, 205, 196, 0)"},
+            name=f"Area = {_result:.4f}" if _result else "Area",
+            hoverinfo="skip",
+        )
+    )
 
     # Function curve
-    _fig.add_trace(go.Scatter(
-        x=_x_plot, y=_y_plot,
-        mode='lines',
-        line={'color': COLORS["primary"], 'width': 3},
-        name=f'f(x) = {_latex_str}',
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_x_plot,
+            y=_y_plot,
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 3},
+            name=f"f(x) = {_latex_str}",
+        )
+    )
 
     # Bounds
     _fig.add_vline(x=_a, line_dash="dash", line_color=COLORS["secondary"], annotation_text=f"a = {_a}")
@@ -698,12 +765,14 @@ def _(COLORS, base_layout, integral_function, lower_bound, upper_bound, go, np, 
 
     _title = f"∫ from {_a} to {_b} of {_latex_str} dx = {_result:.4f}" if _result else f"∫ from {_a} to {_b}"
 
-    _fig.update_layout(**base_layout(
-        title=_title,
-        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x'},
-        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y'},
-        showlegend=True,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=_title,
+            xaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "title": "x"},
+            yaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "title": "y"},
+            showlegend=True,
+        )
+    )
     _fig
     return
 
@@ -797,10 +866,10 @@ def _(mo):
 def _(mo, np, pl):
     # Compare numerical integration methods
     def _f(x):
-        return x ** 2
+        return x**2
 
     _a, _b = 0, 1
-    _exact = 1/3
+    _exact = 1 / 3
 
     _results = []
     for _n in [4, 8, 16, 32, 64, 128]:
@@ -809,7 +878,7 @@ def _(mo, np, pl):
         _y = _f(_x)
 
         # Rectangle (midpoint)
-        _x_mid = np.linspace(_a + _dx/2, _b - _dx/2, _n)
+        _x_mid = np.linspace(_a + _dx / 2, _b - _dx / 2, _n)
         _rect = np.sum(_f(_x_mid)) * _dx
         _rect_err = abs(_rect - _exact)
 
@@ -828,23 +897,26 @@ def _(mo, np, pl):
             _simp = None
             _simp_err = None
 
-        _results.append({
-            "n": _n,
-            "Rectangle Error": f"{_rect_err:.2e}",
-            "Trapezoid Error": f"{_trap_err:.2e}",
-            "Simpson Error": f"{_simp_err:.2e}" if _simp_err else "N/A",
-        })
+        _results.append(
+            {
+                "n": _n,
+                "Rectangle Error": f"{_rect_err:.2e}",
+                "Trapezoid Error": f"{_trap_err:.2e}",
+                "Simpson Error": f"{_simp_err:.2e}" if _simp_err else "N/A",
+            }
+        )
 
     _df = pl.DataFrame(_results)
 
-    mo.vstack([
-        mo.md(r"""
+    mo.vstack(
+        [
+            mo.md(r"""
 **Numerical Integration Accuracy for $\int_0^1 x^2 \, dx = \frac{1}{3}$**
 
 The table shows absolute errors for each method:
         """),
-        mo.ui.table(_df),
-        mo.md(r"""
+            mo.ui.table(_df),
+            mo.md(r"""
 **Observations:**
 
 - Rectangle error decreases by ~4× when n doubles (that's $O(1/n^2)$ for midpoint rule)
@@ -853,7 +925,8 @@ The table shows absolute errors for each method:
 
 With just 16 subintervals, Simpson's rule is accurate to 10 decimal places for this polynomial!
         """),
-    ])
+        ]
+    )
     return
 
 
@@ -878,52 +951,62 @@ def _(COLORS, base_layout, go, np):
         n = 4
 
         x_curve = np.linspace(a, b, 200)
-        y_curve = x_curve ** 2
+        y_curve = x_curve**2
 
         dx = (b - a) / n
         x_pts = np.linspace(a, b, n + 1)
-        y_pts = x_pts ** 2
+        y_pts = x_pts**2
 
         fig = go.Figure()
 
         # Function curve
-        fig.add_trace(go.Scatter(
-            x=x_curve, y=y_curve,
-            mode='lines',
-            line={'color': COLORS["primary"], 'width': 4},
-            name='f(x) = x²',
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=x_curve,
+                y=y_curve,
+                mode="lines",
+                line={"color": COLORS["primary"], "width": 4},
+                name="f(x) = x²",
+            )
+        )
 
         # Trapezoids
         for i in range(n):
-            fig.add_trace(go.Scatter(
-                x=[x_pts[i], x_pts[i], x_pts[i+1], x_pts[i+1], x_pts[i]],
-                y=[0, y_pts[i], y_pts[i+1], 0, 0],
-                fill='toself',
-                fillcolor='rgba(255, 107, 107, 0.3)',
-                line={'color': COLORS["secondary"], 'width': 2},
-                name='Trapezoid' if i == 0 else None,
-                showlegend=(i == 0),
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=[x_pts[i], x_pts[i], x_pts[i + 1], x_pts[i + 1], x_pts[i]],
+                    y=[0, y_pts[i], y_pts[i + 1], 0, 0],
+                    fill="toself",
+                    fillcolor="rgba(255, 107, 107, 0.3)",
+                    line={"color": COLORS["secondary"], "width": 2},
+                    name="Trapezoid" if i == 0 else None,
+                    showlegend=(i == 0),
+                )
+            )
 
         # Points
-        fig.add_trace(go.Scatter(
-            x=x_pts, y=y_pts,
-            mode='markers',
-            marker={'color': COLORS["quaternary"], 'size': 12},
-            name='Sample points',
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=x_pts,
+                y=y_pts,
+                mode="markers",
+                marker={"color": COLORS["quaternary"], "size": 12},
+                name="Sample points",
+            )
+        )
 
         # Calculate areas
         trap_area = dx * (0.5 * y_pts[0] + np.sum(y_pts[1:-1]) + 0.5 * y_pts[-1])
         exact_area = b**3 / 3
 
-        fig.update_layout(**base_layout(
-            title=f"Trapezoidal Rule (n={n}): Approx = {trap_area:.4f}, Exact = {exact_area:.4f}",
-            xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x'},
-            yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y'},
-            showlegend=True,
-        ))
+        fig.update_layout(
+            **base_layout(
+                title=f"Trapezoidal Rule (n={n}): Approx = {trap_area:.4f}, Exact = {exact_area:.4f}",
+                xaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "title": "x"},
+                yaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "title": "y"},
+                showlegend=True,
+            )
+        )
 
         return fig
 
@@ -984,42 +1067,49 @@ def _(COLORS, base_layout, go, np):
     # Visualize area between curves
     _x = np.linspace(-0.2, 1.3, 200)
     _y1 = _x  # y = x
-    _y2 = _x ** 2  # y = x²
+    _y2 = _x**2  # y = x²
 
     _x_fill = np.linspace(0, 1, 100)
     _y1_fill = _x_fill
-    _y2_fill = _x_fill ** 2
+    _y2_fill = _x_fill**2
 
     _fig = go.Figure()
 
     # Fill between curves
-    _fig.add_trace(go.Scatter(
-        x=np.concatenate([_x_fill, _x_fill[::-1]]),
-        y=np.concatenate([_y1_fill, _y2_fill[::-1]]),
-        fill='toself',
-        fillcolor='rgba(78, 205, 196, 0.5)',
-        line={'width': 0},
-        name='Area = 1/6',
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=np.concatenate([_x_fill, _x_fill[::-1]]),
+            y=np.concatenate([_y1_fill, _y2_fill[::-1]]),
+            fill="toself",
+            fillcolor="rgba(78, 205, 196, 0.5)",
+            line={"width": 0},
+            name="Area = 1/6",
+        )
+    )
 
     # Curves
-    _fig.add_trace(go.Scatter(x=_x, y=_y1, mode='lines', line={'color': COLORS["secondary"], 'width': 3}, name='y = x'))
-    _fig.add_trace(go.Scatter(x=_x, y=_y2, mode='lines', line={'color': COLORS["primary"], 'width': 3}, name='y = x²'))
+    _fig.add_trace(go.Scatter(x=_x, y=_y1, mode="lines", line={"color": COLORS["secondary"], "width": 3}, name="y = x"))
+    _fig.add_trace(go.Scatter(x=_x, y=_y2, mode="lines", line={"color": COLORS["primary"], "width": 3}, name="y = x²"))
 
     # Intersection points
-    _fig.add_trace(go.Scatter(
-        x=[0, 1], y=[0, 1],
-        mode='markers',
-        marker={'color': COLORS["quaternary"], 'size': 12},
-        name='Intersections',
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=[0, 1],
+            y=[0, 1],
+            mode="markers",
+            marker={"color": COLORS["quaternary"], "size": 12},
+            name="Intersections",
+        )
+    )
 
-    _fig.update_layout(**base_layout(
-        title="Area Between y = x and y = x²",
-        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x'},
-        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'y'},
-        showlegend=True,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title="Area Between y = x and y = x²",
+            xaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "title": "x"},
+            yaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "title": "y"},
+            showlegend=True,
+        )
+    )
     _fig
     return
 
@@ -1071,28 +1161,39 @@ def _(COLORS, base_layout, go, np):
     _fig = go.Figure()
 
     # Force curve with area
-    _fig.add_trace(go.Scatter(
-        x=np.concatenate([_x, _x[::-1]]),
-        y=np.concatenate([_F, np.zeros_like(_F)]),
-        fill='toself',
-        fillcolor='rgba(255, 107, 107, 0.4)',
-        line={'width': 0},
-        name=f'Work = {0.5 * _k * _d**2:.1f} J',
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=np.concatenate([_x, _x[::-1]]),
+            y=np.concatenate([_F, np.zeros_like(_F)]),
+            fill="toself",
+            fillcolor="rgba(255, 107, 107, 0.4)",
+            line={"width": 0},
+            name=f"Work = {0.5 * _k * _d**2:.1f} J",
+        )
+    )
 
-    _fig.add_trace(go.Scatter(
-        x=_x, y=_F,
-        mode='lines',
-        line={'color': COLORS["secondary"], 'width': 3},
-        name='F(x) = kx',
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_x,
+            y=_F,
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 3},
+            name="F(x) = kx",
+        )
+    )
 
-    _fig.update_layout(**base_layout(
-        title=f"Work Done Stretching a Spring (k = {_k} N/m)",
-        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'Displacement x (m)'},
-        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'Force F (N)'},
-        showlegend=True,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=f"Work Done Stretching a Spring (k = {_k} N/m)",
+            xaxis={
+                "gridcolor": COLORS["grid"],
+                "zerolinecolor": COLORS["text_secondary"],
+                "title": "Displacement x (m)",
+            },
+            yaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "title": "Force F (N)"},
+            showlegend=True,
+        )
+    )
     _fig
     return
 
@@ -1144,7 +1245,7 @@ def _(COLORS, base_layout, go, np, sci_integrate):
     _sigma = 1
 
     def _normal_pdf(x, mu, sigma):
-        return 1 / (sigma * np.sqrt(2 * np.pi)) * np.exp(-((x - mu) ** 2) / (2 * sigma ** 2))
+        return 1 / (sigma * np.sqrt(2 * np.pi)) * np.exp(-((x - mu) ** 2) / (2 * sigma**2))
 
     _x = np.linspace(-4, 4, 300)
     _y = _normal_pdf(_x, _mu, _sigma)
@@ -1157,49 +1258,66 @@ def _(COLORS, base_layout, go, np, sci_integrate):
     _fig = go.Figure()
 
     # Full curve
-    _fig.add_trace(go.Scatter(
-        x=_x, y=_y,
-        mode='lines',
-        line={'color': COLORS["primary"], 'width': 3},
-        name='Normal PDF',
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_x,
+            y=_y,
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 3},
+            name="Normal PDF",
+        )
+    )
 
     # 1 sigma region
     _x_1s = np.linspace(-1, 1, 100)
     _y_1s = _normal_pdf(_x_1s, _mu, _sigma)
-    _fig.add_trace(go.Scatter(
-        x=np.concatenate([_x_1s, _x_1s[::-1]]),
-        y=np.concatenate([_y_1s, np.zeros_like(_y_1s)]),
-        fill='toself',
-        fillcolor='rgba(78, 205, 196, 0.6)',
-        line={'width': 0},
-        name=f'±1σ: {_p_1sigma*100:.1f}%',
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=np.concatenate([_x_1s, _x_1s[::-1]]),
+            y=np.concatenate([_y_1s, np.zeros_like(_y_1s)]),
+            fill="toself",
+            fillcolor="rgba(78, 205, 196, 0.6)",
+            line={"width": 0},
+            name=f"±1σ: {_p_1sigma * 100:.1f}%",
+        )
+    )
 
     # 2 sigma region (extra parts)
     for _sign in [-1, 1]:
         _x_2s = np.linspace(_sign * 1, _sign * 2, 50)
         _y_2s = _normal_pdf(_x_2s, _mu, _sigma)
-        _fig.add_trace(go.Scatter(
-            x=np.concatenate([_x_2s, _x_2s[::-1]]),
-            y=np.concatenate([_y_2s, np.zeros_like(_y_2s)]),
-            fill='toself',
-            fillcolor='rgba(255, 107, 107, 0.4)',
-            line={'width': 0},
-            name=f'±2σ region' if _sign == -1 else None,
-            showlegend=(_sign == -1),
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=np.concatenate([_x_2s, _x_2s[::-1]]),
+                y=np.concatenate([_y_2s, np.zeros_like(_y_2s)]),
+                fill="toself",
+                fillcolor="rgba(255, 107, 107, 0.4)",
+                line={"width": 0},
+                name="±2σ region" if _sign == -1 else None,
+                showlegend=(_sign == -1),
+            )
+        )
 
-    _fig.add_annotation(x=0, y=0.2, text=f"68%", showarrow=False, font={'color': COLORS["text"], 'size': 16})
-    _fig.add_annotation(x=1.5, y=0.08, text=f"13.5%", showarrow=False, font={'color': COLORS["text"], 'size': 12})
-    _fig.add_annotation(x=-1.5, y=0.08, text=f"13.5%", showarrow=False, font={'color': COLORS["text"], 'size': 12})
+    _fig.add_annotation(x=0, y=0.2, text="68%", showarrow=False, font={"color": COLORS["text"], "size": 16})
+    _fig.add_annotation(x=1.5, y=0.08, text="13.5%", showarrow=False, font={"color": COLORS["text"], "size": 12})
+    _fig.add_annotation(x=-1.5, y=0.08, text="13.5%", showarrow=False, font={"color": COLORS["text"], "size": 12})
 
-    _fig.update_layout(**base_layout(
-        title="Standard Normal Distribution: The 68-95-99.7 Rule",
-        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'x (standard deviations from mean)'},
-        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 'Probability density'},
-        showlegend=True,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title="Standard Normal Distribution: The 68-95-99.7 Rule",
+            xaxis={
+                "gridcolor": COLORS["grid"],
+                "zerolinecolor": COLORS["text_secondary"],
+                "title": "x (standard deviations from mean)",
+            },
+            yaxis={
+                "gridcolor": COLORS["grid"],
+                "zerolinecolor": COLORS["text_secondary"],
+                "title": "Probability density",
+            },
+            showlegend=True,
+        )
+    )
     _fig
     return
 
@@ -1276,34 +1394,44 @@ def _(COLORS, base_layout, go, np):
     _fig = go.Figure()
 
     # Cone surface
-    _fig.add_trace(go.Surface(
-        x=_X, y=_Y, z=_Z,
-        colorscale=[[0, COLORS["primary"]], [1, COLORS["tertiary"]]],
-        showscale=False,
-        opacity=0.8,
-        name='Cone',
-    ))
+    _fig.add_trace(
+        go.Surface(
+            x=_X,
+            y=_Y,
+            z=_Z,
+            colorscale=[[0, COLORS["primary"]], [1, COLORS["tertiary"]]],
+            showscale=False,
+            opacity=0.8,
+            name="Cone",
+        )
+    )
 
     # The generating line
-    _fig.add_trace(go.Scatter3d(
-        x=_x_line, y=_y_line, z=np.zeros_like(_x_line),
-        mode='lines',
-        line={'color': COLORS["secondary"], 'width': 6},
-        name='y = (r/h)x',
-    ))
+    _fig.add_trace(
+        go.Scatter3d(
+            x=_x_line,
+            y=_y_line,
+            z=np.zeros_like(_x_line),
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 6},
+            name="y = (r/h)x",
+        )
+    )
 
     _volume = np.pi * _r**2 * _h / 3
 
-    _fig.update_layout(**base_layout(
-        title=f"Cone from y = (r/h)x rotated about x-axis | V = πr²h/3 = {_volume:.3f}",
-        scene=dict(
-            xaxis={'backgroundcolor': COLORS["background"], 'gridcolor': COLORS["grid"], 'title': 'x'},
-            yaxis={'backgroundcolor': COLORS["background"], 'gridcolor': COLORS["grid"], 'title': 'y'},
-            zaxis={'backgroundcolor': COLORS["background"], 'gridcolor': COLORS["grid"], 'title': 'z'},
-            bgcolor=COLORS["background"],
-        ),
-        showlegend=True,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=f"Cone from y = (r/h)x rotated about x-axis | V = πr²h/3 = {_volume:.3f}",
+            scene=dict(
+                xaxis={"backgroundcolor": COLORS["background"], "gridcolor": COLORS["grid"], "title": "x"},
+                yaxis={"backgroundcolor": COLORS["background"], "gridcolor": COLORS["grid"], "title": "y"},
+                zaxis={"backgroundcolor": COLORS["background"], "gridcolor": COLORS["grid"], "title": "z"},
+                bgcolor=COLORS["background"],
+            ),
+            showlegend=True,
+        )
+    )
     _fig
     return
 
@@ -1366,19 +1494,24 @@ def _(mo):
 @app.cell
 def _(mo):
     n_points_slider = mo.ui.slider(
-        start=100, stop=10000, step=100, value=1000,
+        start=100,
+        stop=10000,
+        step=100,
+        value=1000,
         label="Number of random points:",
         show_value=True,
     )
-    return n_points_slider,
+    return (n_points_slider,)
 
 
 @app.cell
 def _(mo, n_points_slider):
-    mo.hstack([
-        mo.md("### Monte Carlo Estimation of π"),
-        n_points_slider,
-    ])
+    mo.hstack(
+        [
+            mo.md("### Monte Carlo Estimation of π"),
+            n_points_slider,
+        ]
+    )
     return
 
 
@@ -1397,44 +1530,60 @@ def _(COLORS, base_layout, go, np, n_points_slider):
     _pi_estimate = 4 * _n_inside / _n
 
     # Quarter circle curve
-    _theta = np.linspace(0, np.pi/2, 100)
+    _theta = np.linspace(0, np.pi / 2, 100)
     _circle_x = np.cos(_theta)
     _circle_y = np.sin(_theta)
 
     _fig = go.Figure()
 
     # Points outside
-    _fig.add_trace(go.Scatter(
-        x=_x[~_inside], y=_y[~_inside],
-        mode='markers',
-        marker={'color': COLORS["secondary"], 'size': 3, 'opacity': 0.5},
-        name=f'Outside: {_n - _n_inside}',
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_x[~_inside],
+            y=_y[~_inside],
+            mode="markers",
+            marker={"color": COLORS["secondary"], "size": 3, "opacity": 0.5},
+            name=f"Outside: {_n - _n_inside}",
+        )
+    )
 
     # Points inside
-    _fig.add_trace(go.Scatter(
-        x=_x[_inside], y=_y[_inside],
-        mode='markers',
-        marker={'color': COLORS["tertiary"], 'size': 3, 'opacity': 0.5},
-        name=f'Inside: {_n_inside}',
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_x[_inside],
+            y=_y[_inside],
+            mode="markers",
+            marker={"color": COLORS["tertiary"], "size": 3, "opacity": 0.5},
+            name=f"Inside: {_n_inside}",
+        )
+    )
 
     # Quarter circle
-    _fig.add_trace(go.Scatter(
-        x=_circle_x, y=_circle_y,
-        mode='lines',
-        line={'color': COLORS["primary"], 'width': 3},
-        name='Quarter circle',
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_circle_x,
+            y=_circle_y,
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 3},
+            name="Quarter circle",
+        )
+    )
 
     _error = abs(_pi_estimate - np.pi) / np.pi * 100
 
-    _fig.update_layout(**base_layout(
-        title=f"π ≈ 4 × {_n_inside}/{_n} = {_pi_estimate:.6f} | True π = {np.pi:.6f} | Error: {_error:.2f}%",
-        xaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'scaleanchor': 'y', 'range': [-0.05, 1.05]},
-        yaxis={'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'range': [-0.05, 1.05]},
-        showlegend=True,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=f"π ≈ 4 × {_n_inside}/{_n} = {_pi_estimate:.6f} | True π = {np.pi:.6f} | Error: {_error:.2f}%",
+            xaxis={
+                "gridcolor": COLORS["grid"],
+                "zerolinecolor": COLORS["text_secondary"],
+                "scaleanchor": "y",
+                "range": [-0.05, 1.05],
+            },
+            yaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "range": [-0.05, 1.05]},
+            showlegend=True,
+        )
+    )
     _fig
     return
 

@@ -53,7 +53,7 @@ def extract_metadata(notebook_path: Path) -> NotebookMetadata:
     number = number_match.group(1) if number_match else "000"
 
     # Extract title from first markdown heading (# Title)
-    title_match = re.search(r'mo\.md\(\s*r?"""[^"]*?#\s+([^\n]+)', content)
+    title_match = re.search(r'mo\.md\(\s*r?"""[^"]*?#\s+([^\n"]+)', content)
     if title_match:
         title = title_match.group(1).strip()
         # Clean up any trailing asterisks or formatting
@@ -69,9 +69,7 @@ def extract_metadata(notebook_path: Path) -> NotebookMetadata:
     if docstring_match:
         desc_lines = docstring_match.group(1).strip().split("\n")
         # Skip the title line if present, get the description
-        description = " ".join(
-            line.strip() for line in desc_lines[1:] if line.strip()
-        ).strip()
+        description = " ".join(line.strip() for line in desc_lines[1:] if line.strip()).strip()
         if not description and desc_lines:
             description = desc_lines[0].strip()
     else:
@@ -138,9 +136,8 @@ def _infer_tags(content: str, stem: str) -> list[str]:
     }
 
     for keyword, tag in tag_keywords.items():
-        if keyword in content_lower or keyword in stem.lower():
-            if tag not in tags:
-                tags.append(tag)
+        if (keyword in content_lower or keyword in stem.lower()) and tag not in tags:
+            tags.append(tag)
 
     # Limit to 4 most relevant tags
     return tags[:4] if tags else ["Mathematics"]
@@ -164,9 +161,14 @@ def export_notebook(notebook_path: Path, output_dir: Path, include_code: bool = 
     output_path = output_dir / f"{notebook_path.stem}.html"
 
     cmd = [
-        "uv", "run", "marimo", "export", "html",
+        "uv",
+        "run",
+        "marimo",
+        "export",
+        "html",
         str(notebook_path),
-        "-o", str(output_path),
+        "-o",
+        str(output_path),
     ]
     if not include_code:
         cmd.append("--no-include-code")
@@ -180,9 +182,7 @@ def export_notebook(notebook_path: Path, output_dir: Path, include_code: bool = 
     )
 
     if result.returncode != 0:
-        raise subprocess.CalledProcessError(
-            result.returncode, cmd, result.stdout, result.stderr
-        )
+        raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
 
     return output_path
 
@@ -202,7 +202,7 @@ def generate_index_html(notebooks: list[NotebookMetadata], output_dir: Path) -> 
     # Generate notebook cards
     cards_html = "\n".join(_generate_card(nb) for nb in notebooks)
 
-    html = f'''<!DOCTYPE html>
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -405,7 +405,7 @@ def generate_index_html(notebooks: list[NotebookMetadata], output_dir: Path) -> 
         </footer>
     </div>
 </body>
-</html>'''
+</html>"""
 
     output_path = output_dir / "index.html"
     output_path.write_text(html)
@@ -414,9 +414,7 @@ def generate_index_html(notebooks: list[NotebookMetadata], output_dir: Path) -> 
 
 def _generate_card(nb: NotebookMetadata) -> str:
     """Generate HTML for a single notebook card."""
-    tags_html = "\n                    ".join(
-        f'<span class="tag">{tag}</span>' for tag in nb.tags
-    )
+    tags_html = "\n                    ".join(f'<span class="tag">{tag}</span>' for tag in nb.tags)
 
     return f'''            <a href="{nb.stem}.html" class="card">
                 <div class="card-number">{nb.number}</div>

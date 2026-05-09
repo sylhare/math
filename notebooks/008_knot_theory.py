@@ -15,6 +15,7 @@ app = marimo.App(width="full")
 @app.cell
 def _():
     import marimo as mo
+
     return (mo,)
 
 
@@ -23,9 +24,15 @@ def _():
     import numpy as np
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
+
     from math_explorations.visualization import (
-        COLORS, SCENE_THEME, base_layout, create_timeline, style_subplot_axes,
+        COLORS,
+        SCENE_THEME,
+        base_layout,
+        create_timeline,
+        style_subplot_axes,
     )
+
     return COLORS, SCENE_THEME, base_layout, create_timeline, go, make_subplots, np, style_subplot_axes
 
 
@@ -35,6 +42,7 @@ def _(np):
         x = (np.sin(t) + 2 * np.sin(2 * t)) / 3.2
         y = (np.cos(t) - 2 * np.cos(2 * t)) / 3.2
         return x, y
+
     return (trefoil_xy,)
 
 
@@ -234,24 +242,42 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
 
     _knots = [
         ("The Unknot (0 crossings)", np.cos(_t), np.sin(_t), COLORS["primary"]),
-        ("Trefoil Knot (3 crossings)", np.sin(_t) + 2 * np.sin(2 * _t), np.cos(_t) - 2 * np.cos(2 * _t), COLORS["secondary"]),
-        ("Figure-8 Knot (4 crossings)", (2 + np.cos(2 * _t)) * np.cos(3 * _t) / 4, (2 + np.cos(2 * _t)) * np.sin(3 * _t) / 4, COLORS["tertiary"]),
+        (
+            "Trefoil Knot (3 crossings)",
+            np.sin(_t) + 2 * np.sin(2 * _t),
+            np.cos(_t) - 2 * np.cos(2 * _t),
+            COLORS["secondary"],
+        ),
+        (
+            "Figure-8 Knot (4 crossings)",
+            (2 + np.cos(2 * _t)) * np.cos(3 * _t) / 4,
+            (2 + np.cos(2 * _t)) * np.sin(3 * _t) / 4,
+            COLORS["tertiary"],
+        ),
     ]
 
     _fig = make_subplots(
-        rows=1, cols=3,
+        rows=1,
+        cols=3,
         subplot_titles=[k[0] for k in _knots],
         horizontal_spacing=0.05,
     )
 
     for _col, (_, _x, _y, _c) in enumerate(_knots, 1):
-        _fig.add_trace(go.Scatter(
-            x=_x, y=_y, mode='lines',
-            line={'color': _c, 'width': 3}, showlegend=False,
-        ), row=1, col=_col)
-        _fig.update_xaxes(scaleanchor=f'y{_col if _col > 1 else ""}', row=1, col=_col)
+        _fig.add_trace(
+            go.Scatter(
+                x=_x,
+                y=_y,
+                mode="lines",
+                line={"color": _c, "width": 3},
+                showlegend=False,
+            ),
+            row=1,
+            col=_col,
+        )
+        _fig.update_xaxes(scaleanchor=f"y{_col if _col > 1 else ''}", row=1, col=_col)
 
-    _fig.update_layout(**base_layout(title='Classic Knots (Parametric Projections)', height=350))
+    _fig.update_layout(**base_layout(title="Classic Knots (Parametric Projections)", height=350))
     style_subplot_axes(_fig)
     _fig
     return
@@ -304,7 +330,8 @@ def _(mo):
 @app.cell
 def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _fig = make_subplots(
-        rows=1, cols=2,
+        rows=1,
+        cols=2,
         subplot_titles=["Positive Crossing (+1)", "Negative Crossing (−1)"],
     )
 
@@ -335,41 +362,67 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
             over_color = COLORS["secondary"]
             under_color = COLORS["primary"]
 
-        fig.add_trace(go.Scatter(
-            x=ox, y=oy, mode='lines',
-            line={'color': over_color, 'width': 6},
-            name='overstrand', showlegend=False,
-        ), row=row, col=col)
-        fig.add_trace(go.Scatter(
-            x=ux1, y=uy1, mode='lines',
-            line={'color': under_color, 'width': 6},
-            name='understrand', showlegend=False,
-        ), row=row, col=col)
-        fig.add_trace(go.Scatter(
-            x=ux2, y=uy2, mode='lines',
-            line={'color': under_color, 'width': 6},
-            showlegend=False,
-        ), row=row, col=col)
+        fig.add_trace(
+            go.Scatter(
+                x=ox,
+                y=oy,
+                mode="lines",
+                line={"color": over_color, "width": 6},
+                name="overstrand",
+                showlegend=False,
+            ),
+            row=row,
+            col=col,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=ux1,
+                y=uy1,
+                mode="lines",
+                line={"color": under_color, "width": 6},
+                name="understrand",
+                showlegend=False,
+            ),
+            row=row,
+            col=col,
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=ux2,
+                y=uy2,
+                mode="lines",
+                line={"color": under_color, "width": 6},
+                showlegend=False,
+            ),
+            row=row,
+            col=col,
+        )
 
         # Arrows to show orientation
         arrow_x = 0.5 if sign == 1 else -0.5
         arrow_dx = 0.3 if sign == 1 else -0.3
         fig.add_annotation(
-            x=arrow_x + arrow_dx, y=arrow_x + arrow_dx if sign == 1 else -(arrow_x + arrow_dx),
-            ax=arrow_x, ay=arrow_x if sign == 1 else -arrow_x,
-            xref=f'x{col}', yref=f'y{col}',
-            axref=f'x{col}', ayref=f'y{col}',
-            arrowhead=2, arrowcolor=over_color, arrowwidth=2,
+            x=arrow_x + arrow_dx,
+            y=arrow_x + arrow_dx if sign == 1 else -(arrow_x + arrow_dx),
+            ax=arrow_x,
+            ay=arrow_x if sign == 1 else -arrow_x,
+            xref=f"x{col}",
+            yref=f"y{col}",
+            axref=f"x{col}",
+            ayref=f"y{col}",
+            arrowhead=2,
+            arrowcolor=over_color,
+            arrowwidth=2,
         )
 
     _crossing_traces(_fig, 1, 1, 1)
     _crossing_traces(_fig, 1, 2, -1)
 
-    _fig.update_layout(**base_layout(title='Crossing Signs (Vertices in Knot Diagrams)', height=350))
+    _fig.update_layout(**base_layout(title="Crossing Signs (Vertices in Knot Diagrams)", height=350))
     style_subplot_axes(_fig)
     for _c in range(1, 3):
         _fig.update_xaxes(range=[-1.3, 1.3], row=1, col=_c)
-        _fig.update_yaxes(range=[-1.3, 1.3], scaleanchor=f'x{_c}', row=1, col=_c)
+        _fig.update_yaxes(range=[-1.3, 1.3], scaleanchor=f"x{_c}", row=1, col=_c)
 
     _fig
     return
@@ -438,7 +491,8 @@ def _(mo):
 @app.cell
 def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _fig = make_subplots(
-        rows=1, cols=3,
+        rows=1,
+        cols=3,
         subplot_titles=["Move I: Twist", "Move II: Poke", "Move III: Slide"],
         horizontal_spacing=0.08,
     )
@@ -458,30 +512,41 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _s2_x = np.array([0.05, 0.8])
     _s2_y = np.array([0.4, 0.8])
 
-    _fig.add_trace(go.Scatter(
-        x=np.concatenate([_s1_x, [np.nan], _loop_x, [np.nan], _s2_x]),
-        y=np.concatenate([_s1_y, [np.nan], _loop_y, [np.nan], _s2_y]),
-        mode='lines',
-        line={'color': COLORS["primary"], 'width': 3},
-        showlegend=False,
-    ), row=1, col=1)
+    _fig.add_trace(
+        go.Scatter(
+            x=np.concatenate([_s1_x, [np.nan], _loop_x, [np.nan], _s2_x]),
+            y=np.concatenate([_s1_y, [np.nan], _loop_y, [np.nan], _s2_y]),
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 3},
+            showlegend=False,
+        ),
+        row=1,
+        col=1,
+    )
 
     # Arrow between: ↔
     _fig.add_annotation(
-        x=0.0, y=0.0,
-        text='<b>⟺</b>',
-        font={'color': COLORS["quaternary"], 'size': 20},
+        x=0.0,
+        y=0.0,
+        text="<b>⟺</b>",
+        font={"color": COLORS["quaternary"], "size": 20},
         showarrow=False,
-        xref='x1', yref='y1',
+        xref="x1",
+        yref="y1",
     )
 
     # Straight strand
-    _fig.add_trace(go.Scatter(
-        x=[-0.8, 0.8], y=[-0.8, 0.8],
-        mode='lines',
-        line={'color': COLORS["tertiary"], 'width': 3, 'dash': 'dot'},
-        showlegend=False,
-    ), row=1, col=1)
+    _fig.add_trace(
+        go.Scatter(
+            x=[-0.8, 0.8],
+            y=[-0.8, 0.8],
+            mode="lines",
+            line={"color": COLORS["tertiary"], "width": 3, "dash": "dot"},
+            showlegend=False,
+        ),
+        row=1,
+        col=1,
+    )
 
     # Move II: two crossings → separated strands
     # Before: two strands crossing twice
@@ -491,84 +556,123 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _arc2_x = 0.5 + 0.5 * np.cos(_t2)
     _arc2_y = 0.5 * np.sin(_t2)
 
-    _fig.add_trace(go.Scatter(
-        x=np.concatenate([[-0.9], _arc1_x, _arc2_x, [0.9]]),
-        y=np.concatenate([[0], _arc1_y, _arc2_y, [0]]),
-        mode='lines',
-        line={'color': COLORS["primary"], 'width': 3},
-        showlegend=False,
-    ), row=1, col=2)
-
-    # Straight lines
-    _fig.add_trace(go.Scatter(
-        x=[-0.9, 0.9], y=[0.5, 0.5],
-        mode='lines',
-        line={'color': COLORS["secondary"], 'width': 3},
-        showlegend=False,
-    ), row=1, col=2)
-
-    _fig.add_annotation(
-        x=0.0, y=-0.5,
-        text='<b>⟺</b>',
-        font={'color': COLORS["quaternary"], 'size': 20},
-        showarrow=False,
-        xref='x2', yref='y2',
+    _fig.add_trace(
+        go.Scatter(
+            x=np.concatenate([[-0.9], _arc1_x, _arc2_x, [0.9]]),
+            y=np.concatenate([[0], _arc1_y, _arc2_y, [0]]),
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 3},
+            showlegend=False,
+        ),
+        row=1,
+        col=2,
     )
 
-    _fig.add_trace(go.Scatter(
-        x=[-0.9, 0.9], y=[-0.6, -0.6],
-        mode='lines',
-        line={'color': COLORS["primary"], 'width': 3, 'dash': 'dot'},
-        showlegend=False,
-    ), row=1, col=2)
-    _fig.add_trace(go.Scatter(
-        x=[-0.9, 0.9], y=[-0.9, -0.9],
-        mode='lines',
-        line={'color': COLORS["secondary"], 'width': 3, 'dash': 'dot'},
-        showlegend=False,
-    ), row=1, col=2)
+    # Straight lines
+    _fig.add_trace(
+        go.Scatter(
+            x=[-0.9, 0.9],
+            y=[0.5, 0.5],
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 3},
+            showlegend=False,
+        ),
+        row=1,
+        col=2,
+    )
+
+    _fig.add_annotation(
+        x=0.0,
+        y=-0.5,
+        text="<b>⟺</b>",
+        font={"color": COLORS["quaternary"], "size": 20},
+        showarrow=False,
+        xref="x2",
+        yref="y2",
+    )
+
+    _fig.add_trace(
+        go.Scatter(
+            x=[-0.9, 0.9],
+            y=[-0.6, -0.6],
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 3, "dash": "dot"},
+            showlegend=False,
+        ),
+        row=1,
+        col=2,
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=[-0.9, 0.9],
+            y=[-0.9, -0.9],
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 3, "dash": "dot"},
+            showlegend=False,
+        ),
+        row=1,
+        col=2,
+    )
 
     # Move III: slide a strand over a crossing
     # Triangle of three strands
-    _fig.add_trace(go.Scatter(
-        x=[-0.7, 0, 0.7, -0.7],
-        y=[-0.6, 0.6, -0.6, -0.6],
-        mode='lines',
-        line={'color': COLORS["primary"], 'width': 3},
-        showlegend=False,
-    ), row=1, col=3)
-    _fig.add_trace(go.Scatter(
-        x=[-0.9, 0.9],
-        y=[0.1, 0.1],
-        mode='lines',
-        line={'color': COLORS["secondary"], 'width': 3},
-        showlegend=False,
-    ), row=1, col=3)
-
-    _fig.add_annotation(
-        x=0.0, y=-0.3,
-        text='<b>⟺</b>',
-        font={'color': COLORS["quaternary"], 'size': 20},
-        showarrow=False,
-        xref='x3', yref='y3',
+    _fig.add_trace(
+        go.Scatter(
+            x=[-0.7, 0, 0.7, -0.7],
+            y=[-0.6, 0.6, -0.6, -0.6],
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 3},
+            showlegend=False,
+        ),
+        row=1,
+        col=3,
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=[-0.9, 0.9],
+            y=[0.1, 0.1],
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 3},
+            showlegend=False,
+        ),
+        row=1,
+        col=3,
     )
 
-    _fig.add_trace(go.Scatter(
-        x=[-0.7, 0, 0.7, -0.7],
-        y=[0.6, -0.6, 0.6, 0.6],
-        mode='lines',
-        line={'color': COLORS["primary"], 'width': 3, 'dash': 'dot'},
-        showlegend=False,
-    ), row=1, col=3)
-    _fig.add_trace(go.Scatter(
-        x=[-0.9, 0.9],
-        y=[-0.1, -0.1],
-        mode='lines',
-        line={'color': COLORS["secondary"], 'width': 3, 'dash': 'dot'},
-        showlegend=False,
-    ), row=1, col=3)
+    _fig.add_annotation(
+        x=0.0,
+        y=-0.3,
+        text="<b>⟺</b>",
+        font={"color": COLORS["quaternary"], "size": 20},
+        showarrow=False,
+        xref="x3",
+        yref="y3",
+    )
 
-    _fig.update_layout(**base_layout(title='The Three Reidemeister Moves (solid ↔ dashed)', height=380))
+    _fig.add_trace(
+        go.Scatter(
+            x=[-0.7, 0, 0.7, -0.7],
+            y=[0.6, -0.6, 0.6, 0.6],
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 3, "dash": "dot"},
+            showlegend=False,
+        ),
+        row=1,
+        col=3,
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=[-0.9, 0.9],
+            y=[-0.1, -0.1],
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 3, "dash": "dot"},
+            showlegend=False,
+        ),
+        row=1,
+        col=3,
+    )
+
+    _fig.update_layout(**base_layout(title="The Three Reidemeister Moves (solid ↔ dashed)", height=380))
     style_subplot_axes(_fig)
     for _c in range(1, 4):
         _fig.update_xaxes(range=[-1.1, 1.1], row=1, col=_c)
@@ -656,39 +760,53 @@ def _(mo):
 
 @app.cell
 def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
-    _knots = ['Unknot', 'Trefoil\n3₁', 'Figure-8\n4₁', 'Cinquefoil\n5₁', '5₂']
+    _knots = ["Unknot", "Trefoil\n3₁", "Figure-8\n4₁", "Cinquefoil\n5₁", "5₂"]
     _crossing_numbers = [0, 3, 4, 5, 5]
     _determinants = [1, 3, 5, 5, 7]
     _unknotting = [0, 1, 1, 2, 1]
 
     _x = np.arange(len(_knots))
     _colors_cn = [COLORS["tertiary"], COLORS["primary"], COLORS["primary"], COLORS["primary"], COLORS["primary"]]
-    _colors_det = [COLORS["tertiary"], COLORS["secondary"], COLORS["secondary"], COLORS["quaternary"], COLORS["secondary"]]
+    _colors_det = [
+        COLORS["tertiary"],
+        COLORS["secondary"],
+        COLORS["secondary"],
+        COLORS["quaternary"],
+        COLORS["secondary"],
+    ]
     _colors_un = [COLORS["tertiary"], COLORS["accent1"], COLORS["accent1"], COLORS["quaternary"], COLORS["accent1"]]
 
     _fig = make_subplots(
-        rows=1, cols=3,
+        rows=1,
+        cols=3,
         subplot_titles=["Crossing Number c(K)", "Determinant det(K)", "Unknotting Number u(K)"],
         horizontal_spacing=0.12,
     )
 
-    for _col, (_vals, _colors, _name) in enumerate([
-        (_crossing_numbers, _colors_cn, 'c(K)'),
-        (_determinants, _colors_det, 'det(K)'),
-        (_unknotting, _colors_un, 'u(K)'),
-    ], 1):
-        _fig.add_trace(go.Bar(
-            x=['U', '3₁', '4₁', '5₁', '5₂'],
-            y=_vals,
-            marker_color=_colors,
-            text=_vals,
-            textposition='outside',
-            textfont={'color': COLORS["text"], 'size': 13},
-            name=_name,
-            showlegend=False,
-        ), row=1, col=_col)
+    for _col, (_vals, _colors, _name) in enumerate(
+        [
+            (_crossing_numbers, _colors_cn, "c(K)"),
+            (_determinants, _colors_det, "det(K)"),
+            (_unknotting, _colors_un, "u(K)"),
+        ],
+        1,
+    ):
+        _fig.add_trace(
+            go.Bar(
+                x=["U", "3₁", "4₁", "5₁", "5₂"],
+                y=_vals,
+                marker_color=_colors,
+                text=_vals,
+                textposition="outside",
+                textfont={"color": COLORS["text"], "size": 13},
+                name=_name,
+                showlegend=False,
+            ),
+            row=1,
+            col=_col,
+        )
 
-    _fig.update_layout(**base_layout(title='Comparing Knot Invariants for Classic Knots', height=380))
+    _fig.update_layout(**base_layout(title="Comparing Knot Invariants for Classic Knots", height=380))
     style_subplot_axes(_fig, show_ticklabels=True)
     _fig
     return
@@ -761,7 +879,7 @@ def _(COLORS, base_layout, go, np, trefoil_xy):
 
     # Build arc segments: arc i runs from cross_t[i] + gap to cross_t[(i+1)%3] - gap
     _arc_colors = [COLORS["secondary"], COLORS["primary"], COLORS["tertiary"]]
-    _arc_labels = ['Arc 1', 'Arc 2', 'Arc 3']
+    _arc_labels = ["Arc 1", "Arc 2", "Arc 3"]
 
     _fig = go.Figure()
 
@@ -773,42 +891,54 @@ def _(COLORS, base_layout, go, np, trefoil_xy):
         _seg_t = np.linspace(_t_start % (2 * np.pi), _t_end % (2 * np.pi), 120)
         # Handle wrap-around
         if _t_end > 2 * np.pi:
-            _seg_t = np.concatenate([
-                np.linspace(_t_start, 2 * np.pi, 80),
-                np.linspace(0, _t_end - 2 * np.pi, 80),
-            ])
+            _seg_t = np.concatenate(
+                [
+                    np.linspace(_t_start, 2 * np.pi, 80),
+                    np.linspace(0, _t_end - 2 * np.pi, 80),
+                ]
+            )
         _sx, _sy = trefoil_xy(_seg_t)
         _mx, _my = trefoil_xy(np.array([(_t_start + _t_end) / 2]))
-        _fig.add_trace(go.Scatter(
-            x=_sx, y=_sy, mode='lines',
-            line={'color': _arc_colors[_i], 'width': 7},
-            name=_arc_labels[_i],
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=_sx,
+                y=_sy,
+                mode="lines",
+                line={"color": _arc_colors[_i], "width": 7},
+                name=_arc_labels[_i],
+            )
+        )
         _fig.add_annotation(
-            x=float(_mx[0]) * 1.25, y=float(_my[0]) * 1.25,
-            text=f'<b>{_arc_labels[_i]}</b>',
-            font={'color': _arc_colors[_i], 'size': 13},
+            x=float(_mx[0]) * 1.25,
+            y=float(_my[0]) * 1.25,
+            text=f"<b>{_arc_labels[_i]}</b>",
+            font={"color": _arc_colors[_i], "size": 13},
             showarrow=False,
         )
 
     # Mark the three vertex crossings
     for _i, _ct in enumerate(_cross_t):
         _vx, _vy = trefoil_xy(np.array([_ct]))
-        _fig.add_trace(go.Scatter(
-            x=[float(_vx[0])], y=[float(_vy[0])],
-            mode='markers',
-            marker={'color': COLORS["quaternary"], 'size': 16, 'symbol': 'circle'},
-            showlegend=_i == 0,
-            name='Vertex (crossing)',
-            hovertemplate=f'Vertex {_i + 1}<extra></extra>',
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[float(_vx[0])],
+                y=[float(_vy[0])],
+                mode="markers",
+                marker={"color": COLORS["quaternary"], "size": 16, "symbol": "circle"},
+                showlegend=_i == 0,
+                name="Vertex (crossing)",
+                hovertemplate=f"Vertex {_i + 1}<extra></extra>",
+            )
+        )
 
-    _fig.update_layout(**base_layout(
-        title='Trefoil Knot: Three Arcs (colored) and Three Vertices (yellow)',
-        xaxis={'visible': False, 'range': [-1.4, 1.4], 'scaleanchor': 'y'},
-        yaxis={'visible': False, 'range': [-1.4, 1.4]},
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title="Trefoil Knot: Three Arcs (colored) and Three Vertices (yellow)",
+            xaxis={"visible": False, "range": [-1.4, 1.4], "scaleanchor": "y"},
+            yaxis={"visible": False, "range": [-1.4, 1.4]},
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -835,10 +965,12 @@ def _(mo):
 
 @app.cell
 def _(arc1_color, arc2_color, arc3_color, mo):
-    mo.vstack([
-        mo.md("### Trefoil Tricolorability Explorer"),
-        mo.hstack([arc1_color, arc2_color, arc3_color], justify="start", gap=2),
-    ])
+    mo.vstack(
+        [
+            mo.md("### Trefoil Tricolorability Explorer"),
+            mo.hstack([arc1_color, arc2_color, arc3_color], justify="start", gap=2),
+        ]
+    )
     return
 
 
@@ -881,46 +1013,66 @@ def _(COLORS, arc1_color, arc2_color, arc3_color, base_layout, go, np, trefoil_x
 
     _fig = go.Figure()
 
-    _fig.add_trace(go.Scatter(
-        x=_x1, y=_y1, mode='lines',
-        line={'color': _hex1, 'width': 7},
-        name=f'Arc 1 ({_c1})',
-    ))
-    _fig.add_trace(go.Scatter(
-        x=_x2, y=_y2, mode='lines',
-        line={'color': _hex2, 'width': 7},
-        name=f'Arc 2 ({_c2})',
-    ))
-    _fig.add_trace(go.Scatter(
-        x=_x3, y=_y3, mode='lines',
-        line={'color': _hex3, 'width': 7},
-        name=f'Arc 3 ({_c3})',
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_x1,
+            y=_y1,
+            mode="lines",
+            line={"color": _hex1, "width": 7},
+            name=f"Arc 1 ({_c1})",
+        )
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=_x2,
+            y=_y2,
+            mode="lines",
+            line={"color": _hex2, "width": 7},
+            name=f"Arc 2 ({_c2})",
+        )
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=_x3,
+            y=_y3,
+            mode="lines",
+            line={"color": _hex3, "width": 7},
+            name=f"Arc 3 ({_c3})",
+        )
+    )
 
     _status_color = COLORS["tertiary"] if _is_tricolorable else COLORS["secondary"]
-    _status = 'VALID tricoloring ✓' if _is_tricolorable else 'INVALID — check crossing rules ✗'
+    _status = "VALID tricoloring ✓" if _is_tricolorable else "INVALID — check crossing rules ✗"
     if not _uses_multiple:
-        _status = 'INVALID — must use at least 2 colors ✗'
+        _status = "INVALID — must use at least 2 colors ✗"
 
     _fig.add_annotation(
-        x=0, y=-1.1,
-        text=f'<b>{_status}</b>',
-        font={'color': _status_color, 'size': 15},
+        x=0,
+        y=-1.1,
+        text=f"<b>{_status}</b>",
+        font={"color": _status_color, "size": 15},
         showarrow=False,
     )
 
-    _fig.update_layout(**base_layout(
-        title='Trefoil Knot — Color Each Arc',
-        xaxis={
-            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
-            'showticklabels': False, 'range': [-1.3, 1.3], 'scaleanchor': 'y',
-        },
-        yaxis={
-            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
-            'showticklabels': False, 'range': [-1.3, 1.3],
-        },
-        height=480,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title="Trefoil Knot — Color Each Arc",
+            xaxis={
+                "gridcolor": COLORS["grid"],
+                "zerolinecolor": COLORS["text_secondary"],
+                "showticklabels": False,
+                "range": [-1.3, 1.3],
+                "scaleanchor": "y",
+            },
+            yaxis={
+                "gridcolor": COLORS["grid"],
+                "zerolinecolor": COLORS["text_secondary"],
+                "showticklabels": False,
+                "range": [-1.3, 1.3],
+            },
+            height=480,
+        )
+    )
     _fig
     return
 
@@ -1010,78 +1162,96 @@ def _(mo):
 
 @app.cell
 def _(COLORS, base_layout, go, np):
-
     _t_vals = np.linspace(-2, 2, 400)
 
     # Alexander polynomials
     def _alex_trefoil(t):
-        return t**(-1) - 1 + t
+        return t ** (-1) - 1 + t
 
     def _alex_figure8(t):
-        return -t**(-1) + 3 - t
+        return -(t ** (-1)) + 3 - t
 
     def _alex_unknot(t):
         return np.ones_like(t)
 
     _fig = go.Figure()
 
-    _fig.add_trace(go.Scatter(
-        x=_t_vals, y=_alex_unknot(_t_vals),
-        mode='lines',
-        line={'color': COLORS["tertiary"], 'width': 3},
-        name='Unknot: Δ(t) = 1',
-    ))
-    _fig.add_trace(go.Scatter(
-        x=_t_vals, y=_alex_trefoil(_t_vals),
-        mode='lines',
-        line={'color': COLORS["secondary"], 'width': 3},
-        name='Trefoil: Δ(t) = t⁻¹ − 1 + t',
-    ))
-    _fig.add_trace(go.Scatter(
-        x=_t_vals, y=_alex_figure8(_t_vals),
-        mode='lines',
-        line={'color': COLORS["primary"], 'width': 3},
-        name='Figure-8: Δ(t) = −t⁻¹ + 3 − t',
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_t_vals,
+            y=_alex_unknot(_t_vals),
+            mode="lines",
+            line={"color": COLORS["tertiary"], "width": 3},
+            name="Unknot: Δ(t) = 1",
+        )
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=_t_vals,
+            y=_alex_trefoil(_t_vals),
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 3},
+            name="Trefoil: Δ(t) = t⁻¹ − 1 + t",
+        )
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=_t_vals,
+            y=_alex_figure8(_t_vals),
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 3},
+            name="Figure-8: Δ(t) = −t⁻¹ + 3 − t",
+        )
+    )
 
     # Mark t = -1 values
     for _f, _label, _color, _det in [
-        (_alex_unknot, 'det=1', COLORS["tertiary"], 1),
-        (_alex_trefoil, 'det=3', COLORS["secondary"], 3),
-        (_alex_figure8, 'det=5', COLORS["primary"], 5),
+        (_alex_unknot, "det=1", COLORS["tertiary"], 1),
+        (_alex_trefoil, "det=3", COLORS["secondary"], 3),
+        (_alex_figure8, "det=5", COLORS["primary"], 5),
     ]:
         _y_val = _f(np.array([-1.0]))[0]
-        _fig.add_trace(go.Scatter(
-            x=[-1], y=[_y_val],
-            mode='markers+text',
-            marker={'color': _color, 'size': 12},
-            text=[f' {_label}'],
-            textposition='middle right',
-            textfont={'color': _color, 'size': 11},
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[-1],
+                y=[_y_val],
+                mode="markers+text",
+                marker={"color": _color, "size": 12},
+                text=[f" {_label}"],
+                textposition="middle right",
+                textfont={"color": _color, "size": 11},
+                showlegend=False,
+            )
+        )
 
-    _fig.add_vline(x=-1, line_color=COLORS["quaternary"], line_width=1, line_dash='dash')
+    _fig.add_vline(x=-1, line_color=COLORS["quaternary"], line_width=1, line_dash="dash")
     _fig.add_annotation(
-        x=-1, y=6,
-        text='t = −1<br>(gives determinant)',
-        font={'color': COLORS["quaternary"], 'size': 12},
+        x=-1,
+        y=6,
+        text="t = −1<br>(gives determinant)",
+        font={"color": COLORS["quaternary"], "size": 12},
         showarrow=False,
         xshift=60,
     )
 
-    _fig.update_layout(**base_layout(
-        title='Alexander Polynomials (evaluated at t = −1 gives the determinant)',
-        xaxis={
-            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"], 'title': 't',
-            'range': [-2, 2],
-        },
-        yaxis={
-            'gridcolor': COLORS["grid"], 'zerolinecolor': COLORS["text_secondary"],
-            'title': 'Δ(t)', 'range': [-5, 8],
-        },
-        height=420,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title="Alexander Polynomials (evaluated at t = −1 gives the determinant)",
+            xaxis={
+                "gridcolor": COLORS["grid"],
+                "zerolinecolor": COLORS["text_secondary"],
+                "title": "t",
+                "range": [-2, 2],
+            },
+            yaxis={
+                "gridcolor": COLORS["grid"],
+                "zerolinecolor": COLORS["text_secondary"],
+                "title": "Δ(t)",
+                "range": [-5, 8],
+            },
+            height=420,
+        )
+    )
     _fig
     return
 
@@ -1110,7 +1280,8 @@ def _(mo):
 @app.cell
 def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _fig = make_subplots(
-        rows=1, cols=3,
+        rows=1,
+        cols=3,
         subplot_titles=["K₊  (positive crossing)", "K₋  (negative crossing)", "K₀  (smoothed / 0-resolution)"],
         horizontal_spacing=0.08,
     )
@@ -1123,7 +1294,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
         # Strand A goes from bottom-left to top-right (for +), top-left to bottom-right (for -)
         # Strand B is the other; broken at center for understrand
 
-        if kind == '+':
+        if kind == "+":
             # Over: bottom-left → top-right  (slope +1)
             # Under (broken): top-left → bottom-right  (slope -1)
             o_x = np.linspace(-1, 1, 80)
@@ -1133,7 +1304,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
             u2_x = np.linspace(_gap, 1, 30)
             u2_y = -u2_x
             oc, uc = COLORS["primary"], COLORS["secondary"]
-        elif kind == '-':
+        elif kind == "-":
             # Over: top-left → bottom-right  (slope -1)
             # Under (broken): bottom-left → top-right  (slope +1)
             o_x = np.linspace(-1, 1, 80)
@@ -1156,19 +1327,26 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
             u2_y = np.array([])
             oc = uc = COLORS["tertiary"]
 
-        fig.add_trace(go.Scatter(x=o_x, y=o_y, mode='lines',
-            line={'color': oc, 'width': 6}, showlegend=False), row=1, col=col)
-        fig.add_trace(go.Scatter(x=u1_x, y=u1_y, mode='lines',
-            line={'color': uc, 'width': 6}, showlegend=False), row=1, col=col)
+        fig.add_trace(
+            go.Scatter(x=o_x, y=o_y, mode="lines", line={"color": oc, "width": 6}, showlegend=False), row=1, col=col
+        )
+        fig.add_trace(
+            go.Scatter(x=u1_x, y=u1_y, mode="lines", line={"color": uc, "width": 6}, showlegend=False), row=1, col=col
+        )
         if len(u2_x):
-            fig.add_trace(go.Scatter(x=u2_x, y=u2_y, mode='lines',
-                line={'color': uc, 'width': 6}, showlegend=False), row=1, col=col)
+            fig.add_trace(
+                go.Scatter(x=u2_x, y=u2_y, mode="lines", line={"color": uc, "width": 6}, showlegend=False),
+                row=1,
+                col=col,
+            )
 
-    _add_crossing(_fig, 1, '+')
-    _add_crossing(_fig, 2, '-')
-    _add_crossing(_fig, 3, '0')
+    _add_crossing(_fig, 1, "+")
+    _add_crossing(_fig, 2, "-")
+    _add_crossing(_fig, 3, "0")
 
-    _fig.update_layout(**base_layout(title='Skein Triple: the three local diagrams related by the skein relation', height=320))
+    _fig.update_layout(
+        **base_layout(title="Skein Triple: the three local diagrams related by the skein relation", height=320)
+    )
     style_subplot_axes(_fig)
     for _c in range(1, 4):
         _fig.update_xaxes(range=[-1.3, 1.3], row=1, col=_c)
@@ -1220,10 +1398,12 @@ def _(mo):
 
 @app.cell
 def _(knot_selector, mo):
-    mo.hstack([
-        mo.md("### 3D Knot Explorer"),
-        knot_selector,
-    ])
+    mo.hstack(
+        [
+            mo.md("### 3D Knot Explorer"),
+            knot_selector,
+        ]
+    )
     return
 
 
@@ -1232,25 +1412,19 @@ def _(COLORS, SCENE_THEME, base_layout, go, knot_selector, np):
     _choice = knot_selector.value
     _t = np.linspace(0, 2 * np.pi, 600)
 
+    def _torus_knot(R, r, p, q, t):
+        return (R + r * np.cos(q * t)) * np.cos(p * t), (R + r * np.cos(q * t)) * np.sin(p * t), r * np.sin(q * t)
+
     if _choice == "trefoil":
-        _R, _r, _p, _q = 3, 1, 2, 3
-        _x = (_R + _r * np.cos(_q * _t)) * np.cos(_p * _t)
-        _y = (_R + _r * np.cos(_q * _t)) * np.sin(_p * _t)
-        _z = _r * np.sin(_q * _t)
+        _x, _y, _z = _torus_knot(3, 1, 2, 3, _t)
         _title = "Trefoil Knot T(2,3)"
         _color = COLORS["secondary"]
     elif _choice == "cinquefoil":
-        _R, _r, _p, _q = 3, 1, 2, 5
-        _x = (_R + _r * np.cos(_q * _t)) * np.cos(_p * _t)
-        _y = (_R + _r * np.cos(_q * _t)) * np.sin(_p * _t)
-        _z = _r * np.sin(_q * _t)
+        _x, _y, _z = _torus_knot(3, 1, 2, 5, _t)
         _title = "Cinquefoil T(2,5)"
         _color = COLORS["quaternary"]
     elif _choice == "t34":
-        _R, _r, _p, _q = 3, 1, 3, 4
-        _x = (_R + _r * np.cos(_q * _t)) * np.cos(_p * _t)
-        _y = (_R + _r * np.cos(_q * _t)) * np.sin(_p * _t)
-        _z = _r * np.sin(_q * _t)
+        _x, _y, _z = _torus_knot(3, 1, 3, 4, _t)
         _title = "Torus Knot T(3,4)"
         _color = COLORS["accent1"]
     else:  # figure-8
@@ -1262,18 +1436,24 @@ def _(COLORS, SCENE_THEME, base_layout, go, knot_selector, np):
 
     _fig = go.Figure()
 
-    _fig.add_trace(go.Scatter3d(
-        x=_x, y=_y, z=_z,
-        mode='lines',
-        line={'color': _color, 'width': 6},
-        name=_title,
-    ))
+    _fig.add_trace(
+        go.Scatter3d(
+            x=_x,
+            y=_y,
+            z=_z,
+            mode="lines",
+            line={"color": _color, "width": 6},
+            name=_title,
+        )
+    )
 
-    _fig.update_layout(**base_layout(
-        title=_title + ' (drag to rotate)',
-        scene=SCENE_THEME,
-        height=500,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=_title + " (drag to rotate)",
+            scene=SCENE_THEME,
+            height=500,
+        )
+    )
     _fig
     return
 
@@ -1340,7 +1520,8 @@ def _(mo):
 @app.cell
 def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _fig = make_subplots(
-        rows=1, cols=2,
+        rows=1,
+        cols=2,
         subplot_titles=["Hopf Link (lk = 1)", "Borromean Rings"],
         horizontal_spacing=0.08,
     )
@@ -1356,17 +1537,31 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _c2x = 0.7 * np.cos(_t) + 0.3
     _c2y = 0.7 * np.sin(_t)
 
-    _fig.add_trace(go.Scatter(
-        x=_c1x, y=_c1y, mode='lines',
-        line={'color': COLORS["primary"], 'width': 5},
-        name='Component 1', showlegend=True,
-    ), row=1, col=1)
+    _fig.add_trace(
+        go.Scatter(
+            x=_c1x,
+            y=_c1y,
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 5},
+            name="Component 1",
+            showlegend=True,
+        ),
+        row=1,
+        col=1,
+    )
 
-    _fig.add_trace(go.Scatter(
-        x=_c2x, y=_c2y, mode='lines',
-        line={'color': COLORS["secondary"], 'width': 5},
-        name='Component 2', showlegend=True,
-    ), row=1, col=1)
+    _fig.add_trace(
+        go.Scatter(
+            x=_c2x,
+            y=_c2y,
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 5},
+            name="Component 2",
+            showlegend=True,
+        ),
+        row=1,
+        col=1,
+    )
 
     # Borromean rings: three circles in characteristic arrangement
     # Three circles of radius 0.6 at 120° apart, slightly offset
@@ -1377,26 +1572,33 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
         (0.45, -0.25),
     ]
     _bor_colors = [COLORS["primary"], COLORS["secondary"], COLORS["tertiary"]]
-    _bor_names = ['Ring A', 'Ring B', 'Ring C']
+    _bor_names = ["Ring A", "Ring B", "Ring C"]
 
     for (_cx, _cy), _bc, _bn in zip(_centers, _bor_colors, _bor_names):
-        _fig.add_trace(go.Scatter(
-            x=_r_bor * np.cos(_t) + _cx,
-            y=_r_bor * np.sin(_t) + _cy,
-            mode='lines',
-            line={'color': _bc, 'width': 4},
-            name=_bn, showlegend=False,
-        ), row=1, col=2)
+        _fig.add_trace(
+            go.Scatter(
+                x=_r_bor * np.cos(_t) + _cx,
+                y=_r_bor * np.sin(_t) + _cy,
+                mode="lines",
+                line={"color": _bc, "width": 4},
+                name=_bn,
+                showlegend=False,
+            ),
+            row=1,
+            col=2,
+        )
 
     _fig.add_annotation(
-        x=0, y=-1.1,
-        text='Removing any ring frees the other two',
-        font={'color': COLORS['quaternary'], 'size': 11},
+        x=0,
+        y=-1.1,
+        text="Removing any ring frees the other two",
+        font={"color": COLORS["quaternary"], "size": 11},
         showarrow=False,
-        xref='x2', yref='y2',
+        xref="x2",
+        yref="y2",
     )
 
-    _fig.update_layout(**base_layout(title='Links: Hopf Link and Borromean Rings', height=380))
+    _fig.update_layout(**base_layout(title="Links: Hopf Link and Borromean Rings", height=380))
     style_subplot_axes(_fig)
     for _c in range(1, 3):
         _fig.update_xaxes(range=[-1.3, 1.3], row=1, col=_c)
@@ -1468,7 +1670,6 @@ def _(mo):
 
 @app.cell
 def _(COLORS, SCENE_THEME, base_layout, go, np):
-
     _t = np.linspace(0, 4 * np.pi, 400)
 
     # Two DNA strands (double helix simplified)
@@ -1485,37 +1686,49 @@ def _(COLORS, SCENE_THEME, base_layout, go, np):
 
     _fig = go.Figure()
 
-    _fig.add_trace(go.Scatter3d(
-        x=_strand1_x, y=_strand1_y, z=_strand1_z,
-        mode='lines',
-        line={'color': COLORS["primary"], 'width': 5},
-        name='Strand 1',
-    ))
-    _fig.add_trace(go.Scatter3d(
-        x=_strand2_x, y=_strand2_y, z=_strand2_z,
-        mode='lines',
-        line={'color': COLORS["secondary"], 'width': 5},
-        name='Strand 2',
-    ))
+    _fig.add_trace(
+        go.Scatter3d(
+            x=_strand1_x,
+            y=_strand1_y,
+            z=_strand1_z,
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 5},
+            name="Strand 1",
+        )
+    )
+    _fig.add_trace(
+        go.Scatter3d(
+            x=_strand2_x,
+            y=_strand2_y,
+            z=_strand2_z,
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 5},
+            name="Strand 2",
+        )
+    )
 
     # Add rungs (base pairs)
     _rung_indices = np.arange(0, len(_t), 25)
     for _i in _rung_indices:
-        _fig.add_trace(go.Scatter3d(
-            x=[_strand1_x[_i], _strand2_x[_i]],
-            y=[_strand1_y[_i], _strand2_y[_i]],
-            z=[_strand1_z[_i], _strand2_z[_i]],
-            mode='lines',
-            line={'color': COLORS["quaternary"], 'width': 2},
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter3d(
+                x=[_strand1_x[_i], _strand2_x[_i]],
+                y=[_strand1_y[_i], _strand2_y[_i]],
+                z=[_strand1_z[_i], _strand2_z[_i]],
+                mode="lines",
+                line={"color": COLORS["quaternary"], "width": 2},
+                showlegend=False,
+            )
+        )
 
-    _scene = {**SCENE_THEME, 'zaxis': {**SCENE_THEME['zaxis'], 'title': 'Position along DNA'}}
-    _fig.update_layout(**base_layout(
-        title='DNA Double Helix: The linking number counts how the two strands wind around each other',
-        scene=_scene,
-        height=450,
-    ))
+    _scene = {**SCENE_THEME, "zaxis": {**SCENE_THEME["zaxis"], "title": "Position along DNA"}}
+    _fig.update_layout(
+        **base_layout(
+            title="DNA Double Helix: The linking number counts how the two strands wind around each other",
+            scene=_scene,
+            height=450,
+        )
+    )
     _fig
     return
 

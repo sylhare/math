@@ -34,29 +34,44 @@ def create_timeline(
 
     fig = go.Figure()
 
-    fig.add_trace(go.Scatter(
-        x=list(x_range), y=[0, 0],
-        mode="lines", line={"color": COLORS["text_secondary"], "width": 2},
-        showlegend=False, hoverinfo="skip",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=list(x_range),
+            y=[0, 0],
+            mode="lines",
+            line={"color": COLORS["text_secondary"], "width": 2},
+            showlegend=False,
+            hoverinfo="skip",
+        )
+    )
 
     for yr, lbl, side in events:
         color = COLORS["primary"] if side == 1 else COLORS["secondary"]
-        fig.add_trace(go.Scatter(
-            x=[yr, yr], y=[0, side * 0.55],
-            mode="lines", line={"color": color, "width": 2},
-            showlegend=False, hoverinfo="skip",
-        ))
-        fig.add_trace(go.Scatter(
-            x=[yr], y=[0],
-            mode="markers", marker={"color": color, "size": 10},
-            showlegend=False,
-            hovertemplate=f'{yr}: {lbl.replace(chr(10), " ")}<extra></extra>',
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=[yr, yr],
+                y=[0, side * 0.55],
+                mode="lines",
+                line={"color": color, "width": 2},
+                showlegend=False,
+                hoverinfo="skip",
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=[yr],
+                y=[0],
+                mode="markers",
+                marker={"color": color, "size": 10},
+                showlegend=False,
+                hovertemplate=f"{yr}: {lbl.replace(chr(10), ' ')}<extra></extra>",
+            )
+        )
 
         year_text = f"{abs(yr)} BCE" if yr < 0 else str(yr)
         fig.add_annotation(
-            x=yr, y=side * 0.65,
+            x=yr,
+            y=side * 0.65,
             text=f"<b>{year_text}</b><br>{lbl}",
             font={"color": color, "size": 10},
             showarrow=False,
@@ -65,20 +80,20 @@ def create_timeline(
 
     tick_kwargs: dict[str, Any] = {"tickvals": years}
     if has_bce:
-        tick_kwargs["ticktext"] = [
-            f"{abs(y)} BCE" if y < 0 else str(y) for y in years
-        ]
+        tick_kwargs["ticktext"] = [f"{abs(y)} BCE" if y < 0 else str(y) for y in years]
 
-    fig.update_layout(**base_layout(
-        title=title,
-        height=height,
-        xaxis={
-            "gridcolor": COLORS["grid"],
-            "zerolinecolor": COLORS["grid"],
-            "range": list(x_range),
-            "title": "Year",
-            **tick_kwargs,
-        },
-        yaxis={"visible": False, "range": [-1.3, 1.3]},
-    ))
+    fig.update_layout(
+        **base_layout(
+            title=title,
+            height=height,
+            xaxis={
+                "gridcolor": COLORS["grid"],
+                "zerolinecolor": COLORS["grid"],
+                "range": list(x_range),
+                "title": "Year",
+                **tick_kwargs,
+            },
+            yaxis={"visible": False, "range": [-1.3, 1.3]},
+        )
+    )
     return fig

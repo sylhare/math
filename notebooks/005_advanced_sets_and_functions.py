@@ -15,6 +15,7 @@ app = marimo.App(width="full")
 @app.cell
 def _():
     import marimo as mo
+
     return (mo,)
 
 
@@ -23,8 +24,10 @@ def _():
     import numpy as np
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
-    from math_explorations.visualization import COLORS, base_layout
-    return COLORS, base_layout, go, make_subplots, np
+
+    from math_explorations.visualization import COLORS, base_layout, plot_directed_graph
+
+    return COLORS, base_layout, go, make_subplots, np, plot_directed_graph
 
 
 @app.cell
@@ -221,35 +224,44 @@ def _(COLORS, base_layout, go, np):
         _x = [_r * np.cos(_t) for _t in _theta]
         _y = [_r * np.sin(_t) for _t in _theta]
 
-        _fig.add_trace(go.Scatter(
-            x=_x, y=_y,
-            mode="lines",
-            line=dict(color=_color, width=3),
-            name=_label,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=_x,
+                y=_y,
+                mode="lines",
+                line=dict(color=_color, width=3),
+                name=_label,
+            )
+        )
 
         # Label
         _fig.add_annotation(
-            x=_r + 0.3, y=0,
+            x=_r + 0.3,
+            y=0,
             text=_label,
             font=dict(size=12, color=_color),
             showarrow=False,
         )
 
     _fig.add_annotation(
-        x=0, y=-3.5,
+        x=0,
+        y=-3.5,
         text="Each ordinal contains all previous ordinals",
         font=dict(size=14, color=COLORS["text_secondary"]),
         showarrow=False,
     )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Von Neumann Ordinals: Building Numbers from Sets", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-4, 5]),
-        yaxis=dict(visible=False, range=[-4, 3.5], scaleanchor="x"),
-        height=400,
-        showlegend=True,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Von Neumann Ordinals: Building Numbers from Sets", font=dict(color=COLORS["text"], size=16)
+            ),
+            xaxis=dict(visible=False, range=[-4, 5]),
+            yaxis=dict(visible=False, range=[-4, 3.5], scaleanchor="x"),
+            height=400,
+            showlegend=True,
+        )
+    )
     _fig
     return
 
@@ -362,33 +374,50 @@ def _(COLORS, base_layout, go, np):
     # Positions for ordinals on a "number line"
     # We'll compress infinite distances for visualization
     _ordinals_display = [
-        (0, "0"), (1, "1"), (2, "2"), (3, "3"), (4, "..."),
-        (6, "ω"), (7, "ω+1"), (8, "ω+2"), (9, "..."),
-        (11, "ω·2"), (12, "ω·2+1"), (13, "..."),
-        (15, "ω²"), (16, "..."),
+        (0, "0"),
+        (1, "1"),
+        (2, "2"),
+        (3, "3"),
+        (4, "..."),
+        (6, "ω"),
+        (7, "ω+1"),
+        (8, "ω+2"),
+        (9, "..."),
+        (11, "ω·2"),
+        (12, "ω·2+1"),
+        (13, "..."),
+        (15, "ω²"),
+        (16, "..."),
     ]
 
     # Draw number line
-    _fig.add_trace(go.Scatter(
-        x=[0, 17], y=[0, 0],
-        mode="lines",
-        line=dict(color=COLORS["muted"], width=2),
-        showlegend=False,
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=[0, 17],
+            y=[0, 0],
+            mode="lines",
+            line=dict(color=COLORS["muted"], width=2),
+            showlegend=False,
+        )
+    )
 
     # Add tick marks and labels
     for _pos, _label in _ordinals_display:
         # Tick mark
-        _fig.add_trace(go.Scatter(
-            x=[_pos, _pos], y=[-0.2, 0.2],
-            mode="lines",
-            line=dict(color=COLORS["primary"], width=2),
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[_pos, _pos],
+                y=[-0.2, 0.2],
+                mode="lines",
+                line=dict(color=COLORS["primary"], width=2),
+                showlegend=False,
+            )
+        )
         # Label
         _color = COLORS["secondary"] if "ω" in _label else COLORS["tertiary"]
         _fig.add_annotation(
-            x=_pos, y=-0.5,
+            x=_pos,
+            y=-0.5,
             text=_label,
             font=dict(size=12, color=_color),
             showarrow=False,
@@ -396,24 +425,33 @@ def _(COLORS, base_layout, go, np):
 
     # Add breaks to show gaps
     for _gap_x in [5, 10, 14]:
-        _fig.add_trace(go.Scatter(
-            x=[_gap_x - 0.3, _gap_x + 0.3], y=[0, 0],
-            mode="lines",
-            line=dict(color=COLORS["background"], width=8),
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[_gap_x - 0.3, _gap_x + 0.3],
+                y=[0, 0],
+                mode="lines",
+                line=dict(color=COLORS["background"], width=8),
+                showlegend=False,
+            )
+        )
 
     # Annotations
     _fig.add_annotation(x=3, y=1, text="Finite ordinals", font=dict(size=11, color=COLORS["tertiary"]), showarrow=False)
-    _fig.add_annotation(x=7, y=1, text="First infinite ordinals", font=dict(size=11, color=COLORS["secondary"]), showarrow=False)
+    _fig.add_annotation(
+        x=7, y=1, text="First infinite ordinals", font=dict(size=11, color=COLORS["secondary"]), showarrow=False
+    )
     _fig.add_annotation(x=15, y=1, text="Beyond ω·n", font=dict(size=11, color=COLORS["highlight"]), showarrow=False)
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="The Ordinal Number Line: Counting Beyond Infinity", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-1, 18]),
-        yaxis=dict(visible=False, range=[-1.5, 2]),
-        height=300,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="The Ordinal Number Line: Counting Beyond Infinity", font=dict(color=COLORS["text"], size=16)
+            ),
+            xaxis=dict(visible=False, range=[-1, 18]),
+            yaxis=dict(visible=False, range=[-1.5, 2]),
+            height=300,
+        )
+    )
     _fig
     return
 
@@ -468,51 +506,87 @@ def _(COLORS, base_layout, go, make_subplots):
     # 1 + ω: one car then omega cars
     _y1 = 0
     # The "1" car
-    _fig.add_trace(go.Scatter(
-        x=[0], y=[_y1], mode="markers+text",
-        marker=dict(size=30, color=COLORS["secondary"], symbol="square"),
-        text=["1"], textposition="middle center",
-        textfont=dict(size=10, color="white"),
-        showlegend=False,
-    ), row=1, col=1)
-    # The omega cars
-    for _i in range(8):
-        _fig.add_trace(go.Scatter(
-            x=[_i + 1.5], y=[_y1], mode="markers+text",
-            marker=dict(size=30, color=COLORS["tertiary"], symbol="square"),
-            text=[str(_i)], textposition="middle center",
+    _fig.add_trace(
+        go.Scatter(
+            x=[0],
+            y=[_y1],
+            mode="markers+text",
+            marker=dict(size=30, color=COLORS["secondary"], symbol="square"),
+            text=["1"],
+            textposition="middle center",
             textfont=dict(size=10, color="white"),
             showlegend=False,
-        ), row=1, col=1)
-    _fig.add_annotation(x=10, y=_y1, text="... = ω", font=dict(size=14, color=COLORS["tertiary"]), showarrow=False, row=1, col=1)
+        ),
+        row=1,
+        col=1,
+    )
+    # The omega cars
+    for _i in range(8):
+        _fig.add_trace(
+            go.Scatter(
+                x=[_i + 1.5],
+                y=[_y1],
+                mode="markers+text",
+                marker=dict(size=30, color=COLORS["tertiary"], symbol="square"),
+                text=[str(_i)],
+                textposition="middle center",
+                textfont=dict(size=10, color="white"),
+                showlegend=False,
+            ),
+            row=1,
+            col=1,
+        )
+    _fig.add_annotation(
+        x=10, y=_y1, text="... = ω", font=dict(size=14, color=COLORS["tertiary"]), showarrow=False, row=1, col=1
+    )
 
     # ω + 1: omega cars then one car
     _y2 = 0
     for _i in range(8):
-        _fig.add_trace(go.Scatter(
-            x=[_i], y=[_y2], mode="markers+text",
-            marker=dict(size=30, color=COLORS["tertiary"], symbol="square"),
-            text=[str(_i)], textposition="middle center",
+        _fig.add_trace(
+            go.Scatter(
+                x=[_i],
+                y=[_y2],
+                mode="markers+text",
+                marker=dict(size=30, color=COLORS["tertiary"], symbol="square"),
+                text=[str(_i)],
+                textposition="middle center",
+                textfont=dict(size=10, color="white"),
+                showlegend=False,
+            ),
+            row=2,
+            col=1,
+        )
+    _fig.add_annotation(
+        x=8.5, y=_y2, text="...", font=dict(size=14, color=COLORS["tertiary"]), showarrow=False, row=2, col=1
+    )
+    # The "+1" car at the end
+    _fig.add_trace(
+        go.Scatter(
+            x=[10],
+            y=[_y2],
+            mode="markers+text",
+            marker=dict(size=30, color=COLORS["secondary"], symbol="square"),
+            text=["ω"],
+            textposition="middle center",
             textfont=dict(size=10, color="white"),
             showlegend=False,
-        ), row=2, col=1)
-    _fig.add_annotation(x=8.5, y=_y2, text="...", font=dict(size=14, color=COLORS["tertiary"]), showarrow=False, row=2, col=1)
-    # The "+1" car at the end
-    _fig.add_trace(go.Scatter(
-        x=[10], y=[_y2], mode="markers+text",
-        marker=dict(size=30, color=COLORS["secondary"], symbol="square"),
-        text=["ω"], textposition="middle center",
-        textfont=dict(size=10, color="white"),
-        showlegend=False,
-    ), row=2, col=1)
-    _fig.add_annotation(x=11, y=_y2, text="← NEW!", font=dict(size=12, color=COLORS["secondary"]), showarrow=False, row=2, col=1)
+        ),
+        row=2,
+        col=1,
+    )
+    _fig.add_annotation(
+        x=11, y=_y2, text="← NEW!", font=dict(size=12, color=COLORS["secondary"]), showarrow=False, row=2, col=1
+    )
 
     _fig.update_xaxes(visible=False, range=[-1, 12])
     _fig.update_yaxes(visible=False, range=[-1, 1])
-    _fig.update_layout(**base_layout(
-        title=dict(text="Ordinal Addition is NOT Commutative", font=dict(color=COLORS["text"], size=16)),
-        height=350,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Ordinal Addition is NOT Commutative", font=dict(color=COLORS["text"], size=16)),
+            height=350,
+        )
+    )
     _fig.update_annotations(font=dict(color=COLORS["text"]))
     _fig
     return
@@ -727,49 +801,86 @@ def _(COLORS, base_layout, go):
 
     # First copy of N (top)
     for _i in range(6):
-        _fig.add_trace(go.Scatter(
-            x=[_i * 2], y=[2], mode="markers+text",
-            marker=dict(size=35, color=COLORS["tertiary"]),
-            text=[f"a{_i}"], textposition="middle center",
-            textfont=dict(size=11, color=COLORS["background"]),
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[_i * 2],
+                y=[2],
+                mode="markers+text",
+                marker=dict(size=35, color=COLORS["tertiary"]),
+                text=[f"a{_i}"],
+                textposition="middle center",
+                textfont=dict(size=11, color=COLORS["background"]),
+                showlegend=False,
+            )
+        )
 
     # Second copy of N (middle)
     for _i in range(6):
-        _fig.add_trace(go.Scatter(
-            x=[_i * 2], y=[0], mode="markers+text",
-            marker=dict(size=35, color=COLORS["secondary"]),
-            text=[f"b{_i}"], textposition="middle center",
-            textfont=dict(size=11, color=COLORS["background"]),
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[_i * 2],
+                y=[0],
+                mode="markers+text",
+                marker=dict(size=35, color=COLORS["secondary"]),
+                text=[f"b{_i}"],
+                textposition="middle center",
+                textfont=dict(size=11, color=COLORS["background"]),
+                showlegend=False,
+            )
+        )
 
     # Interleaved result (bottom)
     _labels = ["a0", "b0", "a1", "b1", "a2", "b2", "a3", "b3", "a4", "b4", "a5", "b5"]
     _colors = [COLORS["tertiary"], COLORS["secondary"]] * 6
     for _i, (_lbl, _col) in enumerate(zip(_labels, _colors)):
-        _fig.add_trace(go.Scatter(
-            x=[_i * 0.9], y=[-2], mode="markers+text",
-            marker=dict(size=30, color=_col),
-            text=[_lbl], textposition="middle center",
-            textfont=dict(size=9, color=COLORS["background"]),
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[_i * 0.9],
+                y=[-2],
+                mode="markers+text",
+                marker=dict(size=30, color=_col),
+                text=[_lbl],
+                textposition="middle center",
+                textfont=dict(size=9, color=COLORS["background"]),
+                showlegend=False,
+            )
+        )
 
     # Arrows showing interleaving
     for _i in range(6):
         # From top to bottom
         _fig.add_annotation(
-            x=_i * 0.9 * 2, y=-1.5, ax=_i * 2, ay=1.5,
-            xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.5, arrowcolor=COLORS["tertiary"], opacity=0.5,
+            x=_i * 0.9 * 2,
+            y=-1.5,
+            ax=_i * 2,
+            ay=1.5,
+            xref="x",
+            yref="y",
+            axref="x",
+            ayref="y",
+            showarrow=True,
+            arrowhead=2,
+            arrowsize=1,
+            arrowwidth=1.5,
+            arrowcolor=COLORS["tertiary"],
+            opacity=0.5,
         )
         # From middle to bottom
         _fig.add_annotation(
-            x=_i * 0.9 * 2 + 0.9, y=-1.5, ax=_i * 2, ay=-0.5,
-            xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.5, arrowcolor=COLORS["secondary"], opacity=0.5,
+            x=_i * 0.9 * 2 + 0.9,
+            y=-1.5,
+            ax=_i * 2,
+            ay=-0.5,
+            xref="x",
+            yref="y",
+            axref="x",
+            ayref="y",
+            showarrow=True,
+            arrowhead=2,
+            arrowsize=1,
+            arrowwidth=1.5,
+            arrowcolor=COLORS["secondary"],
+            opacity=0.5,
         )
 
     # Labels
@@ -780,12 +891,14 @@ def _(COLORS, base_layout, go):
     _fig.add_annotation(x=12, y=0, text="...", font=dict(size=14, color=COLORS["secondary"]), showarrow=False)
     _fig.add_annotation(x=11, y=-2, text="...", font=dict(size=14, color=COLORS["primary"]), showarrow=False)
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Cardinal Addition: ℵ₀ + ℵ₀ = ℵ₀ (Interleaving)", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-3, 14]),
-        yaxis=dict(visible=False, range=[-3.5, 3.5]),
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Cardinal Addition: ℵ₀ + ℵ₀ = ℵ₀ (Interleaving)", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(visible=False, range=[-3, 14]),
+            yaxis=dict(visible=False, range=[-3.5, 3.5]),
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -863,10 +976,7 @@ def _(mo):
 @app.cell
 def _(mo):
     # Slider for Cantor pairing animation
-    pairing_step = mo.ui.slider(
-        start=0, stop=20, step=1, value=10,
-        label="Number of points to show:"
-    )
+    pairing_step = mo.ui.slider(start=0, stop=20, step=1, value=10, label="Number of points to show:")
     return (pairing_step,)
 
 
@@ -900,46 +1010,57 @@ def _(COLORS, base_layout, go, np, pairing_step):
 
     # Draw grid
     for _i in range(7):
-        _fig.add_trace(go.Scatter(
-            x=[_i] * 7, y=list(range(7)),
-            mode="markers",
-            marker=dict(size=20, color="rgba(74, 85, 104, 0.3)"),
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[_i] * 7,
+                y=list(range(7)),
+                mode="markers",
+                marker=dict(size=20, color="rgba(74, 85, 104, 0.3)"),
+                showlegend=False,
+            )
+        )
 
     # Draw path
     if len(_points) > 1:
         _px = [_p[0] for _p in _points]
         _py = [_p[1] for _p in _points]
-        _fig.add_trace(go.Scatter(
-            x=_px, y=_py,
-            mode="lines",
-            line=dict(color=COLORS["primary"], width=2),
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=_px,
+                y=_py,
+                mode="lines",
+                line=dict(color=COLORS["primary"], width=2),
+                showlegend=False,
+            )
+        )
 
     # Draw visited points with numbers
     for _idx, (_m, _n) in enumerate(_points):
-        _fig.add_trace(go.Scatter(
-            x=[_m], y=[_n],
-            mode="markers+text",
-            marker=dict(size=30, color=COLORS["tertiary"]),
-            text=[str(_idx)],
-            textposition="middle center",
-            textfont=dict(size=10, color=COLORS["background"]),
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[_m],
+                y=[_n],
+                mode="markers+text",
+                marker=dict(size=30, color=COLORS["tertiary"]),
+                text=[str(_idx)],
+                textposition="middle center",
+                textfont=dict(size=10, color=COLORS["background"]),
+                showlegend=False,
+            )
+        )
 
     # Axis labels
     _fig.add_annotation(x=3, y=-0.8, text="m", font=dict(size=14, color=COLORS["text_secondary"]), showarrow=False)
     _fig.add_annotation(x=-0.8, y=3, text="n", font=dict(size=14, color=COLORS["text_secondary"]), showarrow=False)
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Cantor Pairing: π(m,n) = ½(m+n)(m+n+1) + n", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-1.5, 7]),
-        yaxis=dict(visible=False, range=[-1.5, 7], scaleanchor="x"),
-        height=450,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Cantor Pairing: π(m,n) = ½(m+n)(m+n+1) + n", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(visible=False, range=[-1.5, 7]),
+            yaxis=dict(visible=False, range=[-1.5, 7], scaleanchor="x"),
+            height=450,
+        )
+    )
     _fig
     return
 
@@ -1062,11 +1183,7 @@ def _(mo):
 @app.cell
 def _(mo):
     # Interactive demonstration of Cantor's theorem
-    cantor_element = mo.ui.dropdown(
-        options={"a": "a", "b": "b", "c": "c"},
-        value="a",
-        label="Select element to check:"
-    )
+    cantor_element = mo.ui.dropdown(options={"a": "a", "b": "b", "c": "c"}, value="a", label="Select element to check:")
     return (cantor_element,)
 
 
@@ -1112,7 +1229,9 @@ def _(COLORS, base_layout, go):
     # Headers
     _headers = ["Element x", "f(x)", "x ∈ f(x)?", "x ∈ D?"]
     for _i, _h in enumerate(_headers):
-        _fig.add_annotation(x=_i, y=4, text=_h, font=dict(size=12, color=COLORS["primary"], family="monospace"), showarrow=False)
+        _fig.add_annotation(
+            x=_i, y=4, text=_h, font=dict(size=12, color=COLORS["primary"], family="monospace"), showarrow=False
+        )
 
     # Data rows
     for _row, (_e, _img, _own, _d) in enumerate(zip(_elements, _images, _in_own, _in_D)):
@@ -1123,15 +1242,27 @@ def _(COLORS, base_layout, go):
         _fig.add_annotation(x=3, y=_y, text=_d, font=dict(size=14, color=COLORS["secondary"]), showarrow=False)
 
     # Diagonal set result
-    _fig.add_annotation(x=1.5, y=0, text="D = {x : x ∉ f(x)} = ∅", font=dict(size=14, color=COLORS["highlight"]), showarrow=False)
-    _fig.add_annotation(x=1.5, y=-0.7, text="D is NOT in the range of f!", font=dict(size=12, color=COLORS["secondary"]), showarrow=False)
+    _fig.add_annotation(
+        x=1.5, y=0, text="D = {x : x ∉ f(x)} = ∅", font=dict(size=14, color=COLORS["highlight"]), showarrow=False
+    )
+    _fig.add_annotation(
+        x=1.5,
+        y=-0.7,
+        text="D is NOT in the range of f!",
+        font=dict(size=12, color=COLORS["secondary"]),
+        showarrow=False,
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Cantor's Diagonal Argument: Building the 'Missing' Set", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-1, 4]),
-        yaxis=dict(visible=False, range=[-1.5, 5]),
-        height=350,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Cantor's Diagonal Argument: Building the 'Missing' Set", font=dict(color=COLORS["text"], size=16)
+            ),
+            xaxis=dict(visible=False, range=[-1, 4]),
+            yaxis=dict(visible=False, range=[-1.5, 5]),
+            height=350,
+        )
+    )
     _fig
     return
 
@@ -1360,13 +1491,18 @@ def _(COLORS, base_layout, go, np):
         for _i, _e in enumerate(_elements):
             _ex = _x_range[0] + (_i + 0.5) * (_x_range[1] - _x_range[0]) / len(_elements)
             _ey = 0
-            _fig.add_trace(go.Scatter(
-                x=[_ex], y=[_ey], mode="markers+text",
-                marker=dict(size=20, color=_color),
-                text=[_e], textposition="middle center",
-                textfont=dict(size=10, color=COLORS["background"]),
-                showlegend=False,
-            ))
+            _fig.add_trace(
+                go.Scatter(
+                    x=[_ex],
+                    y=[_ey],
+                    mode="markers+text",
+                    marker=dict(size=20, color=_color),
+                    text=[_e],
+                    textposition="middle center",
+                    textfont=dict(size=10, color=COLORS["background"]),
+                    showlegend=False,
+                )
+            )
 
         # Set label
         _fig.add_annotation(x=_cx, y=1.2, text=_name, font=dict(size=14, color=_color), showarrow=False)
@@ -1375,21 +1511,43 @@ def _(COLORS, base_layout, go, np):
     _choices = [(-2.5, "b"), (-0.25, "y"), (2.4, "r")]
     for (_x, _lbl), (_, _x_range, _elements, _color) in zip(_choices, _sets):
         _fig.add_annotation(
-            x=_x, y=-1.5, ax=_x, ay=-0.3,
-            xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True, arrowhead=2, arrowsize=1.5, arrowwidth=2, arrowcolor=COLORS["primary"],
+            x=_x,
+            y=-1.5,
+            ax=_x,
+            ay=-0.3,
+            xref="x",
+            yref="y",
+            axref="x",
+            ayref="y",
+            showarrow=True,
+            arrowhead=2,
+            arrowsize=1.5,
+            arrowwidth=2,
+            arrowcolor=COLORS["primary"],
         )
 
     # Choice function result
-    _fig.add_annotation(x=-0.25, y=-2, text="f: {A₁, A₂, A₃} → elements", font=dict(size=12, color=COLORS["primary"]), showarrow=False)
-    _fig.add_annotation(x=-0.25, y=-2.5, text="f(A₁)=b, f(A₂)=y, f(A₃)=r", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(
+        x=-0.25, y=-2, text="f: {A₁, A₂, A₃} → elements", font=dict(size=12, color=COLORS["primary"]), showarrow=False
+    )
+    _fig.add_annotation(
+        x=-0.25,
+        y=-2.5,
+        text="f(A₁)=b, f(A₂)=y, f(A₃)=r",
+        font=dict(size=11, color=COLORS["text_secondary"]),
+        showarrow=False,
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Axiom of Choice: Selecting One Element from Each Set", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-5, 5]),
-        yaxis=dict(visible=False, range=[-3, 2]),
-        height=350,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Axiom of Choice: Selecting One Element from Each Set", font=dict(color=COLORS["text"], size=16)
+            ),
+            xaxis=dict(visible=False, range=[-5, 5]),
+            yaxis=dict(visible=False, range=[-3, 2]),
+            height=350,
+        )
+    )
     _fig
     return
 
@@ -1487,34 +1645,57 @@ def _(COLORS, base_layout, go):
 
     # Draw nodes
     for _name, (_x, _y) in _nodes.items():
-        _fig.add_trace(go.Scatter(
-            x=[_x], y=[_y], mode="markers+text",
-            marker=dict(size=60, color=COLORS["tertiary"]),
-            text=[_name], textposition="middle center",
-            textfont=dict(size=11, color=COLORS["background"]),
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[_x],
+                y=[_y],
+                mode="markers+text",
+                marker=dict(size=60, color=COLORS["tertiary"]),
+                text=[_name],
+                textposition="middle center",
+                textfont=dict(size=11, color=COLORS["background"]),
+                showlegend=False,
+            )
+        )
 
     # Draw double arrows (equivalences)
     _edges = [("AC", "Zorn"), ("AC", "WO"), ("Zorn", "Hausdorff"), ("WO", "Hausdorff")]
     for _a, _b in _edges:
         _x0, _y0 = _nodes[_a]
         _x1, _y1 = _nodes[_b]
-        _fig.add_trace(go.Scatter(
-            x=[_x0, _x1], y=[_y0, _y1], mode="lines",
-            line=dict(color=COLORS["primary"], width=2),
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[_x0, _x1],
+                y=[_y0, _y1],
+                mode="lines",
+                line=dict(color=COLORS["primary"], width=2),
+                showlegend=False,
+            )
+        )
 
-    _fig.add_annotation(x=0, y=1, text="All Four Are Logically Equivalent!", font=dict(size=14, color=COLORS["highlight"]), showarrow=False)
-    _fig.add_annotation(x=-2, y=-3.2, text="If any one is true,\nall are true", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(
+        x=0,
+        y=1,
+        text="All Four Are Logically Equivalent!",
+        font=dict(size=14, color=COLORS["highlight"]),
+        showarrow=False,
+    )
+    _fig.add_annotation(
+        x=-2,
+        y=-3.2,
+        text="If any one is true,\nall are true",
+        font=dict(size=11, color=COLORS["text_secondary"]),
+        showarrow=False,
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="The Equivalence of Choice Principles", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-4, 4]),
-        yaxis=dict(visible=False, range=[-4, 2]),
-        height=350,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="The Equivalence of Choice Principles", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(visible=False, range=[-4, 4]),
+            yaxis=dict(visible=False, range=[-4, 2]),
+            height=350,
+        )
+    )
     _fig
     return
 
@@ -1749,11 +1930,15 @@ def _(COLORS, base_layout, go, np):
             else:
                 _color = COLORS["highlight"]  # zero
 
-            _fig.add_trace(go.Scatter(
-                x=[_a], y=[_b], mode="markers",
-                marker=dict(size=25, color=_color, opacity=0.7),
-                showlegend=False,
-            ))
+            _fig.add_trace(
+                go.Scatter(
+                    x=[_a],
+                    y=[_b],
+                    mode="markers",
+                    marker=dict(size=25, color=_color, opacity=0.7),
+                    showlegend=False,
+                )
+            )
 
     # Draw diagonal lines for equivalence classes
     for _k in range(-5, 6):
@@ -1761,29 +1946,44 @@ def _(COLORS, base_layout, go, np):
         _y0 = max(0, -_k)
         _x1 = min(5, 5 + _k)
         _y1 = min(5, 5 - _k)
-        _fig.add_trace(go.Scatter(
-            x=[_x0, _x1], y=[_y0, _y1], mode="lines",
-            line=dict(color="rgba(255,255,255,0.2)", width=1),
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[_x0, _x1],
+                y=[_y0, _y1],
+                mode="lines",
+                line=dict(color="rgba(255,255,255,0.2)", width=1),
+                showlegend=False,
+            )
+        )
 
     # Labels
-    _fig.add_annotation(x=2.5, y=-1, text="a (first component)", font=dict(size=12, color=COLORS["text_secondary"]), showarrow=False)
-    _fig.add_annotation(x=-1, y=2.5, text="b", font=dict(size=12, color=COLORS["text_secondary"]), showarrow=False, textangle=-90)
+    _fig.add_annotation(
+        x=2.5, y=-1, text="a (first component)", font=dict(size=12, color=COLORS["text_secondary"]), showarrow=False
+    )
+    _fig.add_annotation(
+        x=-1, y=2.5, text="b", font=dict(size=12, color=COLORS["text_secondary"]), showarrow=False, textangle=-90
+    )
 
     # Legend
     _fig.add_annotation(x=7, y=5, text="Positive", font=dict(size=11, color=COLORS["tertiary"]), showarrow=False)
     _fig.add_annotation(x=7, y=4, text="Zero", font=dict(size=11, color=COLORS["highlight"]), showarrow=False)
     _fig.add_annotation(x=7, y=3, text="Negative", font=dict(size=11, color=COLORS["secondary"]), showarrow=False)
 
-    _fig.add_annotation(x=2.5, y=6.5, text="Each diagonal = one integer", font=dict(size=12, color=COLORS["primary"]), showarrow=False)
+    _fig.add_annotation(
+        x=2.5, y=6.5, text="Each diagonal = one integer", font=dict(size=12, color=COLORS["primary"]), showarrow=False
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Integers as Equivalence Classes: (a,b) ~ (c,d) iff a+d = b+c", font=dict(color=COLORS["text"], size=14)),
-        xaxis=dict(visible=False, range=[-1.5, 8]),
-        yaxis=dict(visible=False, range=[-1.5, 7], scaleanchor="x"),
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Integers as Equivalence Classes: (a,b) ~ (c,d) iff a+d = b+c",
+                font=dict(color=COLORS["text"], size=14),
+            ),
+            xaxis=dict(visible=False, range=[-1.5, 8]),
+            yaxis=dict(visible=False, range=[-1.5, 7], scaleanchor="x"),
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -1920,10 +2120,7 @@ def _(mo):
 @app.cell
 def _(mo):
     # Interactive Dedekind cut slider
-    cut_value = mo.ui.slider(
-        start=0, stop=3, step=0.1, value=1.414,
-        label="Cut position (approximating √2 ≈ 1.414):"
-    )
+    cut_value = mo.ui.slider(start=0, stop=3, step=0.1, value=1.414, label="Cut position (approximating √2 ≈ 1.414):")
     return (cut_value,)
 
 
@@ -1934,11 +2131,15 @@ def _(COLORS, base_layout, cut_value, go, np):
     _fig = go.Figure()
 
     # Draw number line
-    _fig.add_trace(go.Scatter(
-        x=[-0.5, 3.5], y=[0, 0], mode="lines",
-        line=dict(color=COLORS["muted"], width=3),
-        showlegend=False,
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=[-0.5, 3.5],
+            y=[0, 0],
+            mode="lines",
+            line=dict(color=COLORS["muted"], width=3),
+            showlegend=False,
+        )
+    )
 
     # Sample rationals
     _rationals = [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3]
@@ -1946,31 +2147,48 @@ def _(COLORS, base_layout, cut_value, go, np):
     for _q in _rationals:
         _color = COLORS["tertiary"] if _q < _cut else COLORS["secondary"]
         _label = "L" if _q < _cut else "R"
-        _fig.add_trace(go.Scatter(
-            x=[_q], y=[0], mode="markers",
-            marker=dict(size=20, color=_color),
-            showlegend=False,
-        ))
-        _fig.add_annotation(x=_q, y=-0.4, text=str(_q), font=dict(size=9, color=COLORS["text_secondary"]), showarrow=False)
+        _fig.add_trace(
+            go.Scatter(
+                x=[_q],
+                y=[0],
+                mode="markers",
+                marker=dict(size=20, color=_color),
+                showlegend=False,
+            )
+        )
+        _fig.add_annotation(
+            x=_q, y=-0.4, text=str(_q), font=dict(size=9, color=COLORS["text_secondary"]), showarrow=False
+        )
 
     # Draw cut line
-    _fig.add_trace(go.Scatter(
-        x=[_cut, _cut], y=[-0.6, 0.6], mode="lines",
-        line=dict(color=COLORS["highlight"], width=2, dash="dash"),
-        showlegend=False,
-    ))
-    _fig.add_annotation(x=_cut, y=0.9, text=f"cut at {_cut:.3f}", font=dict(size=12, color=COLORS["highlight"]), showarrow=False)
+    _fig.add_trace(
+        go.Scatter(
+            x=[_cut, _cut],
+            y=[-0.6, 0.6],
+            mode="lines",
+            line=dict(color=COLORS["highlight"], width=2, dash="dash"),
+            showlegend=False,
+        )
+    )
+    _fig.add_annotation(
+        x=_cut, y=0.9, text=f"cut at {_cut:.3f}", font=dict(size=12, color=COLORS["highlight"]), showarrow=False
+    )
 
     # Labels
     _fig.add_annotation(x=0.5, y=0.6, text="L (lower)", font=dict(size=12, color=COLORS["tertiary"]), showarrow=False)
     _fig.add_annotation(x=2.5, y=0.6, text="R (upper)", font=dict(size=12, color=COLORS["secondary"]), showarrow=False)
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Dedekind Cut: The gap between L and R IS the real number", font=dict(color=COLORS["text"], size=14)),
-        xaxis=dict(visible=False, range=[-0.8, 4]),
-        yaxis=dict(visible=False, range=[-1, 1.5]),
-        height=300,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Dedekind Cut: The gap between L and R IS the real number",
+                font=dict(color=COLORS["text"], size=14),
+            ),
+            xaxis=dict(visible=False, range=[-0.8, 4]),
+            yaxis=dict(visible=False, range=[-1, 1.5]),
+            height=300,
+        )
+    )
     _fig
     return
 
@@ -2051,30 +2269,51 @@ def _(COLORS, base_layout, go):
     for _name, _y, _color, _desc in _levels:
         # Box
         _fig.add_shape(
-            type="rect", x0=-2, x1=2, y0=_y - 0.35, y1=_y + 0.35,
-            fillcolor=_color, opacity=0.2,
+            type="rect",
+            x0=-2,
+            x1=2,
+            y0=_y - 0.35,
+            y1=_y + 0.35,
+            fillcolor=_color,
+            opacity=0.2,
             line=dict(color=_color, width=2),
         )
         # Label
         _fig.add_annotation(x=-1.5, y=_y, text=_name, font=dict(size=24, color=_color), showarrow=False)
-        _fig.add_annotation(x=0.5, y=_y, text=_desc, font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+        _fig.add_annotation(
+            x=0.5, y=_y, text=_desc, font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False
+        )
 
     # Inclusion arrows
     for _i in range(3):
         _fig.add_annotation(
-            x=-1.5, y=_i + 0.6, ax=-1.5, ay=_i + 0.4,
-            xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True, arrowhead=2, arrowsize=1.5, arrowwidth=2, arrowcolor=COLORS["text_secondary"],
+            x=-1.5,
+            y=_i + 0.6,
+            ax=-1.5,
+            ay=_i + 0.4,
+            xref="x",
+            yref="y",
+            axref="x",
+            ayref="y",
+            showarrow=True,
+            arrowhead=2,
+            arrowsize=1.5,
+            arrowwidth=2,
+            arrowcolor=COLORS["text_secondary"],
         )
 
-    _fig.add_annotation(x=-3, y=1.5, text="⊂", font=dict(size=30, color=COLORS["text_secondary"]), showarrow=False, textangle=90)
+    _fig.add_annotation(
+        x=-3, y=1.5, text="⊂", font=dict(size=30, color=COLORS["text_secondary"]), showarrow=False, textangle=90
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="The Number System Tower: Built from ∅", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-4, 4]),
-        yaxis=dict(visible=False, range=[-0.8, 4]),
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="The Number System Tower: Built from ∅", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(visible=False, range=[-4, 4]),
+            yaxis=dict(visible=False, range=[-0.8, 4]),
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -2154,46 +2393,75 @@ def _(COLORS, base_layout, go):
 
         # Draw domain
         for _di, _d in enumerate(_domain):
-            _fig.add_trace(go.Scatter(
-                x=[_base_x], y=[2 - _di], mode="markers+text",
-                marker=dict(size=25, color=COLORS["tertiary"]),
-                text=[_d], textposition="middle center",
-                textfont=dict(size=12, color=COLORS["background"]),
-                showlegend=False,
-            ))
+            _fig.add_trace(
+                go.Scatter(
+                    x=[_base_x],
+                    y=[2 - _di],
+                    mode="markers+text",
+                    marker=dict(size=25, color=COLORS["tertiary"]),
+                    text=[_d],
+                    textposition="middle center",
+                    textfont=dict(size=12, color=COLORS["background"]),
+                    showlegend=False,
+                )
+            )
 
         # Draw codomain
         for _ci, _c in enumerate(_codomain):
-            _fig.add_trace(go.Scatter(
-                x=[_base_x + 1.5], y=[1.5 - _ci], mode="markers+text",
-                marker=dict(size=25, color=COLORS["secondary"]),
-                text=[_c], textposition="middle center",
-                textfont=dict(size=12, color=COLORS["background"]),
-                showlegend=False,
-            ))
+            _fig.add_trace(
+                go.Scatter(
+                    x=[_base_x + 1.5],
+                    y=[1.5 - _ci],
+                    mode="markers+text",
+                    marker=dict(size=25, color=COLORS["secondary"]),
+                    text=[_c],
+                    textposition="middle center",
+                    textfont=dict(size=12, color=COLORS["background"]),
+                    showlegend=False,
+                )
+            )
 
         # Draw arrows
         for _di, _d in enumerate(_domain):
             _target = _fmap[_d]
             _ti = _codomain.index(_target)
             _fig.add_annotation(
-                x=_base_x + 1.3, y=1.5 - _ti,
-                ax=_base_x + 0.2, ay=2 - _di,
-                xref="x", yref="y", axref="x", ayref="y",
-                showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.5, arrowcolor=COLORS["primary"],
+                x=_base_x + 1.3,
+                y=1.5 - _ti,
+                ax=_base_x + 0.2,
+                ay=2 - _di,
+                xref="x",
+                yref="y",
+                axref="x",
+                ayref="y",
+                showarrow=True,
+                arrowhead=2,
+                arrowsize=1,
+                arrowwidth=1.5,
+                arrowcolor=COLORS["primary"],
             )
 
         # Function name
-        _fig.add_annotation(x=_base_x + 0.75, y=3, text=_fname, font=dict(size=12, color=COLORS["highlight"]), showarrow=False)
+        _fig.add_annotation(
+            x=_base_x + 0.75, y=3, text=_fname, font=dict(size=12, color=COLORS["highlight"]), showarrow=False
+        )
 
-    _fig.add_annotation(x=5.5, y=-1, text="...and 4 more functions (2³ = 8 total)", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(
+        x=5.5,
+        y=-1,
+        text="...and 4 more functions (2³ = 8 total)",
+        font=dict(size=11, color=COLORS["text_secondary"]),
+        showarrow=False,
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Function Space {0,1}^{a,b,c}: All 8 Functions", font=dict(color=COLORS["text"], size=14)),
-        xaxis=dict(visible=False, range=[-1, 12]),
-        yaxis=dict(visible=False, range=[-2, 4]),
-        height=350,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Function Space {0,1}^{a,b,c}: All 8 Functions", font=dict(color=COLORS["text"], size=14)),
+            xaxis=dict(visible=False, range=[-1, 12]),
+            yaxis=dict(visible=False, range=[-2, 4]),
+            height=350,
+        )
+    )
     _fig
     return
 
@@ -2267,47 +2535,79 @@ def _(COLORS, base_layout, go):
 
     # Draw A (evens)
     for _i, (_a, _y) in enumerate(zip(_A, _A_y)):
-        _fig.add_trace(go.Scatter(
-            x=[0], y=[_y], mode="markers+text",
-            marker=dict(size=30, color=COLORS["tertiary"]),
-            text=[_a], textposition="middle center",
-            textfont=dict(size=12, color=COLORS["background"]),
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[0],
+                y=[_y],
+                mode="markers+text",
+                marker=dict(size=30, color=COLORS["tertiary"]),
+                text=[_a],
+                textposition="middle center",
+                textfont=dict(size=12, color=COLORS["background"]),
+                showlegend=False,
+            )
+        )
 
     # Draw B (naturals)
     for _i, (_b, _y) in enumerate(zip(_B, _B_y)):
-        _fig.add_trace(go.Scatter(
-            x=[4], y=[_y], mode="markers+text",
-            marker=dict(size=30, color=COLORS["secondary"]),
-            text=[_b], textposition="middle center",
-            textfont=dict(size=12, color=COLORS["background"]),
-            showlegend=False,
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[4],
+                y=[_y],
+                mode="markers+text",
+                marker=dict(size=30, color=COLORS["secondary"]),
+                text=[_b],
+                textposition="middle center",
+                textfont=dict(size=12, color=COLORS["background"]),
+                showlegend=False,
+            )
+        )
 
     # Injection f: A → B (inclusion: 0→0, 2→2, 4→4, 6→6) - evens into naturals
     _f_arrows = [(0, 0), (1, 2), (2, 4)]  # 0→0, 2→2, 4→4
     for _ai, _bi in _f_arrows:
         _fig.add_annotation(
-            x=3.7, y=_B_y[_bi], ax=0.3, ay=_A_y[_ai],
-            xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True, arrowhead=2, arrowsize=1.2, arrowwidth=2, arrowcolor=COLORS["primary"],
+            x=3.7,
+            y=_B_y[_bi],
+            ax=0.3,
+            ay=_A_y[_ai],
+            xref="x",
+            yref="y",
+            axref="x",
+            ayref="y",
+            showarrow=True,
+            arrowhead=2,
+            arrowsize=1.2,
+            arrowwidth=2,
+            arrowcolor=COLORS["primary"],
         )
 
     # Labels
     _fig.add_annotation(x=0, y=4.2, text="A = Evens", font=dict(size=12, color=COLORS["tertiary"]), showarrow=False)
     _fig.add_annotation(x=4, y=4.2, text="B = ℕ", font=dict(size=12, color=COLORS["secondary"]), showarrow=False)
     _fig.add_annotation(x=2, y=4.2, text="f: n ↦ n", font=dict(size=11, color=COLORS["primary"]), showarrow=False)
-    _fig.add_annotation(x=2, y=-1.5, text="f: A ↪ B (inclusion)", font=dict(size=10, color=COLORS["primary"]), showarrow=False)
-    _fig.add_annotation(x=2, y=-2, text="g: B ↪ A (n ↦ 2n)", font=dict(size=10, color=COLORS["highlight"]), showarrow=False)
-    _fig.add_annotation(x=2, y=-2.7, text="Both injections exist ⟹ |A| = |B|", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(
+        x=2, y=-1.5, text="f: A ↪ B (inclusion)", font=dict(size=10, color=COLORS["primary"]), showarrow=False
+    )
+    _fig.add_annotation(
+        x=2, y=-2, text="g: B ↪ A (n ↦ 2n)", font=dict(size=10, color=COLORS["highlight"]), showarrow=False
+    )
+    _fig.add_annotation(
+        x=2,
+        y=-2.7,
+        text="Both injections exist ⟹ |A| = |B|",
+        font=dict(size=11, color=COLORS["text_secondary"]),
+        showarrow=False,
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Schröder-Bernstein: Evens ↔ Naturals", font=dict(color=COLORS["text"], size=14)),
-        xaxis=dict(visible=False, range=[-1, 5]),
-        yaxis=dict(visible=False, range=[-3.5, 5]),
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Schröder-Bernstein: Evens ↔ Naturals", font=dict(color=COLORS["text"], size=14)),
+            xaxis=dict(visible=False, range=[-1, 5]),
+            yaxis=dict(visible=False, range=[-3.5, 5]),
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -2389,30 +2689,42 @@ def _(COLORS, base_layout, go, np):
     _x = np.linspace(-0.5, 2, 200)
 
     # f(x) = x²
-    _y_f = _x ** 2
+    _y_f = _x**2
 
     # y = x line
     _y_id = _x
 
-    _fig.add_trace(go.Scatter(x=_x, y=_y_f, mode="lines", name="f(x) = x²", line=dict(color=COLORS["tertiary"], width=2)))
-    _fig.add_trace(go.Scatter(x=_x, y=_y_id, mode="lines", name="y = x", line=dict(color=COLORS["secondary"], width=2, dash="dash")))
+    _fig.add_trace(
+        go.Scatter(x=_x, y=_y_f, mode="lines", name="f(x) = x²", line=dict(color=COLORS["tertiary"], width=2))
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=_x, y=_y_id, mode="lines", name="y = x", line=dict(color=COLORS["secondary"], width=2, dash="dash")
+        )
+    )
 
     # Mark fixed points
-    _fig.add_trace(go.Scatter(
-        x=[0, 1], y=[0, 1], mode="markers",
-        marker=dict(size=15, color=COLORS["highlight"], symbol="star"),
-        name="Fixed points",
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=[0, 1],
+            y=[0, 1],
+            mode="markers",
+            marker=dict(size=15, color=COLORS["highlight"], symbol="star"),
+            name="Fixed points",
+        )
+    )
 
     _fig.add_annotation(x=0, y=-0.15, text="x=0", font=dict(size=11, color=COLORS["highlight"]), showarrow=False)
     _fig.add_annotation(x=1, y=1.15, text="x=1", font=dict(size=11, color=COLORS["highlight"]), showarrow=False)
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Fixed Points: Where f(x) = x", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(title="x", color=COLORS["text_secondary"], gridcolor="rgba(255,255,255,0.1)", range=[-0.5, 2]),
-        yaxis=dict(title="y", color=COLORS["text_secondary"], gridcolor="rgba(255,255,255,0.1)", range=[-0.5, 2.5]),
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Fixed Points: Where f(x) = x", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(title="x", color=COLORS["text_secondary"], gridcolor="rgba(255,255,255,0.1)", range=[-0.5, 2]),
+            yaxis=dict(title="y", color=COLORS["text_secondary"], gridcolor="rgba(255,255,255,0.1)", range=[-0.5, 2.5]),
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -2492,11 +2804,8 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go):
+def _(COLORS, base_layout, plot_directed_graph):
     # Visualize the power set lattice P({a,b})
-    _fig = go.Figure()
-
-    # Elements of P({a,b}) with positions
     _elements = {
         "∅": (0, 0),
         "{a}": (-1, 1),
@@ -2504,39 +2813,44 @@ def _(COLORS, base_layout, go):
         "{a,b}": (0, 2),
     }
 
-    # Edges (Hasse diagram)
     _edges = [("∅", "{a}"), ("∅", "{b}"), ("{a}", "{a,b}"), ("{b}", "{a,b}")]
 
-    # Draw edges
-    for _a, _b in _edges:
-        _x0, _y0 = _elements[_a]
-        _x1, _y1 = _elements[_b]
-        _fig.add_trace(go.Scatter(
-            x=[_x0, _x1], y=[_y0, _y1], mode="lines",
-            line=dict(color=COLORS["muted"], width=2),
-            showlegend=False,
-        ))
+    _fig = plot_directed_graph(
+        nodes=_elements,
+        edges=_edges,
+        node_size=40,
+        node_color=COLORS["tertiary"],
+        edge_color=COLORS["muted"],
+        text_color=COLORS["background"],
+        title="Power Set Lattice P({a,b})",
+        show_arrows=False,
+    )
 
-    # Draw nodes
-    for _name, (_x, _y) in _elements.items():
-        _fig.add_trace(go.Scatter(
-            x=[_x], y=[_y], mode="markers+text",
-            marker=dict(size=40, color=COLORS["tertiary"]),
-            text=[_name], textposition="middle center",
-            textfont=dict(size=11, color=COLORS["background"]),
-            showlegend=False,
-        ))
+    _fig.add_annotation(
+        x=-2,
+        y=1,
+        text="{a} ∧ {b} = ∅\n(intersection)",
+        font=dict(size=10, color=COLORS["secondary"]),
+        showarrow=False,
+        align="left",
+    )
+    _fig.add_annotation(
+        x=2,
+        y=1,
+        text="{a} ∨ {b} = {a,b}\n(union)",
+        font=dict(size=10, color=COLORS["primary"]),
+        showarrow=False,
+        align="left",
+    )
 
-    # Annotations for meet and join
-    _fig.add_annotation(x=-2, y=1, text="{a} ∧ {b} = ∅\n(intersection)", font=dict(size=10, color=COLORS["secondary"]), showarrow=False, align="left")
-    _fig.add_annotation(x=2, y=1, text="{a} ∨ {b} = {a,b}\n(union)", font=dict(size=10, color=COLORS["primary"]), showarrow=False, align="left")
-
-    _fig.update_layout(**base_layout(
-        title=dict(text="Power Set Lattice P({a,b})", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-3.5, 3.5]),
-        yaxis=dict(visible=False, range=[-0.5, 3]),
-        height=350,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Power Set Lattice P({a,b})", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(visible=False, range=[-3.5, 3.5]),
+            yaxis=dict(visible=False, range=[-0.5, 3]),
+            height=350,
+        )
+    )
     _fig
     return
 
@@ -2618,7 +2932,9 @@ def _(mo):
 @app.cell
 def _(COLORS, base_layout, go, make_subplots):
     # Show N5 (pentagon) and M3 (diamond)
-    _fig = make_subplots(rows=1, cols=2, subplot_titles=["N₅ (Pentagon) - Not Modular", "M₃ (Diamond) - Not Distributive"])
+    _fig = make_subplots(
+        rows=1, cols=2, subplot_titles=["N₅ (Pentagon) - Not Modular", "M₃ (Diamond) - Not Distributive"]
+    )
 
     # N5 Pentagon: 0 < a < b < 1, and separately 0 < c < 1, with c incomparable to a,b
     _n5_nodes = {"0": (0, 0), "a": (-0.5, 1), "b": (-0.5, 2), "c": (0.5, 1.5), "1": (0, 3)}
@@ -2627,10 +2943,29 @@ def _(COLORS, base_layout, go, make_subplots):
     for _a, _b in _n5_edges:
         _x0, _y0 = _n5_nodes[_a]
         _x1, _y1 = _n5_nodes[_b]
-        _fig.add_trace(go.Scatter(x=[_x0, _x1], y=[_y0, _y1], mode="lines", line=dict(color=COLORS["muted"], width=2), showlegend=False), row=1, col=1)
+        _fig.add_trace(
+            go.Scatter(
+                x=[_x0, _x1], y=[_y0, _y1], mode="lines", line=dict(color=COLORS["muted"], width=2), showlegend=False
+            ),
+            row=1,
+            col=1,
+        )
 
     for _name, (_x, _y) in _n5_nodes.items():
-        _fig.add_trace(go.Scatter(x=[_x], y=[_y], mode="markers+text", marker=dict(size=30, color=COLORS["secondary"]), text=[_name], textposition="middle center", textfont=dict(size=12, color=COLORS["background"]), showlegend=False), row=1, col=1)
+        _fig.add_trace(
+            go.Scatter(
+                x=[_x],
+                y=[_y],
+                mode="markers+text",
+                marker=dict(size=30, color=COLORS["secondary"]),
+                text=[_name],
+                textposition="middle center",
+                textfont=dict(size=12, color=COLORS["background"]),
+                showlegend=False,
+            ),
+            row=1,
+            col=1,
+        )
 
     # M3 Diamond
     _m3_nodes = {"0": (0, 0), "a": (-0.7, 1), "b": (0, 1), "c": (0.7, 1), "1": (0, 2)}
@@ -2639,17 +2974,38 @@ def _(COLORS, base_layout, go, make_subplots):
     for _a, _b in _m3_edges:
         _x0, _y0 = _m3_nodes[_a]
         _x1, _y1 = _m3_nodes[_b]
-        _fig.add_trace(go.Scatter(x=[_x0, _x1], y=[_y0, _y1], mode="lines", line=dict(color=COLORS["muted"], width=2), showlegend=False), row=1, col=2)
+        _fig.add_trace(
+            go.Scatter(
+                x=[_x0, _x1], y=[_y0, _y1], mode="lines", line=dict(color=COLORS["muted"], width=2), showlegend=False
+            ),
+            row=1,
+            col=2,
+        )
 
     for _name, (_x, _y) in _m3_nodes.items():
-        _fig.add_trace(go.Scatter(x=[_x], y=[_y], mode="markers+text", marker=dict(size=30, color=COLORS["highlight"]), text=[_name], textposition="middle center", textfont=dict(size=12, color=COLORS["background"]), showlegend=False), row=1, col=2)
+        _fig.add_trace(
+            go.Scatter(
+                x=[_x],
+                y=[_y],
+                mode="markers+text",
+                marker=dict(size=30, color=COLORS["highlight"]),
+                text=[_name],
+                textposition="middle center",
+                textfont=dict(size=12, color=COLORS["background"]),
+                showlegend=False,
+            ),
+            row=1,
+            col=2,
+        )
 
     _fig.update_xaxes(visible=False, range=[-1.5, 1.5])
     _fig.update_yaxes(visible=False, range=[-0.5, 3.5])
-    _fig.update_layout(**base_layout(
-        title=dict(text="Forbidden Sublattices", font=dict(color=COLORS["text"], size=16)),
-        height=350,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Forbidden Sublattices", font=dict(color=COLORS["text"], size=16)),
+            height=350,
+        )
+    )
     _fig.update_annotations(font=dict(color=COLORS["text"]))
     _fig
     return
@@ -2774,39 +3130,80 @@ def _(COLORS, base_layout, go, np):
         _points.append(_x)
 
     # Draw lattice as [0, 1] interval
-    _fig.add_trace(go.Scatter(
-        x=[0, 1], y=[0, 0], mode="lines",
-        line=dict(color=COLORS["muted"], width=4),
-        showlegend=False,
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=[0, 1],
+            y=[0, 0],
+            mode="lines",
+            line=dict(color=COLORS["muted"], width=4),
+            showlegend=False,
+        )
+    )
 
     # Show iterations
-    for _i, _p in enumerate(_points):
-        _fig.add_trace(go.Scatter(
-            x=[_p], y=[0], mode="markers",
-            marker=dict(size=15 - _i, color=f"rgba(78, 205, 196, {1 - _i * 0.1})"),
+    _sizes = [15 - _i for _i in range(len(_points))]
+    _colors = [f"rgba(78, 205, 196, {1 - _i * 0.1})" for _i in range(len(_points))]
+
+    _fig.add_trace(
+        go.Scatter(
+            x=_points,
+            y=[0] * len(_points),
+            mode="markers",
+            marker=dict(size=_sizes, color=_colors),
             showlegend=False,
-        ))
+        )
+    )
+
+    for _i, _p in enumerate(_points):
         if _i < 5:
-            _fig.add_annotation(x=_p, y=0.15 + 0.1 * (_i % 2), text=f"f^{_i}(x₀)", font=dict(size=9, color=COLORS["text_secondary"]), showarrow=False)
+            _fig.add_annotation(
+                x=_p,
+                y=0.15 + 0.1 * (_i % 2),
+                text=f"f^{_i}(x₀)",
+                font=dict(size=9, color=COLORS["text_secondary"]),
+                showarrow=False,
+            )
 
     # Fixed point
-    _fig.add_trace(go.Scatter(
-        x=[1], y=[0], mode="markers",
-        marker=dict(size=20, color=COLORS["secondary"], symbol="star"),
-        name="Fixed point",
-    ))
-    _fig.add_annotation(x=1, y=-0.2, text="Fixed point: 1", font=dict(size=11, color=COLORS["secondary"]), showarrow=False)
+    _fig.add_trace(
+        go.Scatter(
+            x=[1],
+            y=[0],
+            mode="markers",
+            marker=dict(size=20, color=COLORS["secondary"], symbol="star"),
+            name="Fixed point",
+        )
+    )
+    _fig.add_annotation(
+        x=1, y=-0.2, text="Fixed point: 1", font=dict(size=11, color=COLORS["secondary"]), showarrow=False
+    )
 
-    _fig.add_annotation(x=0.5, y=0.5, text="Iterating f(x) = √x from x₀ = 0.1", font=dict(size=12, color=COLORS["primary"]), showarrow=False)
-    _fig.add_annotation(x=0.5, y=0.35, text="Converges to fixed point at x = 1", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(
+        x=0.5,
+        y=0.5,
+        text="Iterating f(x) = √x from x₀ = 0.1",
+        font=dict(size=12, color=COLORS["primary"]),
+        showarrow=False,
+    )
+    _fig.add_annotation(
+        x=0.5,
+        y=0.35,
+        text="Converges to fixed point at x = 1",
+        font=dict(size=11, color=COLORS["text_secondary"]),
+        showarrow=False,
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Knaster-Tarski: Monotone Functions on Complete Lattices Have Fixed Points", font=dict(color=COLORS["text"], size=14)),
-        xaxis=dict(title="[0, 1]", color=COLORS["text_secondary"], range=[-0.1, 1.2]),
-        yaxis=dict(visible=False, range=[-0.4, 0.8]),
-        height=300,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Knaster-Tarski: Monotone Functions on Complete Lattices Have Fixed Points",
+                font=dict(color=COLORS["text"], size=14),
+            ),
+            xaxis=dict(title="[0, 1]", color=COLORS["text_secondary"], range=[-0.1, 1.2]),
+            yaxis=dict(visible=False, range=[-0.4, 0.8]),
+            height=300,
+        )
+    )
     _fig
     return
 

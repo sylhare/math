@@ -15,6 +15,7 @@ app = marimo.App(width="full")
 @app.cell
 def _():
     import marimo as mo
+
     return (mo,)
 
 
@@ -23,8 +24,10 @@ def _():
     import numpy as np
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
-    from math_explorations.visualization import COLORS, base_layout
-    return COLORS, base_layout, go, make_subplots, np
+
+    from math_explorations.visualization import COLORS, base_layout, plot_directed_graph, plot_venn_diagram
+
+    return COLORS, base_layout, go, make_subplots, np, plot_venn_diagram, plot_directed_graph
 
 
 @app.cell
@@ -282,48 +285,66 @@ def _(COLORS, base_layout, go, np):
     np.random.seed(42)
 
     _outcomes = [1, 2, 3, 4, 5, 6]
-    _colors = [COLORS["tertiary"], COLORS["primary"], COLORS["tertiary"], COLORS["primary"], COLORS["tertiary"], COLORS["primary"]]
-    _even_colors = [COLORS["surface"], COLORS["secondary"], COLORS["surface"], COLORS["secondary"], COLORS["surface"], COLORS["secondary"]]
+    _colors = [
+        COLORS["tertiary"],
+        COLORS["primary"],
+        COLORS["tertiary"],
+        COLORS["primary"],
+        COLORS["tertiary"],
+        COLORS["primary"],
+    ]
+    _even_colors = [
+        COLORS["surface"],
+        COLORS["secondary"],
+        COLORS["surface"],
+        COLORS["secondary"],
+        COLORS["surface"],
+        COLORS["secondary"],
+    ]
 
     _fig = go.Figure()
 
     # Draw die faces
     for _i, _outcome in enumerate(_outcomes):
-        _fig.add_trace(go.Scatter(
-            x=[_i], y=[0],
-            mode="markers+text",
-            marker=dict(size=60, color=_even_colors[_i], line=dict(color=COLORS["primary"], width=2)),
-            text=[str(_outcome)],
-            textfont=dict(size=24, color=COLORS["text"]),
-            textposition="middle center",
-            showlegend=False,
-            hovertemplate=f"Outcome: {_outcome}<br>P = 1/6 ≈ 0.167<extra></extra>"
-        ))
+        _fig.add_trace(
+            go.Scatter(
+                x=[_i],
+                y=[0],
+                mode="markers+text",
+                marker=dict(size=60, color=_even_colors[_i], line=dict(color=COLORS["primary"], width=2)),
+                text=[str(_outcome)],
+                textfont=dict(size=24, color=COLORS["text"]),
+                textposition="middle center",
+                showlegend=False,
+                hovertemplate=f"Outcome: {_outcome}<br>P = 1/6 ≈ 0.167<extra></extra>",
+            )
+        )
 
     # Highlight even numbers
     _fig.add_annotation(
-        x=2.5, y=1.2,
+        x=2.5,
+        y=1.2,
         text="Event: 'Roll an even number' = {2, 4, 6}",
         font=dict(size=14, color=COLORS["secondary"]),
-        showarrow=False
+        showarrow=False,
     )
 
     _fig.add_annotation(
-        x=2.5, y=-1.2,
+        x=2.5,
+        y=-1.2,
         text="P(even) = |{2,4,6}| / |Ω| = 3/6 = 1/2",
         font=dict(size=14, color=COLORS["text_secondary"]),
-        showarrow=False
+        showarrow=False,
     )
 
-    _fig.update_layout(**base_layout(
-        title=dict(
-            text="Sample Space: Rolling a Fair Die",
-            font=dict(color=COLORS["text"], size=16)
-        ),
-        xaxis=dict(visible=False, range=[-1, 6]),
-        yaxis=dict(visible=False, range=[-2, 2]),
-        height=300,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Sample Space: Rolling a Fair Die", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(visible=False, range=[-1, 6]),
+            yaxis=dict(visible=False, range=[-2, 2]),
+            height=300,
+        )
+    )
     _fig
     return
 
@@ -384,10 +405,7 @@ def _(mo):
 @app.cell
 def _(go, mo, np):
     # Frequency simulation: Watch relative frequency converge to probability
-    _num_flips_slider = mo.ui.slider(
-        start=10, stop=5000, step=10, value=100,
-        label="Number of coin flips"
-    )
+    _num_flips_slider = mo.ui.slider(start=10, stop=5000, step=10, value=100, label="Number of coin flips")
     mo.md(f"**Simulate coin flips**: {_num_flips_slider}")
     return
 
@@ -406,56 +424,61 @@ def _(COLORS, base_layout, go, mo, np):
     _fig = go.Figure()
 
     # Relative frequency line
-    _fig.add_trace(go.Scatter(
-        x=_n_values,
-        y=_relative_freq,
-        mode="lines",
-        line=dict(color=COLORS["primary"], width=2),
-        name="Relative frequency of Heads"
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_n_values,
+            y=_relative_freq,
+            mode="lines",
+            line=dict(color=COLORS["primary"], width=2),
+            name="Relative frequency of Heads",
+        )
+    )
 
     # True probability line
-    _fig.add_trace(go.Scatter(
-        x=[1, _n_max],
-        y=[0.5, 0.5],
-        mode="lines",
-        line=dict(color=COLORS["secondary"], width=2, dash="dash"),
-        name="True probability (0.5)"
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=[1, _n_max],
+            y=[0.5, 0.5],
+            mode="lines",
+            line=dict(color=COLORS["secondary"], width=2, dash="dash"),
+            name="True probability (0.5)",
+        )
+    )
 
     # Confidence band (approximately)
     _upper = 0.5 + 1.96 * np.sqrt(0.25 / _n_values)
     _lower = 0.5 - 1.96 * np.sqrt(0.25 / _n_values)
 
-    _fig.add_trace(go.Scatter(
-        x=np.concatenate([_n_values, _n_values[::-1]]),
-        y=np.concatenate([_upper, _lower[::-1]]),
-        fill="toself",
-        fillcolor="rgba(255, 107, 107, 0.1)",
-        line=dict(color="rgba(255,255,255,0)"),
-        name="95% confidence band",
-        showlegend=True
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=np.concatenate([_n_values, _n_values[::-1]]),
+            y=np.concatenate([_upper, _lower[::-1]]),
+            fill="toself",
+            fillcolor="rgba(255, 107, 107, 0.1)",
+            line=dict(color="rgba(255,255,255,0)"),
+            name="95% confidence band",
+            showlegend=True,
+        )
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(
-            text="Law of Large Numbers: Relative Frequency Converges to Probability",
-            font=dict(color=COLORS["text"], size=16)
-        ),
-        xaxis=dict(
-            title="Number of flips",
-            color=COLORS["text_secondary"],
-            gridcolor=COLORS["surface"],
-            type="log"
-        ),
-        yaxis=dict(
-            title="Relative frequency of Heads",
-            color=COLORS["text_secondary"],
-            gridcolor=COLORS["surface"],
-            range=[0, 1]
-        ),
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Law of Large Numbers: Relative Frequency Converges to Probability",
+                font=dict(color=COLORS["text"], size=16),
+            ),
+            xaxis=dict(
+                title="Number of flips", color=COLORS["text_secondary"], gridcolor=COLORS["surface"], type="log"
+            ),
+            yaxis=dict(
+                title="Relative frequency of Heads",
+                color=COLORS["text_secondary"],
+                gridcolor=COLORS["surface"],
+                range=[0, 1],
+            ),
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -575,50 +598,50 @@ def _(COLORS, base_layout, go, np):
 
     _fig = go.Figure()
 
-    _fig.add_trace(go.Scatter(
-        x=_probs,
-        y=_odds,
-        mode="lines",
-        line=dict(color=COLORS["primary"], width=3),
-        name="Odds = P/(1-P)",
-        hovertemplate="P = %{x:.2f}<br>Odds = %{y:.2f}:1<extra></extra>"
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_probs,
+            y=_odds,
+            mode="lines",
+            line=dict(color=COLORS["primary"], width=3),
+            name="Odds = P/(1-P)",
+            hovertemplate="P = %{x:.2f}<br>Odds = %{y:.2f}:1<extra></extra>",
+        )
+    )
 
     # Mark some key points
     _key_probs = [0.1, 0.25, 0.5, 0.75, 0.9]
-    _key_odds = [p/(1-p) for p in _key_probs]
+    _key_odds = [p / (1 - p) for p in _key_probs]
 
-    _fig.add_trace(go.Scatter(
-        x=_key_probs,
-        y=_key_odds,
-        mode="markers+text",
-        marker=dict(size=12, color=COLORS["secondary"]),
-        text=[f"P={p}" for p in _key_probs],
-        textposition="top center",
-        textfont=dict(color=COLORS["text_secondary"], size=10),
-        showlegend=False
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_key_probs,
+            y=_key_odds,
+            mode="markers+text",
+            marker=dict(size=12, color=COLORS["secondary"]),
+            text=[f"P={p}" for p in _key_probs],
+            textposition="top center",
+            textfont=dict(color=COLORS["text_secondary"], size=10),
+            showlegend=False,
+        )
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(
-            text="Probability vs Odds: A Non-Linear Relationship",
-            font=dict(color=COLORS["text"], size=16)
-        ),
-        xaxis=dict(
-            title="Probability P",
-            color=COLORS["text_secondary"],
-            gridcolor=COLORS["surface"],
-            range=[0, 1]
-        ),
-        yaxis=dict(
-            title="Odds (as ratio to 1)",
-            color=COLORS["text_secondary"],
-            gridcolor=COLORS["surface"],
-            type="log",
-            range=[-2, 2]
-        ),
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Probability vs Odds: A Non-Linear Relationship", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(
+                title="Probability P", color=COLORS["text_secondary"], gridcolor=COLORS["surface"], range=[0, 1]
+            ),
+            yaxis=dict(
+                title="Odds (as ratio to 1)",
+                color=COLORS["text_secondary"],
+                gridcolor=COLORS["surface"],
+                type="log",
+                range=[-2, 2],
+            ),
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -712,46 +735,50 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, plot_venn_diagram):
     # Venn diagram for mutually exclusive events
-    _fig = go.Figure()
+    _sets = [
+        {
+            "center": (-2, 0),
+            "radius": 1.5,
+            "color": "rgba(0, 212, 255, 0.3)",
+            "line_color": COLORS["primary"],
+            "name": "",
+        },
+        {
+            "center": (2, 0),
+            "radius": 1.5,
+            "color": "rgba(255, 107, 107, 0.3)",
+            "line_color": COLORS["secondary"],
+            "name": "",
+        },
+    ]
 
-    # Draw two separate circles (mutually exclusive)
-    _theta = np.linspace(0, 2*np.pi, 100)
-
-    # Circle A
-    _xa = 1.5 * np.cos(_theta) - 2
-    _ya = 1.5 * np.sin(_theta)
-    _fig.add_trace(go.Scatter(
-        x=_xa, y=_ya, fill="toself",
-        fillcolor="rgba(0, 212, 255, 0.3)",
-        line=dict(color=COLORS["primary"], width=2),
-        name="Event A"
-    ))
-
-    # Circle B
-    _xb = 1.5 * np.cos(_theta) + 2
-    _yb = 1.5 * np.sin(_theta)
-    _fig.add_trace(go.Scatter(
-        x=_xb, y=_yb, fill="toself",
-        fillcolor="rgba(255, 107, 107, 0.3)",
-        line=dict(color=COLORS["secondary"], width=2),
-        name="Event B"
-    ))
+    _fig = plot_venn_diagram(_sets, title="Mutually Exclusive Events")
 
     # Labels
     _fig.add_annotation(x=-2, y=0, text="A", font=dict(size=24, color=COLORS["primary"]), showarrow=False)
     _fig.add_annotation(x=2, y=0, text="B", font=dict(size=24, color=COLORS["secondary"]), showarrow=False)
-    _fig.add_annotation(x=0, y=-2.5, text="Mutually Exclusive: A ∩ B = ∅", font=dict(size=14, color=COLORS["text_secondary"]), showarrow=False)
-    _fig.add_annotation(x=0, y=-3, text="P(A ∪ B) = P(A) + P(B)", font=dict(size=14, color=COLORS["tertiary"]), showarrow=False)
+    _fig.add_annotation(
+        x=0,
+        y=-2.5,
+        text="Mutually Exclusive: A ∩ B = ∅",
+        font=dict(size=14, color=COLORS["text_secondary"]),
+        showarrow=False,
+    )
+    _fig.add_annotation(
+        x=0, y=-3, text="P(A ∪ B) = P(A) + P(B)", font=dict(size=14, color=COLORS["tertiary"]), showarrow=False
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Mutually Exclusive Events", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-5, 5]),
-        yaxis=dict(visible=False, range=[-4, 3], scaleanchor="x"),
-        showlegend=True,
-        height=350,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Mutually Exclusive Events", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(visible=False, range=[-5, 5]),
+            yaxis=dict(visible=False, range=[-4, 3], scaleanchor="x"),
+            showlegend=False,
+            height=350,
+        )
+    )
     _fig
     return
 
@@ -797,49 +824,54 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, plot_venn_diagram):
     # Venn diagram showing overlap (not mutually exclusive)
-    _fig = go.Figure()
+    _sets = [
+        {
+            "center": (0.5, 0),
+            "radius": 1.5,
+            "color": "rgba(255, 107, 107, 0.3)",
+            "line_color": COLORS["secondary"],
+            "name": "Even = {2,4,6}",
+        },
+        {
+            "center": (-0.3, 0),
+            "radius": 0.8,
+            "color": "rgba(0, 212, 255, 0.5)",
+            "line_color": COLORS["primary"],
+            "name": "{2}",
+        },
+    ]
 
-    _theta = np.linspace(0, 2*np.pi, 100)
-
-    # Circle A (roll a 2) - smaller
-    _xa = 0.8 * np.cos(_theta) - 0.3
-    _ya = 0.8 * np.sin(_theta)
-
-    # Circle B (roll even) - larger
-    _xb = 1.5 * np.cos(_theta) + 0.5
-    _yb = 1.5 * np.sin(_theta)
-
-    # Draw B first (so A appears on top)
-    _fig.add_trace(go.Scatter(
-        x=_xb, y=_yb, fill="toself",
-        fillcolor="rgba(255, 107, 107, 0.3)",
-        line=dict(color=COLORS["secondary"], width=2),
-        name="Even = {2,4,6}"
-    ))
-
-    # Draw A (overlapping)
-    _fig.add_trace(go.Scatter(
-        x=_xa, y=_ya, fill="toself",
-        fillcolor="rgba(0, 212, 255, 0.5)",
-        line=dict(color=COLORS["primary"], width=2),
-        name="{2}"
-    ))
+    _fig = plot_venn_diagram(_sets, title="Overlapping Events: Don't Double Count!")
 
     # Labels
     _fig.add_annotation(x=-0.3, y=0, text="2", font=dict(size=20, color=COLORS["primary"]), showarrow=False)
     _fig.add_annotation(x=1.3, y=0, text="4, 6", font=dict(size=16, color=COLORS["secondary"]), showarrow=False)
-    _fig.add_annotation(x=0.5, y=-2.5, text="A ⊂ B: The set {2} is inside {2,4,6}", font=dict(size=12, color=COLORS["text_secondary"]), showarrow=False)
-    _fig.add_annotation(x=0.5, y=-3, text="P(A ∪ B) = P(A) + P(B) - P(A∩B) = 1/6 + 3/6 - 1/6 = 3/6", font=dict(size=12, color=COLORS["tertiary"]), showarrow=False)
+    _fig.add_annotation(
+        x=0.5,
+        y=-2.5,
+        text="A ⊂ B: The set {2} is inside {2,4,6}",
+        font=dict(size=12, color=COLORS["text_secondary"]),
+        showarrow=False,
+    )
+    _fig.add_annotation(
+        x=0.5,
+        y=-3,
+        text="P(A ∪ B) = P(A) + P(B) - P(A∩B) = 1/6 + 3/6 - 1/6 = 3/6",
+        font=dict(size=12, color=COLORS["tertiary"]),
+        showarrow=False,
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Overlapping Events: Don't Double Count!", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-3, 4]),
-        yaxis=dict(visible=False, range=[-4, 3], scaleanchor="x"),
-        showlegend=True,
-        height=350,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Overlapping Events: Don't Double Count!", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(visible=False, range=[-3, 4]),
+            yaxis=dict(visible=False, range=[-4, 3], scaleanchor="x"),
+            showlegend=True,
+            height=350,
+        )
+    )
     _fig
     return
 
@@ -889,47 +921,54 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, plot_venn_diagram):
     # Three-set Venn diagram with inclusion-exclusion
-    _fig = go.Figure()
+    def _hex_to_rgba(h, alpha=0.2):
+        return f"rgba({int(h[1:3], 16)}, {int(h[3:5], 16)}, {int(h[5:7], 16)}, {alpha})"
 
-    _theta = np.linspace(0, 2*np.pi, 100)
-    _r = 1.2
-
-    # Three circles arranged in a triangle
-    _centers = [
-        (-0.7, 0.5),   # A - top left
-        (0.7, 0.5),    # B - top right
-        (0, -0.7)      # C - bottom
+    _sets = [
+        {
+            "center": (-0.7, 0.5),
+            "radius": 1.2,
+            "color": _hex_to_rgba(COLORS["primary"]),
+            "line_color": COLORS["primary"],
+            "name": "A",
+        },
+        {
+            "center": (0.7, 0.5),
+            "radius": 1.2,
+            "color": _hex_to_rgba(COLORS["secondary"]),
+            "line_color": COLORS["secondary"],
+            "name": "B",
+        },
+        {
+            "center": (0, -0.7),
+            "radius": 1.2,
+            "color": _hex_to_rgba(COLORS["tertiary"]),
+            "line_color": COLORS["tertiary"],
+            "name": "C",
+        },
     ]
-    _colors = [COLORS["primary"], COLORS["secondary"], COLORS["tertiary"]]
-    _names = ["A", "B", "C"]
 
-    for _i, ((_cx, _cy), _color, _name) in enumerate(zip(_centers, _colors, _names)):
-        _x = _r * np.cos(_theta) + _cx
-        _y = _r * np.sin(_theta) + _cy
-        _fig.add_trace(go.Scatter(
-            x=_x, y=_y, fill="toself",
-            fillcolor=f"rgba{tuple(list(int(_color[i:i+2], 16) for i in (1, 3, 5)) + [0.2])}",
-            line=dict(color=_color, width=2),
-            name=_name
-        ))
-        _fig.add_annotation(
-            x=_cx + 0.8 * np.cos(np.pi/2 + _i * 2*np.pi/3),
-            y=_cy + 0.8 * np.sin(np.pi/2 + _i * 2*np.pi/3),
-            text=_name, font=dict(size=20, color=_color), showarrow=False
+    _fig = plot_venn_diagram(_sets, title="Inclusion-Exclusion: Three Events")
+
+    _fig.add_annotation(
+        x=0,
+        y=-2.8,
+        text="P(A∪B∪C) = P(A)+P(B)+P(C) − P(A∩B)−P(A∩C)−P(B∩C) + P(A∩B∩C)",
+        font=dict(size=11, color=COLORS["text_secondary"]),
+        showarrow=False,
+    )
+
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Inclusion-Exclusion: Three Events", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(visible=False, range=[-3, 3]),
+            yaxis=dict(visible=False, range=[-3.5, 2.5], scaleanchor="x"),
+            showlegend=True,
+            height=400,
         )
-
-    _fig.add_annotation(x=0, y=-2.8, text="P(A∪B∪C) = P(A)+P(B)+P(C) − P(A∩B)−P(A∩C)−P(B∩C) + P(A∩B∩C)",
-                       font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
-
-    _fig.update_layout(**base_layout(
-        title=dict(text="Inclusion-Exclusion: Three Events", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-3, 3]),
-        yaxis=dict(visible=False, range=[-3.5, 2.5], scaleanchor="x"),
-        showlegend=True,
-        height=400,
-    ))
+    )
     _fig
     return
 
@@ -1087,29 +1126,38 @@ def _(COLORS, base_layout, go, np):
     _fig = go.Figure()
 
     # Bar chart
-    _fig.add_trace(go.Bar(
-        x=["Heads (11th flip)", "Tails (11th flip)"],
-        y=[_eleventh_flip_heads, 1 - _eleventh_flip_heads],
-        marker_color=[COLORS["primary"], COLORS["secondary"]],
-        text=[f"{_eleventh_flip_heads:.1%}", f"{1-_eleventh_flip_heads:.1%}"],
-        textposition="auto",
-        textfont=dict(size=16)
-    ))
+    _fig.add_trace(
+        go.Bar(
+            x=["Heads (11th flip)", "Tails (11th flip)"],
+            y=[_eleventh_flip_heads, 1 - _eleventh_flip_heads],
+            marker_color=[COLORS["primary"], COLORS["secondary"]],
+            text=[f"{_eleventh_flip_heads:.1%}", f"{1 - _eleventh_flip_heads:.1%}"],
+            textposition="auto",
+            textfont=dict(size=16),
+        )
+    )
 
     # Reference line
-    _fig.add_hline(y=0.5, line_dash="dash", line_color=COLORS["tertiary"],
-                  annotation_text="Expected: 50%", annotation_font_color=COLORS["tertiary"])
+    _fig.add_hline(
+        y=0.5,
+        line_dash="dash",
+        line_color=COLORS["tertiary"],
+        annotation_text="Expected: 50%",
+        annotation_font_color=COLORS["tertiary"],
+    )
 
     _n_found = np.sum(_ten_heads_mask)
-    _fig.update_layout(**base_layout(
-        title=dict(
-            text=f"After 10 Heads, What's the 11th Flip? (Found {_n_found} such sequences)",
-            font=dict(color=COLORS["text"], size=14)
-        ),
-        xaxis=dict(color=COLORS["text_secondary"]),
-        yaxis=dict(title="Proportion", color=COLORS["text_secondary"], gridcolor=COLORS["surface"], range=[0, 1]),
-        height=350,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text=f"After 10 Heads, What's the 11th Flip? (Found {_n_found} such sequences)",
+                font=dict(color=COLORS["text"], size=14),
+            ),
+            xaxis=dict(color=COLORS["text_secondary"]),
+            yaxis=dict(title="Proportion", color=COLORS["text_secondary"], gridcolor=COLORS["surface"], range=[0, 1]),
+            height=350,
+        )
+    )
     _fig
     return
 
@@ -1159,78 +1207,60 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, plot_directed_graph):
     # Tree diagram for sequential probability
-    _fig = go.Figure()
+    _nodes = {
+        "Start": (0, 0),
+        "H1": (2, 1.5),
+        "T1": (2, -1.5),
+        "HH": (4, 2.5),
+        "HT": (4, 0.5),
+        "TH": (4, -0.5),
+        "TT": (4, -2.5),
+    }
 
-    # Draw tree for two coin flips
-    # Level 0: Start
-    _fig.add_trace(go.Scatter(
-        x=[0], y=[0], mode="markers+text",
-        marker=dict(size=20, color=COLORS["tertiary"]),
-        text=["Start"], textposition="middle left",
-        textfont=dict(color=COLORS["text"], size=12),
-        showlegend=False
-    ))
+    _edges = [("Start", "H1"), ("Start", "T1"), ("H1", "HH"), ("H1", "HT"), ("T1", "TH"), ("T1", "TT")]
 
-    # Level 1: First flip
-    _level1_y = [1.5, -1.5]
-    _level1_labels = ["H", "T"]
-    _level1_probs = ["P=0.5", "P=0.5"]
+    _labels = {"Start": "Start", "H1": "H", "T1": "T", "HH": "HH", "HT": "HT", "TH": "TH", "TT": "TT"}
 
-    for _i, (_y, _label, _prob) in enumerate(zip(_level1_y, _level1_labels, _level1_probs)):
-        _color = COLORS["primary"] if _label == "H" else COLORS["secondary"]
-        # Line from start
-        _fig.add_trace(go.Scatter(
-            x=[0, 2], y=[0, _y], mode="lines",
-            line=dict(color=COLORS["muted"], width=2),
-            showlegend=False
-        ))
-        # Node
-        _fig.add_trace(go.Scatter(
-            x=[2], y=[_y], mode="markers+text",
-            marker=dict(size=25, color=_color),
-            text=[_label], textposition="middle center",
-            textfont=dict(color=COLORS["background"], size=14),
-            showlegend=False
-        ))
-        # Probability label on edge
-        _fig.add_annotation(x=1, y=_y/2 + 0.3, text=_prob, font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False)
+    _fig = plot_directed_graph(
+        nodes=_nodes,
+        edges=_edges,
+        node_size=25,
+        node_color=COLORS["primary"],
+        edge_color=COLORS["muted"],
+        text_color=COLORS["background"],
+        title="Tree Diagram: Two Coin Flips",
+        show_arrows=False,
+        node_labels=_labels,
+    )
 
-    # Level 2: Second flip
-    _level2_data = [
-        (2.5, "HH", 0.25, COLORS["primary"]),
-        (0.5, "HT", 0.25, COLORS["tertiary"]),
-        (-0.5, "TH", 0.25, COLORS["tertiary"]),
-        (-2.5, "TT", 0.25, COLORS["secondary"]),
-    ]
+    # Probabilities on lines
+    _fig.add_annotation(
+        x=1, y=0.75 + 0.3, text="P=0.5", font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False
+    )
+    _fig.add_annotation(
+        x=1, y=-0.75 + 0.3, text="P=0.5", font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False
+    )
 
-    _level1_positions = [(2, 1.5), (2, 1.5), (2, -1.5), (2, -1.5)]
+    _fig.add_annotation(x=3, y=2, text="0.5", font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=3, y=1, text="0.5", font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=3, y=-1, text="0.5", font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=3, y=-2, text="0.5", font=dict(size=10, color=COLORS["text_secondary"]), showarrow=False)
 
-    for (_y, _label, _prob, _color), (_x1, _y1) in zip(_level2_data, _level1_positions):
-        # Line
-        _fig.add_trace(go.Scatter(
-            x=[_x1, 4], y=[_y1, _y], mode="lines",
-            line=dict(color=COLORS["muted"], width=2),
-            showlegend=False
-        ))
-        # Node
-        _fig.add_trace(go.Scatter(
-            x=[4], y=[_y], mode="markers+text",
-            marker=dict(size=30, color=_color),
-            text=[_label], textposition="middle center",
-            textfont=dict(color=COLORS["background"], size=12),
-            showlegend=False
-        ))
-        # Final probability
-        _fig.add_annotation(x=5, y=_y, text=f"P={_prob}", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=5, y=2.5, text="P=0.25", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=5, y=0.5, text="P=0.25", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=5, y=-0.5, text="P=0.25", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(x=5, y=-2.5, text="P=0.25", font=dict(size=11, color=COLORS["text_secondary"]), showarrow=False)
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Tree Diagram: Two Coin Flips", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-1, 6]),
-        yaxis=dict(visible=False, range=[-3.5, 3.5]),
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Tree Diagram: Two Coin Flips", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(visible=False, range=[-1, 6]),
+            yaxis=dict(visible=False, range=[-3, 3]),
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -1290,43 +1320,64 @@ def _(COLORS, base_layout, go, np):
     # Visual representation of conditional probability
     _fig = go.Figure()
 
-    _theta = np.linspace(0, 2*np.pi, 100)
+    _theta = np.linspace(0, 2 * np.pi, 100)
 
     # Circle B (the condition - what we know happened)
     _xb = 1.8 * np.cos(_theta)
     _yb = 1.8 * np.sin(_theta)
-    _fig.add_trace(go.Scatter(
-        x=_xb, y=_yb, fill="toself",
-        fillcolor="rgba(255, 107, 107, 0.3)",
-        line=dict(color=COLORS["secondary"], width=3),
-        name="B (known to have occurred)"
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_xb,
+            y=_yb,
+            fill="toself",
+            fillcolor="rgba(255, 107, 107, 0.3)",
+            line=dict(color=COLORS["secondary"], width=3),
+            name="B (known to have occurred)",
+        )
+    )
 
     # Circle A (what we want probability of)
     _xa = 1.3 * np.cos(_theta) + 0.8
     _ya = 1.3 * np.sin(_theta)
-    _fig.add_trace(go.Scatter(
-        x=_xa, y=_ya, fill="toself",
-        fillcolor="rgba(0, 212, 255, 0.4)",
-        line=dict(color=COLORS["primary"], width=3),
-        name="A (what we want to know)"
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_xa,
+            y=_ya,
+            fill="toself",
+            fillcolor="rgba(0, 212, 255, 0.4)",
+            line=dict(color=COLORS["primary"], width=3),
+            name="A (what we want to know)",
+        )
+    )
 
     # Labels
     _fig.add_annotation(x=-1.2, y=0, text="B only", font=dict(size=12, color=COLORS["secondary"]), showarrow=False)
     _fig.add_annotation(x=1.5, y=0, text="A only", font=dict(size=12, color=COLORS["primary"]), showarrow=False)
     _fig.add_annotation(x=0.4, y=0, text="A∩B", font=dict(size=14, color=COLORS["tertiary"]), showarrow=False)
 
-    _fig.add_annotation(x=0, y=-3, text="P(A|B) = P(A∩B) / P(B)", font=dict(size=16, color=COLORS["text"]), showarrow=False)
-    _fig.add_annotation(x=0, y=-3.6, text="'Zoom in' on B, then see how much is also A", font=dict(size=12, color=COLORS["text_secondary"]), showarrow=False)
+    _fig.add_annotation(
+        x=0, y=-3, text="P(A|B) = P(A∩B) / P(B)", font=dict(size=16, color=COLORS["text"]), showarrow=False
+    )
+    _fig.add_annotation(
+        x=0,
+        y=-3.6,
+        text="'Zoom in' on B, then see how much is also A",
+        font=dict(size=12, color=COLORS["text_secondary"]),
+        showarrow=False,
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Conditional Probability: Restricting to Where B Occurred", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-4, 4]),
-        yaxis=dict(visible=False, range=[-4.5, 3], scaleanchor="x"),
-        showlegend=True,
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Conditional Probability: Restricting to Where B Occurred",
+                font=dict(color=COLORS["text"], size=16),
+            ),
+            xaxis=dict(visible=False, range=[-4, 4]),
+            yaxis=dict(visible=False, range=[-4.5, 3], scaleanchor="x"),
+            showlegend=True,
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -1467,53 +1518,67 @@ def _(COLORS, base_layout, go):
     _disease = 100  # 1%
     _healthy = 9900  # 99%
 
-    _true_positive = 99   # 99% of 100
-    _false_negative = 1   # 1% of 100
+    _true_positive = 99  # 99% of 100
+    _false_negative = 1  # 1% of 100
     _false_positive = 99  # 1% of 9900
-    _true_negative = 9801 # 99% of 9900
+    _true_negative = 9801  # 99% of 9900
 
     # Create treemap-style visualization
-    _fig.add_trace(go.Treemap(
-        labels=[
-            "Population<br>10,000",
-            "Has Disease<br>100 (1%)",
-            "No Disease<br>9,900 (99%)",
-            f"True Positive<br>{_true_positive}",
-            f"False Negative<br>{_false_negative}",
-            f"False Positive<br>{_false_positive}",
-            f"True Negative<br>{_true_negative}"
-        ],
-        parents=[
-            "",
-            "Population<br>10,000",
-            "Population<br>10,000",
-            "Has Disease<br>100 (1%)",
-            "Has Disease<br>100 (1%)",
-            "No Disease<br>9,900 (99%)",
-            "No Disease<br>9,900 (99%)"
-        ],
-        values=[_total, _disease, _healthy, _true_positive, _false_negative, _false_positive, _true_negative],
-        marker=dict(
-            colors=[COLORS["surface"], COLORS["secondary"], COLORS["tertiary"], COLORS["secondary"], COLORS["muted"], COLORS["highlight"], COLORS["tertiary"]],
-        ),
-        textfont=dict(size=14, color=COLORS["text"]),
-        hovertemplate="<b>%{label}</b><extra></extra>"
-    ))
+    _fig.add_trace(
+        go.Treemap(
+            labels=[
+                "Population<br>10,000",
+                "Has Disease<br>100 (1%)",
+                "No Disease<br>9,900 (99%)",
+                f"True Positive<br>{_true_positive}",
+                f"False Negative<br>{_false_negative}",
+                f"False Positive<br>{_false_positive}",
+                f"True Negative<br>{_true_negative}",
+            ],
+            parents=[
+                "",
+                "Population<br>10,000",
+                "Population<br>10,000",
+                "Has Disease<br>100 (1%)",
+                "Has Disease<br>100 (1%)",
+                "No Disease<br>9,900 (99%)",
+                "No Disease<br>9,900 (99%)",
+            ],
+            values=[_total, _disease, _healthy, _true_positive, _false_negative, _false_positive, _true_negative],
+            marker=dict(
+                colors=[
+                    COLORS["surface"],
+                    COLORS["secondary"],
+                    COLORS["tertiary"],
+                    COLORS["secondary"],
+                    COLORS["muted"],
+                    COLORS["highlight"],
+                    COLORS["tertiary"],
+                ],
+            ),
+            textfont=dict(size=14, color=COLORS["text"]),
+            hovertemplate="<b>%{label}</b><extra></extra>",
+        )
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(
-            text="Base Rate Neglect: Why Positive Test ≠ 99% Chance of Disease",
-            font=dict(color=COLORS["text"], size=14)
-        ),
-        height=450,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Base Rate Neglect: Why Positive Test ≠ 99% Chance of Disease",
+                font=dict(color=COLORS["text"], size=14),
+            ),
+            height=450,
+        )
+    )
 
     _fig.add_annotation(
-        x=0.5, y=-0.12,
-        xref="paper", yref="paper",
-        text=f"Of {_true_positive + _false_positive} positive tests, only {_true_positive} actually have disease = {_true_positive/(_true_positive+_false_positive):.1%}",
+        x=0.5,
+        y=-0.12,
+        xref="paper",
+        yref="paper",
+        text=f"Of {_true_positive + _false_positive} positive tests, only {_true_positive} actually have disease = {_true_positive / (_true_positive + _false_positive):.1%}",
         font=dict(size=13, color=COLORS["highlight"]),
-        showarrow=False
+        showarrow=False,
     )
     _fig
     return
@@ -1563,18 +1628,9 @@ def _(mo):
 @app.cell
 def _(go, mo, np):
     # Interactive Bayes calculator
-    _prevalence_slider = mo.ui.slider(
-        start=0.1, stop=20, step=0.1, value=1,
-        label="Disease prevalence (%)"
-    )
-    _sensitivity_slider = mo.ui.slider(
-        start=50, stop=99.9, step=0.1, value=99,
-        label="Test sensitivity (%)"
-    )
-    _specificity_slider = mo.ui.slider(
-        start=50, stop=99.9, step=0.1, value=99,
-        label="Test specificity (%)"
-    )
+    _prevalence_slider = mo.ui.slider(start=0.1, stop=20, step=0.1, value=1, label="Disease prevalence (%)")
+    _sensitivity_slider = mo.ui.slider(start=50, stop=99.9, step=0.1, value=99, label="Test sensitivity (%)")
+    _specificity_slider = mo.ui.slider(start=50, stop=99.9, step=0.1, value=99, label="Test specificity (%)")
 
     mo.md(f"""
     ### Interactive Bayes Calculator
@@ -1606,32 +1662,33 @@ def _(COLORS, base_layout, go, mo, np):
     _fig = go.Figure()
 
     # Gauge chart for posterior probability
-    _fig.add_trace(go.Indicator(
-        mode="gauge+number",
-        value=_posterior * 100,
-        number=dict(suffix="%", font=dict(color=COLORS["text"], size=40)),
-        gauge=dict(
-            axis=dict(range=[0, 100], tickcolor=COLORS["text_secondary"]),
-            bar=dict(color=COLORS["primary"]),
-            bgcolor=COLORS["surface"],
-            bordercolor=COLORS["muted"],
-            steps=[
-                dict(range=[0, 33], color=COLORS["secondary"]),
-                dict(range=[33, 66], color=COLORS["highlight"]),
-                dict(range=[66, 100], color=COLORS["tertiary"])
-            ],
-            threshold=dict(
-                line=dict(color=COLORS["text"], width=2),
-                value=50,
-                thickness=0.75
-            )
-        ),
-        title=dict(text="P(Disease | Positive Test)", font=dict(color=COLORS["text"], size=16))
-    ))
+    _fig.add_trace(
+        go.Indicator(
+            mode="gauge+number",
+            value=_posterior * 100,
+            number=dict(suffix="%", font=dict(color=COLORS["text"], size=40)),
+            gauge=dict(
+                axis=dict(range=[0, 100], tickcolor=COLORS["text_secondary"]),
+                bar=dict(color=COLORS["primary"]),
+                bgcolor=COLORS["surface"],
+                bordercolor=COLORS["muted"],
+                steps=[
+                    dict(range=[0, 33], color=COLORS["secondary"]),
+                    dict(range=[33, 66], color=COLORS["highlight"]),
+                    dict(range=[66, 100], color=COLORS["tertiary"]),
+                ],
+                threshold=dict(line=dict(color=COLORS["text"], width=2), value=50, thickness=0.75),
+            ),
+            title=dict(text="P(Disease | Positive Test)", font=dict(color=COLORS["text"], size=16)),
+        )
+    )
 
-    _fig.update_layout(**base_layout(
-        height=300,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title="Bayesian Update: Posterior Probability",
+            height=300,
+        )
+    )
     _fig
     return
 
@@ -1716,46 +1773,75 @@ def _(COLORS, base_layout, go):
 
         # Scenario box
         _fig.add_shape(
-            type="rect", x0=-0.5, x1=2, y0=_y-0.4, y1=_y+0.4,
-            fillcolor=_color, opacity=0.3, line=dict(color=_color, width=2)
+            type="rect",
+            x0=-0.5,
+            x1=2,
+            y0=_y - 0.4,
+            y1=_y + 0.4,
+            fillcolor=_color,
+            opacity=0.3,
+            line=dict(color=_color, width=2),
         )
-        _fig.add_annotation(x=0.75, y=_y, text=f"{_scenario}<br>({_initial})",
-                          font=dict(size=11, color=COLORS["text"]), showarrow=False)
+        _fig.add_annotation(
+            x=0.75, y=_y, text=f"{_scenario}<br>({_initial})", font=dict(size=11, color=COLORS["text"]), showarrow=False
+        )
 
         # Switch outcome
         _switch_color = COLORS["tertiary"] if "CAR" in _switch else COLORS["secondary"]
         _fig.add_shape(
-            type="rect", x0=3, x1=5, y0=_y+0.3, y1=_y+0.9,
-            fillcolor=_switch_color, opacity=0.4, line=dict(color=_switch_color, width=1)
+            type="rect",
+            x0=3,
+            x1=5,
+            y0=_y + 0.3,
+            y1=_y + 0.9,
+            fillcolor=_switch_color,
+            opacity=0.4,
+            line=dict(color=_switch_color, width=1),
         )
-        _fig.add_annotation(x=4, y=_y+0.6, text=_switch, font=dict(size=10, color=COLORS["text"]), showarrow=False)
+        _fig.add_annotation(x=4, y=_y + 0.6, text=_switch, font=dict(size=10, color=COLORS["text"]), showarrow=False)
 
         # Stay outcome
         _stay_color = COLORS["tertiary"] if "CAR" in _stay else COLORS["secondary"]
         _fig.add_shape(
-            type="rect", x0=3, x1=5, y0=_y-0.9, y1=_y-0.3,
-            fillcolor=_stay_color, opacity=0.4, line=dict(color=_stay_color, width=1)
+            type="rect",
+            x0=3,
+            x1=5,
+            y0=_y - 0.9,
+            y1=_y - 0.3,
+            fillcolor=_stay_color,
+            opacity=0.4,
+            line=dict(color=_stay_color, width=1),
         )
-        _fig.add_annotation(x=4, y=_y-0.6, text=_stay, font=dict(size=10, color=COLORS["text"]), showarrow=False)
+        _fig.add_annotation(x=4, y=_y - 0.6, text=_stay, font=dict(size=10, color=COLORS["text"]), showarrow=False)
 
         # Arrows
-        _fig.add_annotation(x=3, y=_y+0.6, ax=2, ay=_y, axref="x", ayref="y",
-                          arrowhead=2, arrowcolor=COLORS["text_secondary"])
-        _fig.add_annotation(x=3, y=_y-0.6, ax=2, ay=_y, axref="x", ayref="y",
-                          arrowhead=2, arrowcolor=COLORS["text_secondary"])
+        _fig.add_annotation(
+            x=3, y=_y + 0.6, ax=2, ay=_y, axref="x", ayref="y", arrowhead=2, arrowcolor=COLORS["text_secondary"]
+        )
+        _fig.add_annotation(
+            x=3, y=_y - 0.6, ax=2, ay=_y, axref="x", ayref="y", arrowhead=2, arrowcolor=COLORS["text_secondary"]
+        )
 
     # Summary
-    _fig.add_annotation(x=2.5, y=-3, text="Switch wins: 2/3 | Stay wins: 1/3",
-                       font=dict(size=16, color=COLORS["highlight"]), showarrow=False)
-    _fig.add_annotation(x=2.5, y=-3.6, text="You should ALWAYS switch!",
-                       font=dict(size=14, color=COLORS["tertiary"]), showarrow=False)
+    _fig.add_annotation(
+        x=2.5,
+        y=-3,
+        text="Switch wins: 2/3 | Stay wins: 1/3",
+        font=dict(size=16, color=COLORS["highlight"]),
+        showarrow=False,
+    )
+    _fig.add_annotation(
+        x=2.5, y=-3.6, text="You should ALWAYS switch!", font=dict(size=14, color=COLORS["tertiary"]), showarrow=False
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Monty Hall Problem: All Three Scenarios", font=dict(color=COLORS["text"], size=16)),
-        xaxis=dict(visible=False, range=[-1, 6]),
-        yaxis=dict(visible=False, range=[-4.5, 3.5]),
-        height=450,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Monty Hall Problem: All Three Scenarios", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(visible=False, range=[-1, 6]),
+            yaxis=dict(visible=False, range=[-4.5, 3.5]),
+            height=450,
+        )
+    )
     _fig
     return
 
@@ -1790,7 +1876,7 @@ def _(COLORS, base_layout, go, np):
         _monty_opens = np.random.choice(_available) if len(_available) > 1 else _available[0]
 
         # Switch door
-        _switch_to = [d for d in range(3) if d != _pick and d != _monty_opens][0]
+        _switch_to = next(d for d in range(3) if d != _pick and d != _monty_opens)
 
         if _pick == _car:
             _wins_stay += 1
@@ -1799,29 +1885,40 @@ def _(COLORS, base_layout, go, np):
 
     _fig = go.Figure()
 
-    _fig.add_trace(go.Bar(
-        x=["Stay", "Switch"],
-        y=[_wins_stay / _n_games, _wins_switch / _n_games],
-        marker_color=[COLORS["secondary"], COLORS["tertiary"]],
-        text=[f"{_wins_stay/_n_games:.1%}", f"{_wins_switch/_n_games:.1%}"],
-        textposition="auto",
-        textfont=dict(size=20)
-    ))
+    _fig.add_trace(
+        go.Bar(
+            x=["Stay", "Switch"],
+            y=[_wins_stay / _n_games, _wins_switch / _n_games],
+            marker_color=[COLORS["secondary"], COLORS["tertiary"]],
+            text=[f"{_wins_stay / _n_games:.1%}", f"{_wins_switch / _n_games:.1%}"],
+            textposition="auto",
+            textfont=dict(size=20),
+        )
+    )
 
-    _fig.add_hline(y=1/3, line_dash="dash", line_color=COLORS["secondary"],
-                  annotation_text="Expected stay: 33.3%", annotation_position="left")
-    _fig.add_hline(y=2/3, line_dash="dash", line_color=COLORS["tertiary"],
-                  annotation_text="Expected switch: 66.7%", annotation_position="left")
+    _fig.add_hline(
+        y=1 / 3,
+        line_dash="dash",
+        line_color=COLORS["secondary"],
+        annotation_text="Expected stay: 33.3%",
+        annotation_position="left",
+    )
+    _fig.add_hline(
+        y=2 / 3,
+        line_dash="dash",
+        line_color=COLORS["tertiary"],
+        annotation_text="Expected switch: 66.7%",
+        annotation_position="left",
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(
-            text=f"Monty Hall Simulation: {_n_games:,} Games",
-            font=dict(color=COLORS["text"], size=16)
-        ),
-        xaxis=dict(color=COLORS["text_secondary"]),
-        yaxis=dict(title="Win Rate", color=COLORS["text_secondary"], gridcolor=COLORS["surface"], range=[0, 1]),
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text=f"Monty Hall Simulation: {_n_games:,} Games", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(color=COLORS["text_secondary"]),
+            yaxis=dict(title="Win Rate", color=COLORS["text_secondary"], gridcolor=COLORS["surface"], range=[0, 1]),
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -1880,44 +1977,58 @@ def _(COLORS, base_layout, go, np):
     # Calculate P(no match) for each n
     _p_no_match = np.ones(_max_people)
     for _i in range(1, _max_people):
-        _p_no_match[_i] = _p_no_match[_i-1] * (365 - _i) / 365
+        _p_no_match[_i] = _p_no_match[_i - 1] * (365 - _i) / 365
 
     _p_match = 1 - _p_no_match
 
     _fig = go.Figure()
 
     # Main curve
-    _fig.add_trace(go.Scatter(
-        x=_n_people, y=_p_match,
-        mode="lines",
-        line=dict(color=COLORS["primary"], width=3),
-        name="P(at least one match)",
-        hovertemplate="n = %{x}<br>P = %{y:.1%}<extra></extra>"
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_n_people,
+            y=_p_match,
+            mode="lines",
+            line=dict(color=COLORS["primary"], width=3),
+            name="P(at least one match)",
+            hovertemplate="n = %{x}<br>P = %{y:.1%}<extra></extra>",
+        )
+    )
 
     # Mark 50% threshold
-    _fig.add_hline(y=0.5, line_dash="dash", line_color=COLORS["secondary"],
-                  annotation_text="50% probability")
-    _fig.add_vline(x=23, line_dash="dash", line_color=COLORS["tertiary"],
-                  annotation_text="n=23")
+    _fig.add_hline(y=0.5, line_dash="dash", line_color=COLORS["secondary"], annotation_text="50% probability")
+    _fig.add_vline(x=23, line_dash="dash", line_color=COLORS["tertiary"], annotation_text="n=23")
 
     # Mark 99% threshold
     _fig.add_hline(y=0.99, line_dash="dot", line_color=COLORS["highlight"])
     _n_99 = np.argmax(_p_match >= 0.99) + 1
-    _fig.add_annotation(x=_n_99, y=0.99, text=f"99% at n={_n_99}",
-                       font=dict(size=11, color=COLORS["highlight"]), showarrow=True,
-                       arrowhead=2, arrowcolor=COLORS["highlight"], ax=30, ay=-30)
+    _fig.add_annotation(
+        x=_n_99,
+        y=0.99,
+        text=f"99% at n={_n_99}",
+        font=dict(size=11, color=COLORS["highlight"]),
+        showarrow=True,
+        arrowhead=2,
+        arrowcolor=COLORS["highlight"],
+        ax=30,
+        ay=-30,
+    )
 
-    _fig.update_layout(**base_layout(
-        title=dict(
-            text="Birthday Paradox: Probability of a Shared Birthday",
-            font=dict(color=COLORS["text"], size=16)
-        ),
-        xaxis=dict(title="Number of people", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
-        yaxis=dict(title="P(at least one shared birthday)", color=COLORS["text_secondary"],
-                  gridcolor=COLORS["surface"], range=[0, 1.05]),
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Birthday Paradox: Probability of a Shared Birthday", font=dict(color=COLORS["text"], size=16)
+            ),
+            xaxis=dict(title="Number of people", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
+            yaxis=dict(
+                title="P(at least one shared birthday)",
+                color=COLORS["text_secondary"],
+                gridcolor=COLORS["surface"],
+                range=[0, 1.05],
+            ),
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -1989,33 +2100,40 @@ def _(COLORS, base_layout, go, make_subplots, np):
     _women_admit_a, _women_admit_b = 0.95, 0.45  # Higher rates in both!
 
     # By department
-    _fig.add_trace(go.Bar(
-        x=_departments, y=[_men_admit_a, _men_admit_b],
-        name="Men", marker_color=COLORS["primary"]
-    ), row=1, col=1)
+    _fig.add_trace(
+        go.Bar(x=_departments, y=[_men_admit_a, _men_admit_b], name="Men", marker_color=COLORS["primary"]), row=1, col=1
+    )
 
-    _fig.add_trace(go.Bar(
-        x=_departments, y=[_women_admit_a, _women_admit_b],
-        name="Women", marker_color=COLORS["secondary"]
-    ), row=1, col=1)
+    _fig.add_trace(
+        go.Bar(x=_departments, y=[_women_admit_a, _women_admit_b], name="Women", marker_color=COLORS["secondary"]),
+        row=1,
+        col=1,
+    )
 
     # Overall (weighted average)
     _men_overall = (_men_a * _men_admit_a + _men_b * _men_admit_b) / (_men_a + _men_b)
     _women_overall = (_women_a * _women_admit_a + _women_b * _women_admit_b) / (_women_a + _women_b)
 
-    _fig.add_trace(go.Bar(
-        x=["Men", "Women"], y=[_men_overall, _women_overall],
-        marker_color=[COLORS["primary"], COLORS["secondary"]],
-        showlegend=False
-    ), row=1, col=2)
-
-    _fig.update_layout(**base_layout(
-        title=dict(
-            text="Simpson's Paradox: Women win in each dept, but lose overall!",
-            font=dict(color=COLORS["text"], size=14)
+    _fig.add_trace(
+        go.Bar(
+            x=["Men", "Women"],
+            y=[_men_overall, _women_overall],
+            marker_color=[COLORS["primary"], COLORS["secondary"]],
+            showlegend=False,
         ),
-        height=350,
-    ))
+        row=1,
+        col=2,
+    )
+
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Simpson's Paradox: Women win in each dept, but lose overall!",
+                font=dict(color=COLORS["text"], size=14),
+            ),
+            height=350,
+        )
+    )
     _fig.update_xaxes(color=COLORS["text_secondary"])
     _fig.update_yaxes(color=COLORS["text_secondary"], gridcolor=COLORS["surface"], range=[0, 1])
     _fig
@@ -2128,26 +2246,20 @@ def _(COLORS, base_layout, go, np):
 
     _fig = go.Figure()
 
-    _fig.add_trace(go.Bar(
-        x=_k_values, y=_pmf,
-        marker_color=COLORS["primary"],
-        name=f"Binomial(n={_n}, p={_p})"
-    ))
+    _fig.add_trace(go.Bar(x=_k_values, y=_pmf, marker_color=COLORS["primary"], name=f"Binomial(n={_n}, p={_p})"))
 
     # Mark mean
     _mean = _n * _p
-    _fig.add_vline(x=_mean, line_dash="dash", line_color=COLORS["secondary"],
-                  annotation_text=f"Mean = {_mean:.1f}")
+    _fig.add_vline(x=_mean, line_dash="dash", line_color=COLORS["secondary"], annotation_text=f"Mean = {_mean:.1f}")
 
-    _fig.update_layout(**base_layout(
-        title=dict(
-            text=f"Binomial Distribution: n={_n}, p={_p}",
-            font=dict(color=COLORS["text"], size=16)
-        ),
-        xaxis=dict(title="k (number of successes)", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
-        yaxis=dict(title="P(X = k)", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
-        height=350,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text=f"Binomial Distribution: n={_n}, p={_p}", font=dict(color=COLORS["text"], size=16)),
+            xaxis=dict(title="k (number of successes)", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
+            yaxis=dict(title="P(X = k)", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
+            height=350,
+        )
+    )
     _fig
     return (stats,)
 
@@ -2237,23 +2349,17 @@ def _(COLORS, base_layout, go, np, stats):
 
     for _lam, _color in zip(_lambdas, _colors):
         _pmf = stats.poisson.pmf(_k_values, _lam)
-        _fig.add_trace(go.Bar(
-            x=_k_values, y=_pmf,
-            name=f"λ = {_lam}",
-            marker_color=_color,
-            opacity=0.7
-        ))
+        _fig.add_trace(go.Bar(x=_k_values, y=_pmf, name=f"λ = {_lam}", marker_color=_color, opacity=0.7))
 
-    _fig.update_layout(**base_layout(
-        title=dict(
-            text="Poisson Distribution for Different λ Values",
-            font=dict(color=COLORS["text"], size=16)
-        ),
-        xaxis=dict(title="k (number of events)", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
-        yaxis=dict(title="P(X = k)", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
-        barmode="overlay",
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Poisson Distribution for Different λ Values", font=dict(color=COLORS["text"])),
+            barmode="group",
+            xaxis=dict(title="k (number of events)", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
+            yaxis=dict(title="P(X = k)", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -2371,53 +2477,65 @@ def _(COLORS, base_layout, go, np, stats):
     _fig = go.Figure()
 
     # Main curve
-    _fig.add_trace(go.Scatter(
-        x=_x, y=_pdf,
-        mode="lines",
-        line=dict(color=COLORS["primary"], width=3),
-        name="N(0, 1)",
-        fill="tozeroy",
-        fillcolor="rgba(0, 212, 255, 0.1)"
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_x,
+            y=_pdf,
+            mode="lines",
+            line=dict(color=COLORS["primary"], width=3),
+            name="N(0, 1)",
+            fill="tozeroy",
+            fillcolor="rgba(0, 212, 255, 0.1)",
+        )
+    )
 
     # 68% region
     _x_68 = _x[(_x >= -1) & (_x <= 1)]
     _y_68 = stats.norm.pdf(_x_68, _mu, _sigma)
-    _fig.add_trace(go.Scatter(
-        x=np.concatenate([_x_68, _x_68[::-1]]),
-        y=np.concatenate([_y_68, np.zeros(len(_y_68))]),
-        fill="toself",
-        fillcolor="rgba(78, 205, 196, 0.4)",
-        line=dict(color="rgba(0,0,0,0)"),
-        name="68% (±1σ)"
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=np.concatenate([_x_68, _x_68[::-1]]),
+            y=np.concatenate([_y_68, np.zeros(len(_y_68))]),
+            fill="toself",
+            fillcolor="rgba(78, 205, 196, 0.4)",
+            line=dict(color="rgba(0,0,0,0)"),
+            name="68% (±1σ)",
+        )
+    )
 
     # 95% region (outer part only for visibility)
     _x_95 = _x[(_x >= -2) & (_x <= 2)]
     _y_95 = stats.norm.pdf(_x_95, _mu, _sigma)
-    _fig.add_trace(go.Scatter(
-        x=np.concatenate([_x_95, _x_95[::-1]]),
-        y=np.concatenate([_y_95, np.zeros(len(_y_95))]),
-        fill="toself",
-        fillcolor="rgba(255, 217, 61, 0.2)",
-        line=dict(color="rgba(0,0,0,0)"),
-        name="95% (±2σ)"
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=np.concatenate([_x_95, _x_95[::-1]]),
+            y=np.concatenate([_y_95, np.zeros(len(_y_95))]),
+            fill="toself",
+            fillcolor="rgba(255, 217, 61, 0.2)",
+            line=dict(color="rgba(0,0,0,0)"),
+            name="95% (±2σ)",
+        )
+    )
 
     # Annotations
     _fig.add_annotation(x=0, y=0.2, text="68%", font=dict(size=14, color=COLORS["tertiary"]), showarrow=False)
     _fig.add_annotation(x=1.5, y=0.1, text="95%", font=dict(size=12, color=COLORS["highlight"]), showarrow=False)
     _fig.add_annotation(x=2.5, y=0.02, text="99.7%", font=dict(size=10, color=COLORS["secondary"]), showarrow=False)
 
-    _fig.update_layout(**base_layout(
-        title=dict(
-            text="Standard Normal Distribution with 68-95-99.7 Rule",
-            font=dict(color=COLORS["text"], size=16)
-        ),
-        xaxis=dict(title="x (in standard deviations from mean)", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
-        yaxis=dict(title="Probability Density", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
-        height=400,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Standard Normal Distribution with 68-95-99.7 Rule", font=dict(color=COLORS["text"], size=16)
+            ),
+            xaxis=dict(
+                title="x (in standard deviations from mean)",
+                color=COLORS["text_secondary"],
+                gridcolor=COLORS["surface"],
+            ),
+            yaxis=dict(title="Probability Density", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
+            height=400,
+        )
+    )
     _fig
     return
 
@@ -2456,9 +2574,9 @@ def _(COLORS, base_layout, go, make_subplots, np, stats):
     np.random.seed(42)
     _n_samples = 10000
 
-    _fig = make_subplots(rows=2, cols=2, subplot_titles=[
-        "n=1 (Uniform)", "n=2 (Sum of 2)", "n=5 (Sum of 5)", "n=30 (Sum of 30)"
-    ])
+    _fig = make_subplots(
+        rows=2, cols=2, subplot_titles=["n=1 (Uniform)", "n=2 (Sum of 2)", "n=5 (Sum of 5)", "n=30 (Sum of 30)"]
+    )
 
     _ns = [1, 2, 5, 30]
     _positions = [(1, 1), (1, 2), (2, 1), (2, 2)]
@@ -2472,32 +2590,38 @@ def _(COLORS, base_layout, go, make_subplots, np, stats):
         _std = np.sqrt(_n / 12)
         _standardized = (_sums - _mean) / _std
 
-        _fig.add_trace(go.Histogram(
-            x=_standardized,
-            nbinsx=50,
-            marker_color=COLORS["primary"],
-            opacity=0.7,
-            histnorm="probability density",
-            showlegend=False
-        ), row=_row, col=_col)
+        _fig.add_trace(
+            go.Histogram(
+                x=_standardized,
+                nbinsx=50,
+                marker_color=COLORS["primary"],
+                opacity=0.7,
+                histnorm="probability density",
+                showlegend=False,
+            ),
+            row=_row,
+            col=_col,
+        )
 
         # Overlay standard normal for comparison
         _x_norm = np.linspace(-4, 4, 100)
         _y_norm = stats.norm.pdf(_x_norm)
-        _fig.add_trace(go.Scatter(
-            x=_x_norm, y=_y_norm,
-            mode="lines",
-            line=dict(color=COLORS["secondary"], width=2),
-            showlegend=False
-        ), row=_row, col=_col)
+        _fig.add_trace(
+            go.Scatter(
+                x=_x_norm, y=_y_norm, mode="lines", line=dict(color=COLORS["secondary"], width=2), showlegend=False
+            ),
+            row=_row,
+            col=_col,
+        )
 
-    _fig.update_layout(**base_layout(
-        title=dict(
-            text="Central Limit Theorem: Sum of Uniforms → Normal",
-            font=dict(color=COLORS["text"], size=16)
-        ),
-        height=500,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Central Limit Theorem: Sum of Uniforms → Normal", font=dict(color=COLORS["text"], size=16)
+            ),
+            height=500,
+        )
+    )
     _fig.update_xaxes(color=COLORS["text_secondary"], gridcolor=COLORS["surface"])
     _fig.update_yaxes(color=COLORS["text_secondary"], gridcolor=COLORS["surface"])
     _fig
@@ -2641,31 +2765,47 @@ def _(COLORS, base_layout, go, make_subplots, np):
     _x = np.linspace(-5, 5, 1000)
 
     # Low variance (σ = 0.5)
-    _y_low = np.exp(-_x**2 / (2 * 0.5**2)) / (0.5 * np.sqrt(2 * np.pi))
-    _fig.add_trace(go.Scatter(
-        x=_x, y=_y_low, mode="lines", fill="tozeroy",
-        line=dict(color=COLORS["tertiary"], width=2),
-        fillcolor="rgba(78, 205, 196, 0.3)",
-        name="σ = 0.5"
-    ), row=1, col=1)
+    _y_low = np.exp(-(_x**2) / (2 * 0.5**2)) / (0.5 * np.sqrt(2 * np.pi))
+    _fig.add_trace(
+        go.Scatter(
+            x=_x,
+            y=_y_low,
+            mode="lines",
+            fill="tozeroy",
+            line=dict(color=COLORS["tertiary"], width=2),
+            fillcolor="rgba(78, 205, 196, 0.3)",
+            name="σ = 0.5",
+        ),
+        row=1,
+        col=1,
+    )
 
     # High variance (σ = 2)
-    _y_high = np.exp(-_x**2 / (2 * 2**2)) / (2 * np.sqrt(2 * np.pi))
-    _fig.add_trace(go.Scatter(
-        x=_x, y=_y_high, mode="lines", fill="tozeroy",
-        line=dict(color=COLORS["secondary"], width=2),
-        fillcolor="rgba(255, 107, 107, 0.3)",
-        name="σ = 2"
-    ), row=1, col=2)
+    _y_high = np.exp(-(_x**2) / (2 * 2**2)) / (2 * np.sqrt(2 * np.pi))
+    _fig.add_trace(
+        go.Scatter(
+            x=_x,
+            y=_y_high,
+            mode="lines",
+            fill="tozeroy",
+            line=dict(color=COLORS["secondary"], width=2),
+            fillcolor="rgba(255, 107, 107, 0.3)",
+            name="σ = 2",
+        ),
+        row=1,
+        col=2,
+    )
 
     # Mean lines
     _fig.add_vline(x=0, line_dash="dash", line_color=COLORS["highlight"], row=1, col=1)
     _fig.add_vline(x=0, line_dash="dash", line_color=COLORS["highlight"], row=1, col=2)
 
-    _fig.update_layout(**base_layout(
-        title=dict(text="Same Mean, Different Variance", font=dict(color=COLORS["text"], size=16)),
-        height=300,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(text="Same Mean, Different Variance", font=dict(color=COLORS["text"], size=16)),
+            height=300,
+        )
+    )
     _fig.update_xaxes(color=COLORS["text_secondary"], gridcolor=COLORS["surface"])
     _fig.update_yaxes(color=COLORS["text_secondary"], gridcolor=COLORS["surface"])
     _fig
@@ -2739,25 +2879,31 @@ def _(COLORS, base_layout, go, np):
 
     _fig = go.Figure()
 
-    _fig.add_trace(go.Scatter(
-        x=_n_values, y=_running_avg,
-        mode="lines",
-        line=dict(color=COLORS["primary"], width=2),
-        name="Running average"
-    ))
+    _fig.add_trace(
+        go.Scatter(
+            x=_n_values,
+            y=_running_avg,
+            mode="lines",
+            line=dict(color=COLORS["primary"], width=2),
+            name="Running average",
+        )
+    )
 
-    _fig.add_hline(y=3.5, line_dash="dash", line_color=COLORS["secondary"],
-                  annotation_text="E[X] = 3.5")
+    _fig.add_hline(y=3.5, line_dash="dash", line_color=COLORS["secondary"], annotation_text="E[X] = 3.5")
 
-    _fig.update_layout(**base_layout(
-        title=dict(
-            text="Law of Large Numbers: Die Roll Average Converges to E[X]",
-            font=dict(color=COLORS["text"], size=16)
-        ),
-        xaxis=dict(title="Number of rolls", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
-        yaxis=dict(title="Running average", color=COLORS["text_secondary"], gridcolor=COLORS["surface"], range=[1, 6]),
-        height=350,
-    ))
+    _fig.update_layout(
+        **base_layout(
+            title=dict(
+                text="Law of Large Numbers: Die Roll Average Converges to E[X]",
+                font=dict(color=COLORS["text"], size=16),
+            ),
+            xaxis=dict(title="Number of rolls", color=COLORS["text_secondary"], gridcolor=COLORS["surface"]),
+            yaxis=dict(
+                title="Running average", color=COLORS["text_secondary"], gridcolor=COLORS["surface"], range=[1, 6]
+            ),
+            height=350,
+        )
+    )
     _fig
     return
 
