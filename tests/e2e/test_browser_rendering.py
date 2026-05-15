@@ -20,6 +20,8 @@ from math_explorations.export import export_notebook, get_all_notebooks
 
 # How long to wait for marimo's JS to render (seconds)
 RENDER_TIMEOUT = 20
+# How long to wait for content to appear (includes CDN loading + hydration)
+CONTENT_TIMEOUT = 60
 # Minimum visible text length to consider a page "rendered"
 MIN_TEXT_LENGTH = 200
 
@@ -101,13 +103,13 @@ class TestBrowserRendering:
         try:
             page.wait_for_function(
                 f"document.getElementById('root')?.innerText?.length > {MIN_TEXT_LENGTH}",
-                timeout=RENDER_TIMEOUT * 1000,
+                timeout=CONTENT_TIMEOUT * 1000,
             )
         except Exception:
             root_len = page.eval_on_selector("#root", "el => el.innerText.length")
             page.close()
             pytest.fail(
-                f"{notebook.stem}: Page did not render within {RENDER_TIMEOUT}s. "
+                f"{notebook.stem}: Page did not render within {CONTENT_TIMEOUT}s. "
                 f"Root text length: {root_len}. "
                 f"JS errors: {page_errors[:3]}"
             )
