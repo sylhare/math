@@ -13,10 +13,23 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+GA_MEASUREMENT_ID = "G-YPX3TXS4S4"
+
 # Project paths
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 NOTEBOOKS_DIR = PROJECT_ROOT / "notebooks"
 DOCS_DIR = PROJECT_ROOT / "docs"
+
+
+def _ga_snippet() -> str:
+    return f"""    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){{dataLayer.push(arguments);}}
+      gtag('js', new Date());
+      gtag('config', '{GA_MEASUREMENT_ID}');
+    </script>"""
 
 
 @dataclass
@@ -184,7 +197,16 @@ def export_notebook(notebook_path: Path, output_dir: Path, include_code: bool = 
     if result.returncode != 0:
         raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
 
+    _inject_analytics(output_path)
     return output_path
+
+
+def _inject_analytics(html_path: Path) -> None:
+    content = html_path.read_text()
+    if GA_MEASUREMENT_ID in content:
+        return
+    injected = content.replace("</head>", f"{_ga_snippet()}\n</head>", 1)
+    html_path.write_text(injected)
 
 
 def generate_index_html(notebooks: list[NotebookMetadata], output_dir: Path) -> Path:
@@ -208,6 +230,7 @@ def generate_index_html(notebooks: list[NotebookMetadata], output_dir: Path) -> 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Math Explorations</title>
+{_ga_snippet()}
     <style>
         * {{
             margin: 0;
