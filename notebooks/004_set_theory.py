@@ -375,10 +375,10 @@ def _(COLORS, base_layout, operation_selector, plot_venn_diagram):
     # Define colors based on operation
     _colors = {
         "union": {"a": COLORS["tertiary"], "b": COLORS["tertiary"]},
-        "intersection": {"a": "rgba(100,100,100,0.3)", "b": "rgba(100,100,100,0.3)"},
-        "difference": {"a": COLORS["tertiary"], "b": "rgba(100,100,100,0.3)"},
+        "intersection": {"a": COLORS["muted_fill"], "b": COLORS["muted_fill"]},
+        "difference": {"a": COLORS["tertiary"], "b": COLORS["muted_fill"]},
         "symmetric_difference": {"a": COLORS["tertiary"], "b": COLORS["tertiary"]},
-        "complement": {"a": "rgba(100,100,100,0.3)", "b": COLORS["tertiary"]},
+        "complement": {"a": COLORS["muted_fill"], "b": COLORS["tertiary"]},
     }
     _c = _colors[_op]
 
