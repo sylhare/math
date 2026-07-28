@@ -59,6 +59,52 @@ def _(np):
         theta = golden_angle * i
         return ring * np.cos(theta), ring * np.sin(theta), dz
 
+    def spherical_spiral(n, turns=6):
+        """Return (dx, dy, dz) along a smooth pole-to-pole spiral over the unit sphere.
+
+        Unlike the Fibonacci spread (great for *even* coverage but which jumps ~137°
+        in longitude between consecutive points), here successive samples are close
+        together — so a needle stepping through them sweeps smoothly instead of
+        shaking in place.
+        """
+        t = np.linspace(0, 1, n)
+        dz = np.cos(np.pi * t)  # north pole (+1) -> south pole (-1), even in polar angle
+        ring = np.sqrt(np.clip(1 - dz * dz, 0, 1))
+        theta = 2 * np.pi * turns * t
+        return ring * np.cos(theta), ring * np.sin(theta), dz
+
+    def needle_segments(dirs):
+        """None-separated coordinate lists of unit segments through the origin.
+
+        ``dirs`` is a tuple of direction-component arrays — ``(dx, dy)`` in 2D or
+        ``(dx, dy, dz)`` in 3D — one output list per component, ready for a single
+        Scatter/Scatter3d "lines" trace.
+        """
+        coords = [[] for _ in dirs]
+        for k in range(len(dirs[0])):
+            for axis, comp in zip(coords, dirs):
+                axis += [-0.5 * comp[k], 0.5 * comp[k], None]
+        return coords
+
+    def sphere_surface(go, radius=0.5, color="#00d4ff", opacity=0.12):
+        """A faint translucent sphere — the set of all directions the tips trace out."""
+        u = np.linspace(0, 2 * np.pi, 48)
+        v = np.linspace(0, np.pi, 24)
+        sx = radius * np.outer(np.cos(u), np.sin(v))
+        sy = radius * np.outer(np.sin(u), np.sin(v))
+        sz = radius * np.outer(np.ones_like(u), np.cos(v))
+        return go.Surface(
+            x=sx,
+            y=sy,
+            z=sz,
+            showscale=False,
+            opacity=opacity,
+            colorscale=[[0, color], [1, color]],
+            hoverinfo="skip",
+            showlegend=False,
+            name="sphere of directions",
+        )
+
     def play_pause(play_label):
         """Return a Plotly play/pause button pair for a frame animation."""
         return [
@@ -83,7 +129,7 @@ def _(np):
             }
         ]
 
-    return fibonacci_sphere, play_pause
+    return fibonacci_sphere, needle_segments, play_pause, spherical_spiral, sphere_surface
 
 
 @app.cell
@@ -97,6 +143,10 @@ def _(mo):
     ---
 
     ## A Puzzle That Looks Too Simple
+
+    > Imagine turning a car until it has faced every compass
+    > direction, then parking it. You'd expect to need a roundabout's worth of tarmac —
+    > yet the astonishing answer is that you can do it in almost *no* space at all.
 
     Lay an infinitely thin, one-inch needle flat on a table. Now rotate it until it
     has pointed in **every** direction, then set it back down. What is the *smallest
@@ -128,6 +178,9 @@ def _(mo):
     ---
 
     ## Part I: A Century of the Needle
+
+    > A hundred-year relay race: each mathematician carries the
+    > idea a little further, from a 1917 doodle on paper to a 2026 Fields Medal.
 
     ### Kakeya poses the puzzle (1917)
 
@@ -201,6 +254,9 @@ def _(mo):
     ---
 
     ## Part II: The Naive Answer — Just Spin It
+
+    > The clumsy way to face every direction is to spin on the
+    > spot like a clock's hand — it works, but it hogs an entire disk of space.
 
     The most obvious way to point a needle in every direction is to spin it about its
     midpoint. A unit needle centred at the origin sweeps out a **disk of radius
@@ -284,6 +340,9 @@ def _(mo):
 
     ## Part III: Doing Better — the Deltoid
 
+    > Give the needle a curved "skateboard bowl" to ride and it
+    > can turn the whole way round using only half the room.
+
     We can already beat the disk with a classical shape: the
     [**deltoid**](https://en.wikipedia.org/wiki/Deltoid_curve), a three-cusped
     hypocycloid. A needle can be turned all the way around while staying inside it,
@@ -307,41 +366,20 @@ def _(mo):
 def _(COLORS, base_layout, go, np, play_pause):
     # Deltoid (3-cusped hypocycloid), scaled so the tangent chord (the needle) has length 1.
     _scale = 0.25  # raw chord length is 4; scale to a unit needle
-    _bt = np.linspace(0, 2 * np.pi, 900)
-    _bx = _scale * (2 * np.cos(_bt) + np.cos(2 * _bt))
-    _by = _scale * (2 * np.sin(_bt) - np.sin(2 * _bt))
+
+    def _deltoid_pt(u):
+        return _scale * (2 * np.cos(u) + np.cos(2 * u)), _scale * (2 * np.sin(u) - np.sin(2 * u))
 
     def _tangent_chord(t):
-        px = _scale * (2 * np.cos(t) + np.cos(2 * t))
-        py = _scale * (2 * np.sin(t) - np.sin(2 * t))
-        dx = -2 * np.sin(t) - 2 * np.sin(2 * t)
-        dy = 2 * np.cos(t) - 2 * np.cos(2 * t)
-        norm = np.hypot(dx, dy)
-        if norm < 1e-9:  # cusp: pick an arbitrary direction
-            dx, dy, norm = 1.0, 0.0, 1.0
-        ux, uy = dx / norm, dy / norm
-        nx_, ny_ = -uy, ux  # perpendicular unit vector to the tangent line
-        s = (_bx - px) * nx_ + (_by - py) * ny_
-        cross_x, cross_y = [], []
-        for i in range(len(s) - 1):
-            if s[i] == 0.0 or (s[i] < 0) != (s[i + 1] < 0):
-                denom = s[i] - s[i + 1]
-                if denom == 0:
-                    continue
-                f = s[i] / denom
-                cross_x.append(_bx[i] + f * (_bx[i + 1] - _bx[i]))
-                cross_y.append(_by[i] + f * (_by[i + 1] - _by[i]))
-        if len(cross_x) < 2:  # fallback: length-1 segment centred on the tangent point
-            return [px - 0.5 * ux, px + 0.5 * ux], [py - 0.5 * uy, py + 0.5 * uy]
-        cx = np.array(cross_x)
-        cy = np.array(cross_y)
-        best_i, best_j, best_d = 0, 1, -1.0
-        for i in range(len(cx)):
-            for j in range(i + 1, len(cx)):
-                d = (cx[i] - cx[j]) ** 2 + (cy[i] - cy[j]) ** 2
-                if d > best_d:
-                    best_d, best_i, best_j = d, i, j
-        return [cx[best_i], cx[best_j]], [cy[best_i], cy[best_j]]
+        # The tangent line at parameter t re-meets the deltoid at parameters -t/2 and
+        # pi - t/2; the segment it cuts off is the needle, and its length is always 1.
+        # (Closed form — no root-finding, so it stays smooth through the three cusps.)
+        ax, ay = _deltoid_pt(-t / 2)
+        bx, by = _deltoid_pt(np.pi - t / 2)
+        return [ax, bx], [ay, by]
+
+    _bt = np.linspace(0, 2 * np.pi, 900)
+    _bx, _by = _deltoid_pt(_bt)
 
     _angles = np.linspace(0, 2 * np.pi, 37)
     _nx0, _ny0 = _tangent_chord(_angles[0])
@@ -397,6 +435,10 @@ def _(mo):
 
     ## Part IV: Besicovitch — Shrinking the Area to Nothing
 
+    > Sliding a shape never changes the directions tucked inside it — so you can overlap
+    > the slices like two paper cut-outs laid on the same spot: every direction is still
+    > there, but the shared area is counted only once, letting the footprint melt toward zero.
+
     The deltoid and triangle are pretty, but Besicovitch showed there is **no lower
     bound at all**. The engine is a single observation:
 
@@ -408,24 +450,18 @@ def _(mo):
     the overlap is now counted only once. Repeat this recursively (the **Perron tree**)
     and the area tumbles toward zero while the directional coverage is untouched.
 
-    Drag the slider to slide the two halves together and watch the union area fall.
+    Press **▶ Slide** below to close the two halves together. The thin needles inside each
+    half mark a fan of directions that half contains — watch them **keep their exact angles**
+    (directions preserved) even as the overlapping footprint, and its area, visibly shrink.
     """)
     return
 
 
 @app.cell
-def _(mo):
-    besicovitch_slide = mo.ui.slider(
-        start=0.0, stop=0.45, step=0.03, value=0.24, label="Slide the halves together", show_value=True
-    )
-    besicovitch_slide
-    return (besicovitch_slide,)
-
-
-@app.cell
-def _(COLORS, base_layout, besicovitch_slide, go, make_subplots, np, style_subplot_axes):
-    # Two halves of a unit triangle, slid together so they overlap.
-    # Translation preserves the directions each half contains, but the union area shrinks.
+def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
+    # Slice a unit triangle down the middle and slide the halves together. Translating a
+    # half never changes the DIRECTIONS inside it (the thin needles keep their angles),
+    # yet the overlap makes the shared footprint shrink -> why a Kakeya set can have area 0.
     _apex = np.array([0.5, 1.0])
     _left = np.array([[0.0, 0.0], [0.5, 0.0], _apex])  # left half-triangle
     _right = np.array([[0.5, 0.0], [1.0, 0.0], _apex])  # right half-triangle
@@ -434,10 +470,6 @@ def _(COLORS, base_layout, besicovitch_slide, go, make_subplots, np, style_subpl
         out = tri.copy()
         out[:, 0] = out[:, 0] + dx
         return out
-
-    _s = float(besicovitch_slide.value)
-    _L = _shift(_left, _s)  # slide left half rightward
-    _R = _shift(_right, -_s)  # slide right half leftward
 
     def _in_triangle(px, py, tri):
         (ax, ay), (bx, by), (cx, cy) = tri
@@ -454,80 +486,107 @@ def _(COLORS, base_layout, besicovitch_slide, go, make_subplots, np, style_subpl
         v = (d00 * d21 - d01 * d20) / denom
         return (u >= 0) & (v >= 0) & (u + v <= 1)
 
-    # Union area by rasterisation
-    _gx = np.linspace(-0.2, 1.2, 420)
-    _gy = np.linspace(-0.05, 1.05, 330)
+    _gx = np.linspace(-0.3, 1.3, 320)
+    _gy = np.linspace(-0.05, 1.05, 230)
     _GX, _GY = np.meshgrid(_gx, _gy)
-    _inside = _in_triangle(_GX, _GY, _L) | _in_triangle(_GX, _GY, _R)
     _cell = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
-    _area = float(_inside.sum() * _cell)
 
-    # Area-vs-slide curve
-    _slides = np.linspace(0.0, 0.45, 16)
-    _areas = []
-    for _sv in _slides:
-        _Ls = _shift(_left, _sv)
-        _Rs = _shift(_right, -_sv)
-        _ins = _in_triangle(_GX, _GY, _Ls) | _in_triangle(_GX, _GY, _Rs)
-        _areas.append(float(_ins.sum() * _cell))
+    def _union_area(s):
+        _ins = _in_triangle(_GX, _GY, _shift(_left, s)) | _in_triangle(_GX, _GY, _shift(_right, -s))
+        return float(_ins.sum() * _cell)
+
+    # "Direction fans": needles from each half's outer base vertex to its cut edge. Each
+    # slides horizontally with its half, so its angle (its direction) never changes.
+    _ys = np.array([0.15, 0.4, 0.65, 0.9])
+
+    def _fan(base_x, edge_x, s):
+        _xs, _ys_out = [], []
+        for _y in _ys:
+            _xs += [base_x + s, edge_x + s, None]
+            _ys_out += [0.0, _y, None]
+        return _xs, _ys_out
+
+    def _tri_trace(tri, col, fill):
+        return go.Scatter(
+            x=[*list(tri[:, 0]), tri[0, 0]],
+            y=[*list(tri[:, 1]), tri[0, 1]],
+            mode="lines",
+            fill="toself",
+            fillcolor=fill,
+            line={"color": col, "width": 2},
+            xaxis="x",
+            yaxis="y",
+            name="left half" if col == COLORS["primary"] else "right half",
+        )
+
+    def _fan_trace(xs, ys, col):
+        return go.Scatter(
+            x=xs, y=ys, mode="lines", line={"color": col, "width": 1.5}, opacity=0.95,
+            xaxis="x", yaxis="y", showlegend=False, name="needle directions",
+        )
+
+    def _frame_traces(s):
+        _area = _union_area(s)
+        _lx, _lyy = _fan(0.0, 0.5, s)
+        _rx, _ryy = _fan(1.0, 0.5, -s)
+        return [
+            _tri_trace(_shift(_left, s), COLORS["primary"], "rgba(0, 212, 255, 0.22)"),
+            _tri_trace(_shift(_right, -s), COLORS["secondary"], "rgba(255, 107, 107, 0.22)"),
+            _fan_trace(_lx, _lyy, COLORS["accent1"]),
+            _fan_trace(_rx, _ryy, COLORS["quaternary"]),
+            go.Scatter(
+                x=[s], y=[_area], mode="markers", xaxis="x2", yaxis="y2",
+                marker={"color": COLORS["accent1"], "size": 14, "symbol": "star"}, name="current",
+            ),
+            go.Scatter(
+                x=[s], y=[_area + 0.03], mode="text", text=[f"area {_area:.3f}"], xaxis="x2", yaxis="y2",
+                textfont={"color": COLORS["text"], "size": 13}, showlegend=False,
+            ),
+        ]
+
+    _slides = np.linspace(0.0, 0.18, 20)  # stop at maximal overlap (the area minimum for one slice)
+    _areas = [_union_area(_sv) for _sv in _slides]
 
     _fig = make_subplots(
         rows=1,
         cols=2,
         column_widths=[0.55, 0.45],
-        subplot_titles=("The two overlapping halves", "Union area vs. slide"),
+        subplot_titles=("Two halves sliding together — needles keep their angles", "Union area vs. slide"),
     )
 
-    for _tri, _name, _col in ((_L, "left half", COLORS["primary"]), (_R, "right half", COLORS["secondary"])):
-        _fig.add_trace(
-            go.Scatter(
-                x=[*list(_tri[:, 0]), _tri[0, 0]],
-                y=[*list(_tri[:, 1]), _tri[0, 1]],
-                mode="lines",
-                fill="toself",
-                fillcolor="rgba(0, 212, 255, 0.28)" if _col == COLORS["primary"] else "rgba(255, 107, 107, 0.28)",
-                line={"color": _col, "width": 2},
-                name=_name,
-            ),
-            row=1,
-            col=1,
-        )
-
-    _fig.add_trace(
+    _init = _frame_traces(0.0)
+    _fig.add_trace(_init[0], row=1, col=1)
+    _fig.add_trace(_init[1], row=1, col=1)
+    _fig.add_trace(_init[2], row=1, col=1)
+    _fig.add_trace(_init[3], row=1, col=1)
+    _fig.add_trace(  # index 4: static area curve
         go.Scatter(
-            x=_slides,
-            y=_areas,
-            mode="lines+markers",
-            line={"color": COLORS["quaternary"], "width": 3},
-            marker={"size": 6},
-            name="union area",
+            x=_slides, y=_areas, mode="lines+markers",
+            line={"color": COLORS["muted"], "width": 3}, marker={"size": 5}, name="union area",
         ),
         row=1,
         col=2,
     )
-    _fig.add_trace(
-        go.Scatter(
-            x=[_s],
-            y=[_area],
-            mode="markers",
-            marker={"color": COLORS["accent1"], "size": 14, "symbol": "star"},
-            name="current",
-        ),
-        row=1,
-        col=2,
-    )
+    _fig.add_trace(_init[4], row=1, col=2)  # index 5: moving star
+    _fig.add_trace(_init[5], row=1, col=2)  # index 6: area readout
+
+    _fig.frames = [
+        go.Frame(data=_frame_traces(_sv), traces=[0, 1, 2, 3, 5, 6], name=str(_i))
+        for _i, _sv in enumerate(_slides)
+    ]
 
     _fig.update_layout(
         **base_layout(
-            title=f"Slice-and-Slide: union area ≈ {_area:.3f} (from 0.500 for the whole triangle)",
-            height=440,
+            title="Slice-and-Slide: the Overlap Shrinks the Area, the Directions Stay Put",
+            height=460,
         )
     )
-    _fig.update_xaxes(range=[-0.2, 1.2], row=1, col=1, scaleanchor="y", constrain="domain")
-    _fig.update_yaxes(range=[-0.05, 1.05], row=1, col=1)
-    _fig.update_xaxes(title_text="slide amount", row=1, col=2)
-    _fig.update_yaxes(title_text="area", row=1, col=2)
+    _fig.update_xaxes(range=[-0.15, 1.15], row=1, col=1, scaleanchor="y", constrain="domain")
+    _fig.update_yaxes(range=[-0.05, 1.1], row=1, col=1)
+    _fig.update_xaxes(title_text="slide amount", range=[-0.01, 0.19], row=1, col=2)
+    _fig.update_yaxes(title_text="area", range=[0.3, 0.56], row=1, col=2)
     style_subplot_axes(_fig, show_ticklabels=True)
+    _fig.update_layout(updatemenus=play_pause("▶ Slide"))
     _fig
     return
 
@@ -553,6 +612,9 @@ def _(mo):
     ---
 
     ## Part V: What Does "Dimension" Even Mean?
+
+    > Dimension is a shape's *appetite for space* as you zoom in:
+    > how fast the number of tiles needed to cover it grows as the tiles shrink.
 
     A line has dimension 1, a filled square dimension 2. The
     [**box-counting dimension**](https://en.wikipedia.org/wiki/Minkowski%E2%80%93Bouligand_dimension)
@@ -635,9 +697,35 @@ def _(COLORS, base_layout, go, np):
 @app.cell
 def _(mo):
     mo.md(r"""
+    **So what is that slope actually telling us?** Halve the size of your covering boxes
+    and watch how the count multiplies:
+
+    - A **line** (1D): halving the boxes roughly **doubles** the count ($2 = 2^1$) → slope **1**.
+    - A **filled patch** (2D): halving the boxes roughly **quadruples** it ($4 = 2^2$) → slope **2**.
+
+    The little exponent on that "$2^{\,?}$" *is* the dimension. Crucially it need **not** be a
+    whole number — which is exactly why dimension can measure spiky, fractal, in-between sets
+    that the labels "1, 2, 3" cannot.
+
+    **And here's why it matters for Kakeya.** A Besicovitch set has **zero area**, so your gut
+    says it must behave like a thin 1D scribble. But its box-count still **quadruples** every
+    time you halve the ruler — slope **2**, the same explosive growth as a *solid* patch. So it
+    fills no area at all, yet carries the full dimension of the plane. That clash — *"takes up no
+    space"* (area $= 0$) versus *"detail multiplies as fast as a solid region"* (dimension $= 2$)
+    — is the entire heart of the Kakeya conjecture, and what all the hard work is fighting over.
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
     ---
 
     ## Part VI: The Conjecture, and the 2D Answer
+
+    > On a flat table you can make the needle's trail weigh
+    > nothing — yet it stays stubbornly two-dimensional, as "wide" as the table itself.
 
     With dimension in hand, the modern **Kakeya conjecture** is a single clean line:
 
@@ -664,13 +752,10 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, go, needle_segments, np):
     # A 2D "bush": unit segments in many directions through a common point.
     _dirs = np.linspace(0, np.pi, 60, endpoint=False)
-    _bx, _by = [], []
-    for _th in _dirs:
-        _bx += [-0.5 * np.cos(_th), 0.5 * np.cos(_th), None]
-        _by += [-0.5 * np.sin(_th), 0.5 * np.sin(_th), None]
+    _bx, _by = needle_segments((np.cos(_dirs), np.sin(_dirs)))
 
     _fig = go.Figure()
     _fig.add_trace(
@@ -707,9 +792,136 @@ def _(COLORS, base_layout, go, np):
 @app.cell
 def _(mo):
     mo.md(r"""
+    ### The cheap way vs. the expensive way to turn
+
+    This is the crux — and it's *not* the same as spinning in a circle. Watch both needles
+    below face **every** direction, but pay very different amounts of area:
+
+    - **Left — pivot on the spot.** The needle turns about its centre. It does point every
+      way, but it paints the *entire disk*: area $\pi/4 \approx 0.785$. This is "rotating in
+      a circle."
+    - **Right — slide *and* turn.** The needle rolls around a deltoid, sliding as it turns.
+      Same directions covered, yet it paints only $\pi/8 \approx 0.393$ — half as much —
+      because sliding a needle *along its own length* adds no new area (it just retraces the
+      line it already sits on). That "free" in-and-out slide is the whole idea.
+
+    Besicovitch pushed this same slide-and-turn trick (Part IV) all the way down to **zero**
+    area. Watch the two regions fill: identical directions, wildly different paint. *(In 3D
+    the circle of directions becomes a whole sphere — the next section.)*
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
+    # Two ways to point a needle in every direction, side by side:
+    #   left  = pivot on the spot   -> the swept region fills the whole disk (area pi/4)
+    #   right = slide & turn (roll around a deltoid) -> fills only pi/8, because sliding a
+    #           needle along its own length adds no area. Same directions, far less paint.
+    _n = 48
+    _scale = 0.25
+
+    def _deltoid_pt(u):
+        return _scale * (2 * np.cos(u) + np.cos(2 * u)), _scale * (2 * np.sin(u) - np.sin(2 * u))
+
+    _ang = np.linspace(0, np.pi, _n)  # left: centred diameter turning a half-turn
+    _dc, _ds = np.cos(_ang), np.sin(_ang)
+
+    def _diam(k):
+        return [-0.5 * _dc[k], 0.5 * _dc[k]], [-0.5 * _ds[k], 0.5 * _ds[k]]
+
+    _tt = np.linspace(0, 2 * np.pi, _n)  # right: tangent chord of the deltoid
+
+    def _chord(k):
+        _ax, _ay = _deltoid_pt(-_tt[k] / 2)
+        _bx, _by = _deltoid_pt(np.pi - _tt[k] / 2)
+        return [_ax, _bx], [_ay, _by]
+
+    def _accum_trace(fn, k, ax):
+        # Every needle position up to frame k -> shows the region the needle has swept.
+        _xs, _ys = [], []
+        for _j in range(k + 1):
+            _x, _y = fn(_j)
+            _xs += [_x[0], _x[1], None]
+            _ys += [_y[0], _y[1], None]
+        return go.Scatter(
+            x=_xs, y=_ys, mode="lines", line={"color": COLORS["primary"], "width": 1},
+            opacity=0.35, xaxis=ax[0], yaxis=ax[1], showlegend=False, name="swept",
+        )
+
+    def _cur_trace(fn, k, ax):
+        _x, _y = fn(k)
+        return go.Scatter(
+            x=_x, y=_y, mode="lines", line={"color": COLORS["secondary"], "width": 5},
+            xaxis=ax[0], yaxis=ax[1], showlegend=False, name="needle",
+        )
+
+    _L, _R = ("x", "y"), ("x2", "y2")
+    _fig = make_subplots(
+        rows=1,
+        cols=2,
+        subplot_titles=("Pivot on the spot → paints π/4 ≈ 0.785", "Slide & turn → paints only π/8 ≈ 0.393"),
+    )
+
+    _dt = np.linspace(0, 2 * np.pi, 200)
+    _fig.add_trace(  # 0: swept disk (static fill, left)
+        go.Scatter(
+            x=0.5 * np.cos(_dt), y=0.5 * np.sin(_dt), mode="lines", fill="toself",
+            fillcolor="rgba(0, 212, 255, 0.10)", line={"color": COLORS["grid"], "width": 1.5},
+            xaxis="x", yaxis="y", showlegend=False, name="disk",
+        ),
+        row=1, col=1,
+    )
+    _fig.add_trace(_accum_trace(_diam, 0, _L), row=1, col=1)  # 1
+    _fig.add_trace(_cur_trace(_diam, 0, _L), row=1, col=1)  # 2
+
+    _bxo, _byo = _deltoid_pt(np.linspace(0, 2 * np.pi, 400))
+    _fig.add_trace(  # 3: deltoid region (static fill, right)
+        go.Scatter(
+            x=_bxo, y=_byo, mode="lines", fill="toself",
+            fillcolor="rgba(255, 230, 109, 0.10)", line={"color": COLORS["grid"], "width": 1.5},
+            xaxis="x2", yaxis="y2", showlegend=False, name="deltoid",
+        ),
+        row=1, col=2,
+    )
+    _fig.add_trace(_accum_trace(_chord, 0, _R), row=1, col=2)  # 4
+    _fig.add_trace(_cur_trace(_chord, 0, _R), row=1, col=2)  # 5
+
+    _fig.frames = [
+        go.Frame(
+            data=[_accum_trace(_diam, _k, _L), _cur_trace(_diam, _k, _L),
+                  _accum_trace(_chord, _k, _R), _cur_trace(_chord, _k, _R)],
+            traces=[1, 2, 4, 5],
+            name=str(_k),
+        )
+        for _k in range(1, _n)
+    ]
+
+    _fig.update_layout(
+        **base_layout(
+            title="Rotating in a Circle vs. Sliding as You Turn — Same Directions, Less Area",
+            height=470,
+        )
+    )
+    _fig.update_xaxes(range=[-0.8, 0.8], row=1, col=1, scaleanchor="y", constrain="domain")
+    _fig.update_yaxes(range=[-0.8, 0.8], row=1, col=1)
+    _fig.update_xaxes(range=[-0.8, 0.8], row=1, col=2, scaleanchor="y2", constrain="domain")
+    _fig.update_yaxes(range=[-0.8, 0.8], row=1, col=2)
+    style_subplot_axes(_fig)
+    _fig.update_layout(updatemenus=play_pause("▶ Turn"))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
     ---
 
     ## Part VII: Into Three Dimensions
+
+    > Now play the same game in mid-air: the needle must aim at
+    > every star in the sky, sweeping out a whole *sphere* of directions.
 
     In space, a Kakeya set contains a unit segment pointing in *every* direction of the
     sphere. Drag the plot below to rotate it: this is a 3D **bush**, a genuine Kakeya
@@ -722,18 +934,15 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, SCENE_THEME, base_layout, fibonacci_sphere, go):
+def _(COLORS, SCENE_THEME, base_layout, fibonacci_sphere, go, needle_segments, sphere_surface):
     # A 3D "bush": unit segments through the origin, directions sampled evenly on the sphere.
     _n = 240
     _dx, _dy, _dz = fibonacci_sphere(_n)
-
-    _lx, _ly, _lz = [], [], []
-    for _k in range(_n):
-        _lx += [-0.5 * _dx[_k], 0.5 * _dx[_k], None]
-        _ly += [-0.5 * _dy[_k], 0.5 * _dy[_k], None]
-        _lz += [-0.5 * _dz[_k], 0.5 * _dz[_k], None]
+    _lx, _ly, _lz = needle_segments((_dx, _dy, _dz))
 
     _fig = go.Figure()
+    # The tips of every segment sit on this sphere of radius 1/2 — the "shape" of directions.
+    _fig.add_trace(sphere_surface(go, color=COLORS["accent3"], opacity=0.10))
     _fig.add_trace(
         go.Scatter3d(
             x=_lx,
@@ -760,68 +969,96 @@ def _(COLORS, SCENE_THEME, base_layout, fibonacci_sphere, go):
 def _(mo):
     mo.md(r"""
     To *feel* the "every direction" requirement, the animation below sends a single unit
-    needle spiralling over the whole sphere of directions. The faint dots mark where the
-    needle has already pointed — together they trace out the full sphere of directions
-    that a Kakeya set must accommodate.
+    needle spiralling over the whole sphere of directions. Keep three things in view:
+
+    - The **needle** (thick coral line) always passes through the origin, so it is a
+      *diameter* of the faint sphere. The **yellow arrow** on its leading tip shows which
+      way it currently points — watch the arrow to see the direction change.
+    - The faint **sphere of radius $\tfrac12$** is the "shape" that makes it work: *every*
+      point on it is one direction the needle must eventually hit.
+    - The bright **dots** accumulate where the tip has already been — the needle's job is
+      done only once they cover the entire sphere.
     """)
     return
 
 
 @app.cell
-def _(COLORS, SCENE_THEME, base_layout, fibonacci_sphere, go, play_pause):
+def _(COLORS, SCENE_THEME, base_layout, go, play_pause, spherical_spiral, sphere_surface):
     # Animate one needle sweeping over all directions on the sphere; accumulate its tips.
-    _n = 64
-    _dx, _dy, _dz = fibonacci_sphere(_n)
+    # The needle is a diameter of the faint sphere: as it turns, its leading tip (the
+    # arrow) paints the sphere, which *is* the "shape" of all directions to be covered.
+    # A smooth spiral (not the Fibonacci spread) keeps consecutive frames close, so the
+    # needle glides continuously instead of jittering.
+    _n = 180
+    _dx, _dy, _dz = spherical_spiral(_n, turns=6)
 
-    _fig = go.Figure()
-    _fig.add_trace(
-        go.Scatter3d(
-            x=[-0.5 * _dx[0], 0.5 * _dx[0]],
-            y=[-0.5 * _dy[0], 0.5 * _dy[0]],
-            z=[-0.5 * _dz[0], 0.5 * _dz[0]],
+    def _needle_line(k):
+        return go.Scatter3d(
+            x=[-0.5 * _dx[k], 0.5 * _dx[k]],
+            y=[-0.5 * _dy[k], 0.5 * _dy[k]],
+            z=[-0.5 * _dz[k], 0.5 * _dz[k]],
             mode="lines",
-            line={"color": COLORS["secondary"], "width": 8},
+            line={"color": COLORS["secondary"], "width": 10},
             name="needle",
         )
-    )
-    _fig.add_trace(
-        go.Scatter3d(
-            x=[0.5 * _dx[0]],
-            y=[0.5 * _dy[0]],
-            z=[0.5 * _dz[0]],
+
+    def _arrow(k):
+        # A cone at the leading tip, pointing along the needle — shows which way it faces.
+        return go.Cone(
+            x=[0.5 * _dx[k]],
+            y=[0.5 * _dy[k]],
+            z=[0.5 * _dz[k]],
+            u=[_dx[k]],
+            v=[_dy[k]],
+            w=[_dz[k]],
+            sizemode="absolute",
+            sizeref=0.12,
+            anchor="tip",
+            showscale=False,
+            colorscale=[[0, COLORS["quaternary"]], [1, COLORS["quaternary"]]],
+            name="pointing direction",
+        )
+
+    def _covered(k):
+        return go.Scatter3d(
+            x=list(0.5 * _dx[: k + 1]),
+            y=list(0.5 * _dy[: k + 1]),
+            z=list(0.5 * _dz[: k + 1]),
             mode="markers",
-            marker={"color": COLORS["primary"], "size": 2},
-            opacity=0.5,
+            marker={"color": COLORS["primary"], "size": 4},
+            opacity=0.85,
             name="directions covered",
         )
-    )
 
-    _frames = []
-    for _k in range(1, _n):
-        _frames.append(
-            go.Frame(
-                data=[
-                    go.Scatter3d(
-                        x=[-0.5 * _dx[_k], 0.5 * _dx[_k]],
-                        y=[-0.5 * _dy[_k], 0.5 * _dy[_k]],
-                        z=[-0.5 * _dz[_k], 0.5 * _dz[_k]],
-                    ),
-                    go.Scatter3d(
-                        x=list(0.5 * _dx[: _k + 1]),
-                        y=list(0.5 * _dy[: _k + 1]),
-                        z=list(0.5 * _dz[: _k + 1]),
-                    ),
-                ],
-                name=str(_k),
-            )
-        )
-    _fig.frames = _frames
+    _fig = go.Figure()
+    _fig.add_trace(sphere_surface(go, color=COLORS["accent3"], opacity=0.10))  # trace 0: static
+    _fig.add_trace(_needle_line(0))  # trace 1
+    _fig.add_trace(_arrow(0))  # trace 2
+    _fig.add_trace(_covered(0))  # trace 3
+
+    # Frames update only the needle, its arrow, and the covered dots — never the sphere.
+    _fig.frames = [
+        go.Frame(data=[_needle_line(_k), _arrow(_k), _covered(_k)], traces=[1, 2, 3], name=str(_k))
+        for _k in range(1, _n)
+    ]
+
+    # Lock the axis ranges and aspect so the box never rescales between frames —
+    # otherwise Plotly autoranges to the growing cloud of dots and the scene appears
+    # to zoom. With fixed ranges, only the needle moves.
+    _bound = 0.65
+    _scene = {
+        **SCENE_THEME,
+        "xaxis": {**SCENE_THEME["xaxis"], "range": [-_bound, _bound]},
+        "yaxis": {**SCENE_THEME["yaxis"], "range": [-_bound, _bound]},
+        "zaxis": {**SCENE_THEME["zaxis"], "range": [-_bound, _bound]},
+        "aspectmode": "cube",
+    }
 
     _fig.update_layout(
         **base_layout(
-            title="One Needle Sweeping Every 3D Direction",
+            title="One Needle Sweeping Every 3D Direction — its Tip Paints the Sphere",
             height=560,
-            scene=SCENE_THEME,
+            scene=_scene,
         )
     )
     _fig.update_layout(updatemenus=play_pause("▶ Sweep"))
@@ -835,6 +1072,9 @@ def _(mo):
     ---
 
     ## Part VIII: Fifty Years of Chipping Away
+
+    > Like climbers inching up a rock face, each team plants a
+    > flag a little higher — dimension 2, then 2½ — until the summit at 3.
 
     In 3D, mathematicians could not reach dimension $3$ directly — they crept up on it
     with better and better *lower bounds*. Each new idea proved "the dimension is at
@@ -903,6 +1143,10 @@ def _(mo):
 
     ## Part IX: The 2025 Breakthrough
 
+    > The final pitch: Wang and Zahl showed any wild tangle of
+    > needles can be quietly combed neat without losing its size — planting the flag at
+    > the summit, dimension 3.
+
     In February 2025, **Hong Wang** and **Joshua Zahl** posted
     [*Volume estimates for unions of convex sets, and the Kakeya set conjecture in three
     dimensions*](https://arxiv.org/abs/2502.17655) (127 pages), proving:
@@ -942,6 +1186,9 @@ def _(mo):
     ---
 
     ## Why Anyone Cares
+
+    > That little needle turns out to be a hidden gear driving
+    > machinery all over mathematics — from how waves ripple to how secret codes hold up.
 
     A puzzle about turning a needle would be a curiosity if it stayed alone. It doesn't.
     The geometry of *lines pointing in many directions* is a hidden skeleton beneath a
