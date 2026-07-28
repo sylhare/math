@@ -105,6 +105,56 @@ def _(np):
             name="sphere of directions",
         )
 
+    def in_triangle(px, py, tri):
+        """Boolean mask: which (px, py) grid points lie inside triangle ``tri``."""
+        (ax, ay), (bx, by), (cx, cy) = tri
+        v0x, v0y = cx - ax, cy - ay
+        v1x, v1y = bx - ax, by - ay
+        v2x, v2y = px - ax, py - ay
+        d00 = v0x * v0x + v0y * v0y
+        d01 = v0x * v1x + v0y * v1y
+        d11 = v1x * v1x + v1y * v1y
+        d20 = v2x * v0x + v2y * v0y
+        d21 = v2x * v1x + v2y * v1y
+        denom = d00 * d11 - d01 * d01
+        if abs(denom) < 1e-15:
+            return np.zeros(px.shape, dtype=bool)
+        u = (d11 * d20 - d01 * d21) / denom
+        v = (d00 * d21 - d01 * d20) / denom
+        return (u >= 0) & (v >= 0) & (u + v <= 1)
+
+    def union_area(tris, gx, gy):
+        """Rasterised area of the union of ``tris`` over the meshgrids ``gx``, ``gy``."""
+        mask = np.zeros(gx.shape, dtype=bool)
+        for t in tris:
+            mask |= in_triangle(gx, gy, t)
+        return float(mask.sum() * (gx[0, 1] - gx[0, 0]) * (gy[1, 0] - gy[0, 0]))
+
+    def perron_stages(base, levels, alpha=0.16, steps=8):
+        """Perron tree: repeatedly slice every triangle in half and slide the halves to overlap.
+
+        Translation can't change the directions inside a piece, so the direction-fan stays
+        fully covered — but the shared area keeps dropping. Returns a list of
+        ``(triangles, level)`` snapshots, with the slide animated within each level.
+        """
+        def _slide(tris, sigma):
+            out = []
+            for b0, b1, apex in tris:
+                m = (b0 + b1) / 2.0
+                d = np.array([sigma * alpha * (b1[0] - b0[0]), 0.0])
+                out.append(np.array([b0, m, apex]) + d)
+                out.append(np.array([m, b1, apex]) - d)
+            return out
+
+        fracs = np.linspace(0.0, 1.0, steps)
+        stages = [(base, 0)]
+        current = base
+        for lvl in range(1, levels + 1):
+            for sig in fracs:
+                stages.append((_slide(current, sig), lvl))
+            current = _slide(current, 1.0)
+        return stages
+
     def play_pause(play_label):
         """Return a Plotly play/pause button pair for a frame animation."""
         return [
@@ -129,7 +179,15 @@ def _(np):
             }
         ]
 
-    return fibonacci_sphere, needle_segments, play_pause, spherical_spiral, sphere_surface
+    return (
+        fibonacci_sphere,
+        needle_segments,
+        perron_stages,
+        play_pause,
+        spherical_spiral,
+        sphere_surface,
+        union_area,
+    )
 
 
 @app.cell
@@ -450,143 +508,63 @@ def _(mo):
     the overlap is now counted only once. Repeat this recursively (the **Perron tree**)
     and the area tumbles toward zero while the directional coverage is untouched.
 
-    Press **▶ Slide** below to close the two halves together. The thin needles inside each
-    half mark a fan of directions that half contains — watch them **keep their exact angles**
-    (directions preserved) even as the overlapping footprint, and its area, visibly shrink.
+    Press **▶ Iterate** to run the **Perron tree**: each round slices *every* triangle in
+    half and slides the halves to overlap. Because translation never changes the directions
+    inside a piece, the full fan of directions stays covered the whole time — yet the shared
+    area keeps tumbling (watch the readout). One slice alone barely dents it; the shrinking
+    only really bites once you iterate, and in the limit of infinitely many slices it reaches
+    **zero**.
     """)
     return
 
 
 @app.cell
-def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
-    # Slice a unit triangle down the middle and slide the halves together. Translating a
-    # half never changes the DIRECTIONS inside it (the thin needles keep their angles),
-    # yet the overlap makes the shared footprint shrink -> why a Kakeya set can have area 0.
-    _apex = np.array([0.5, 1.0])
-    _left = np.array([[0.0, 0.0], [0.5, 0.0], _apex])  # left half-triangle
-    _right = np.array([[0.5, 0.0], [1.0, 0.0], _apex])  # right half-triangle
-
-    def _shift(tri, dx):
-        out = tri.copy()
-        out[:, 0] = out[:, 0] + dx
-        return out
-
-    def _in_triangle(px, py, tri):
-        (ax, ay), (bx, by), (cx, cy) = tri
-        v0x, v0y = cx - ax, cy - ay
-        v1x, v1y = bx - ax, by - ay
-        v2x, v2y = px - ax, py - ay
-        d00 = v0x * v0x + v0y * v0y
-        d01 = v0x * v1x + v0y * v1y
-        d11 = v1x * v1x + v1y * v1y
-        d20 = v2x * v0x + v2y * v0y
-        d21 = v2x * v1x + v2y * v1y
-        denom = d00 * d11 - d01 * d01
-        u = (d11 * d20 - d01 * d21) / denom
-        v = (d00 * d21 - d01 * d20) / denom
-        return (u >= 0) & (v >= 0) & (u + v <= 1)
-
-    _gx = np.linspace(-0.3, 1.3, 320)
-    _gy = np.linspace(-0.05, 1.05, 230)
+def _(COLORS, base_layout, go, np, perron_stages, play_pause, union_area):
+    # The Perron tree (built in the shared helpers): recursively slice every triangle in half
+    # and slide the halves to overlap. Each slice preserves the direction-fan, yet the shared
+    # area keeps dropping. We rasterise the true union area so the readout is honest.
+    _gx = np.linspace(-0.65, 0.65, 220)
+    _gy = np.linspace(-0.05, 1.05, 180)
     _GX, _GY = np.meshgrid(_gx, _gy)
-    _cell = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
 
-    def _union_area(s):
-        _ins = _in_triangle(_GX, _GY, _shift(_left, s)) | _in_triangle(_GX, _GY, _shift(_right, -s))
-        return float(_ins.sum() * _cell)
+    _base = [np.array([[-0.5, 0.0], [0.5, 0.0], [0.0, 1.0]])]
+    _stages = perron_stages(_base, levels=5)
 
-    # "Direction fans": needles from each half's outer base vertex to its cut edge. Each
-    # slides horizontally with its half, so its angle (its direction) never changes.
-    _ys = np.array([0.15, 0.4, 0.65, 0.9])
-
-    def _fan(base_x, edge_x, s):
-        _xs, _ys_out = [], []
-        for _y in _ys:
-            _xs += [base_x + s, edge_x + s, None]
-            _ys_out += [0.0, _y, None]
-        return _xs, _ys_out
-
-    def _tri_trace(tri, col, fill):
+    def _poly_trace(tris):
+        _x, _y = [], []
+        for _t in tris:
+            _x += [_t[0, 0], _t[1, 0], _t[2, 0], _t[0, 0], None]
+            _y += [_t[0, 1], _t[1, 1], _t[2, 1], _t[0, 1], None]
         return go.Scatter(
-            x=[*list(tri[:, 0]), tri[0, 0]],
-            y=[*list(tri[:, 1]), tri[0, 1]],
-            mode="lines",
-            fill="toself",
-            fillcolor=fill,
-            line={"color": col, "width": 2},
-            xaxis="x",
-            yaxis="y",
-            name="left half" if col == COLORS["primary"] else "right half",
+            x=_x, y=_y, mode="lines", fill="toself", fillcolor="rgba(0, 212, 255, 0.18)",
+            line={"color": COLORS["primary"], "width": 1}, showlegend=False, name="Perron tree",
         )
 
-    def _fan_trace(xs, ys, col):
+    def _label_trace(tris, level):
+        _n = 2**level
         return go.Scatter(
-            x=xs, y=ys, mode="lines", line={"color": col, "width": 1.5}, opacity=0.95,
-            xaxis="x", yaxis="y", showlegend=False, name="needle directions",
+            x=[0.0], y=[1.14], mode="text",
+            text=[f"level {level}  ·  {_n} triangle{'s' if _n > 1 else ''}  ·  area ≈ {union_area(tris, _GX, _GY):.3f}"],
+            textfont={"color": COLORS["highlight"], "size": 15}, showlegend=False,
         )
 
-    def _frame_traces(s):
-        _area = _union_area(s)
-        _lx, _lyy = _fan(0.0, 0.5, s)
-        _rx, _ryy = _fan(1.0, 0.5, -s)
-        return [
-            _tri_trace(_shift(_left, s), COLORS["primary"], "rgba(0, 212, 255, 0.22)"),
-            _tri_trace(_shift(_right, -s), COLORS["secondary"], "rgba(255, 107, 107, 0.22)"),
-            _fan_trace(_lx, _lyy, COLORS["accent1"]),
-            _fan_trace(_rx, _ryy, COLORS["quaternary"]),
-            go.Scatter(
-                x=[s], y=[_area], mode="markers", xaxis="x2", yaxis="y2",
-                marker={"color": COLORS["accent1"], "size": 14, "symbol": "star"}, name="current",
-            ),
-            go.Scatter(
-                x=[s], y=[_area + 0.03], mode="text", text=[f"area {_area:.3f}"], xaxis="x2", yaxis="y2",
-                textfont={"color": COLORS["text"], "size": 13}, showlegend=False,
-            ),
-        ]
-
-    _slides = np.linspace(0.0, 0.18, 20)  # stop at maximal overlap (the area minimum for one slice)
-    _areas = [_union_area(_sv) for _sv in _slides]
-
-    _fig = make_subplots(
-        rows=1,
-        cols=2,
-        column_widths=[0.55, 0.45],
-        subplot_titles=("Two halves sliding together — needles keep their angles", "Union area vs. slide"),
-    )
-
-    _init = _frame_traces(0.0)
-    _fig.add_trace(_init[0], row=1, col=1)
-    _fig.add_trace(_init[1], row=1, col=1)
-    _fig.add_trace(_init[2], row=1, col=1)
-    _fig.add_trace(_init[3], row=1, col=1)
-    _fig.add_trace(  # index 4: static area curve
-        go.Scatter(
-            x=_slides, y=_areas, mode="lines+markers",
-            line={"color": COLORS["muted"], "width": 3}, marker={"size": 5}, name="union area",
-        ),
-        row=1,
-        col=2,
-    )
-    _fig.add_trace(_init[4], row=1, col=2)  # index 5: moving star
-    _fig.add_trace(_init[5], row=1, col=2)  # index 6: area readout
-
+    _fig = go.Figure()
+    _fig.add_trace(_poly_trace(_stages[0][0]))  # trace 0
+    _fig.add_trace(_label_trace(*_stages[0]))  # trace 1
     _fig.frames = [
-        go.Frame(data=_frame_traces(_sv), traces=[0, 1, 2, 3, 5, 6], name=str(_i))
-        for _i, _sv in enumerate(_slides)
+        go.Frame(data=[_poly_trace(_t), _label_trace(_t, _lv)], traces=[0, 1], name=str(_i))
+        for _i, (_t, _lv) in enumerate(_stages)
     ]
 
     _fig.update_layout(
         **base_layout(
-            title="Slice-and-Slide: the Overlap Shrinks the Area, the Directions Stay Put",
-            height=460,
+            title="Perron Tree: Keep Slicing & Sliding — the Area Tumbles Toward Zero",
+            height=520,
+            xaxis={"range": [-0.65, 0.65], "scaleanchor": "y", "constrain": "domain", "showticklabels": False},
+            yaxis={"range": [-0.05, 1.25], "showticklabels": False},
         )
     )
-    _fig.update_xaxes(range=[-0.15, 1.15], row=1, col=1, scaleanchor="y", constrain="domain")
-    _fig.update_yaxes(range=[-0.05, 1.1], row=1, col=1)
-    _fig.update_xaxes(title_text="slide amount", range=[-0.01, 0.19], row=1, col=2)
-    _fig.update_yaxes(title_text="area", range=[0.3, 0.56], row=1, col=2)
-    style_subplot_axes(_fig, show_ticklabels=True)
-    _fig.update_layout(updatemenus=play_pause("▶ Slide"))
+    _fig.update_layout(updatemenus=play_pause("▶ Iterate"))
     _fig
     return
 
@@ -603,6 +581,107 @@ def _(mo):
     So *measure* is a dead end — every Besicovitch set has area zero. To measure how
     "big" these thorny sets really are, we need a finer ruler: **dimension**.
     """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ### An intuition: "stealing" the third dimension
+
+    Here's a great way to *feel* why zero area isn't absurd — think of **folding the needle
+    up out of the plane**. Pin one end to the table and tip the needle upward: its **shadow
+    on the floor shrinks toward a single point**. Now swing it over the top and lay it back
+    down pointing a completely new way. The needle has **changed direction**, but its shadow
+    only ever traced two thin lines — so on the floor it used **essentially zero area**.
+
+    That's a genuine 3D move (a segment really can be reoriented while sweeping almost no
+    footprint). The catch: Kakeya's puzzle forbids leaving the table. So Besicovitch has to
+    pull off the *same* zero-area magic staying perfectly flat — by sliding the needle along
+    its **own length**, which is the in-the-plane version of "shrinking it to a dot" (a needle
+    gliding along the line it already sits on paints no new area).
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, SCENE_THEME, base_layout, go, np, play_pause):
+    # "Fold to a dot" intuition: a needle pinned at the origin tips up to vertical (its floor
+    # shadow shrinks to a point), swings over the top, and lays back down pointing a NEW way.
+    # The shadow only ever sweeps two thin radii -> zero floor area, yet the direction changed.
+    _phis = np.linspace(0, np.pi / 2, 26)
+    _states = [(1.0, 0.0, _p) for _p in _phis] + [(0.0, 1.0, _p) for _p in _phis[::-1]]
+
+    def _tip(k):
+        _ax, _ay, _phi = _states[k]
+        return np.cos(_phi) * _ax, np.cos(_phi) * _ay, np.sin(_phi)
+
+    def _needle(k):
+        _tx, _ty, _tz = _tip(k)
+        return go.Scatter3d(
+            x=[0, _tx], y=[0, _ty], z=[0, _tz], mode="lines",
+            line={"color": COLORS["secondary"], "width": 10}, name="needle",
+        )
+
+    def _cone(k):
+        _tx, _ty, _tz = _tip(k)
+        return go.Cone(
+            x=[_tx], y=[_ty], z=[_tz], u=[_tx], v=[_ty], w=[_tz],
+            sizemode="absolute", sizeref=0.16, anchor="tip", showscale=False,
+            colorscale=[[0, COLORS["quaternary"]], [1, COLORS["quaternary"]]], name="direction",
+        )
+
+    def _shadow_path(k):
+        _sx = [np.cos(_states[_j][2]) * _states[_j][0] for _j in range(k + 1)]
+        _sy = [np.cos(_states[_j][2]) * _states[_j][1] for _j in range(k + 1)]
+        return go.Scatter3d(
+            x=_sx, y=_sy, z=[0] * len(_sx), mode="lines",
+            line={"color": COLORS["primary"], "width": 8}, name="floor shadow (≈ zero area)",
+        )
+
+    def _shadow_dot(k):
+        _tx, _ty, _tz = _tip(k)
+        return go.Scatter3d(
+            x=[_tx], y=[_ty], z=[0], mode="markers",
+            marker={"color": COLORS["primary"], "size": 5}, showlegend=False, name="shadow",
+        )
+
+    _fu = np.array([-1.1, 1.1])
+    _FX, _FY = np.meshgrid(_fu, _fu)
+    _fig = go.Figure()
+    _fig.add_trace(  # trace 0: the floor (z = 0), static
+        go.Surface(
+            x=_FX, y=_FY, z=np.zeros((2, 2)), showscale=False, opacity=0.12,
+            colorscale=[[0, COLORS["grid"]], [1, COLORS["grid"]]], hoverinfo="skip", showlegend=False,
+        )
+    )
+    _fig.add_trace(_shadow_path(0))  # 1
+    _fig.add_trace(_needle(0))  # 2
+    _fig.add_trace(_cone(0))  # 3
+    _fig.add_trace(_shadow_dot(0))  # 4
+
+    _fig.frames = [
+        go.Frame(data=[_shadow_path(_k), _needle(_k), _cone(_k), _shadow_dot(_k)], traces=[1, 2, 3, 4], name=str(_k))
+        for _k in range(1, len(_states))
+    ]
+
+    _scene = {
+        **SCENE_THEME,
+        "xaxis": {**SCENE_THEME["xaxis"], "range": [-1.1, 1.1], "title": "x (floor)"},
+        "yaxis": {**SCENE_THEME["yaxis"], "range": [-1.1, 1.1], "title": "y (floor)"},
+        "zaxis": {**SCENE_THEME["zaxis"], "range": [-0.05, 1.1], "title": "up"},
+        "aspectmode": "manual",
+        "aspectratio": {"x": 2, "y": 2, "z": 1},
+    }
+    _fig.update_layout(
+        **base_layout(
+            title="Change Direction for Free: Stand the Needle Up → its Floor Shadow Vanishes",
+            height=560,
+            scene=_scene,
+        )
+    )
+    _fig.update_layout(updatemenus=play_pause("▶ Fold & turn"))
+    _fig
     return
 
 
@@ -794,30 +873,31 @@ def _(mo):
     mo.md(r"""
     ### The cheap way vs. the expensive way to turn
 
-    This is the crux — and it's *not* the same as spinning in a circle. Watch both needles
-    below face **every** direction, but pay very different amounts of area:
+    This is the crux — and it's *not* the same as spinning in a circle. Watch all three
+    needles below face **every** direction, but pay wildly different amounts of area:
 
     - **Left — pivot on the spot.** The needle turns about its centre. It does point every
       way, but it paints the *entire disk*: area $\pi/4 \approx 0.785$. This is "rotating in
       a circle."
-    - **Right — slide *and* turn.** The needle rolls around a deltoid, sliding as it turns.
+    - **Middle — slide *and* turn.** The needle rolls around a deltoid, sliding as it turns.
       Same directions covered, yet it paints only $\pi/8 \approx 0.393$ — half as much —
       because sliding a needle *along its own length* adds no new area (it just retraces the
       line it already sits on). That "free" in-and-out slide is the whole idea.
+    - **Right — slice & slide (Perron tree).** Push that same idea to the limit: chop the
+      region into ever-finer overlapping slivers and the painted area tumbles toward
+      **zero** — Besicovitch's result (Part IV).
 
-    Besicovitch pushed this same slide-and-turn trick (Part IV) all the way down to **zero**
-    area. Watch the two regions fill: identical directions, wildly different paint. *(In 3D
-    the circle of directions becomes a whole sphere — the next section.)*
+    Watch all three fill: identical directions, wildly different paint. *(In 3D the circle
+    of directions becomes a whole sphere — the next section.)*
     """)
     return
 
 
 @app.cell
-def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
-    # Two ways to point a needle in every direction, side by side:
-    #   left  = pivot on the spot   -> the swept region fills the whole disk (area pi/4)
-    #   right = slide & turn (roll around a deltoid) -> fills only pi/8, because sliding a
-    #           needle along its own length adds no area. Same directions, far less paint.
+def _(COLORS, base_layout, go, make_subplots, np, perron_stages, play_pause, style_subplot_axes, union_area):
+    # Three ways to point a needle in every direction, side by side:
+    #   pivot on the spot -> fills the whole disk (pi/4);  slide & turn on a deltoid -> pi/8;
+    #   slice & slide (Perron) -> tumbles toward 0. Same directions, wildly different area.
     _n = 48
     _scale = 0.25
 
@@ -830,7 +910,7 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
     def _diam(k):
         return [-0.5 * _dc[k], 0.5 * _dc[k]], [-0.5 * _ds[k], 0.5 * _ds[k]]
 
-    _tt = np.linspace(0, 2 * np.pi, _n)  # right: tangent chord of the deltoid
+    _tt = np.linspace(0, 2 * np.pi, _n)  # middle: tangent chord of the deltoid
 
     def _chord(k):
         _ax, _ay = _deltoid_pt(-_tt[k] / 2)
@@ -856,15 +936,48 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
             xaxis=ax[0], yaxis=ax[1], showlegend=False, name="needle",
         )
 
-    _L, _R = ("x", "y"), ("x2", "y2")
+    # Right panel: Perron tree (centred vertically to share the same window), sampled so it
+    # keeps subdividing across the frames while the disk and deltoid fill.
+    _pbase = [np.array([[-0.5, -0.5], [0.5, -0.5], [0.0, 0.5]])]
+    _pstages = perron_stages(_pbase, levels=5)
+    _pgx = np.linspace(-0.8, 0.8, 200)
+    _pgy = np.linspace(-0.8, 0.8, 200)
+    _PGX, _PGY = np.meshgrid(_pgx, _pgy)
+
+    def _pstage(k):
+        return _pstages[min(len(_pstages) - 1, int(round(k / (_n - 1) * (len(_pstages) - 1))))]
+
+    def _perron_trace(k, ax):
+        _tris, _ = _pstage(k)
+        _x, _y = [], []
+        for _t in _tris:
+            _x += [_t[0, 0], _t[1, 0], _t[2, 0], _t[0, 0], None]
+            _y += [_t[0, 1], _t[1, 1], _t[2, 1], _t[0, 1], None]
+        return go.Scatter(
+            x=_x, y=_y, mode="lines", fill="toself", fillcolor="rgba(149, 225, 211, 0.20)",
+            line={"color": COLORS["accent1"], "width": 1}, xaxis=ax[0], yaxis=ax[1], showlegend=False, name="perron",
+        )
+
+    def _perron_label(k, ax):
+        _tris, _ = _pstage(k)
+        return go.Scatter(
+            x=[0.0], y=[0.68], mode="text", text=[f"area ≈ {union_area(_tris, _PGX, _PGY):.3f}"],
+            textfont={"color": COLORS["highlight"], "size": 13}, xaxis=ax[0], yaxis=ax[1], showlegend=False,
+        )
+
+    _P1, _P2, _P3 = ("x", "y"), ("x2", "y2"), ("x3", "y3")
     _fig = make_subplots(
         rows=1,
-        cols=2,
-        subplot_titles=("Pivot on the spot → paints π/4 ≈ 0.785", "Slide & turn → paints only π/8 ≈ 0.393"),
+        cols=3,
+        subplot_titles=(
+            "Pivot on the spot → π/4 ≈ 0.785",
+            "Slide & turn → π/8 ≈ 0.393",
+            "Slice & slide (Perron) → 0",
+        ),
     )
 
     _dt = np.linspace(0, 2 * np.pi, 200)
-    _fig.add_trace(  # 0: swept disk (static fill, left)
+    _fig.add_trace(  # 0: swept disk (static fill)
         go.Scatter(
             x=0.5 * np.cos(_dt), y=0.5 * np.sin(_dt), mode="lines", fill="toself",
             fillcolor="rgba(0, 212, 255, 0.10)", line={"color": COLORS["grid"], "width": 1.5},
@@ -872,11 +985,11 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         ),
         row=1, col=1,
     )
-    _fig.add_trace(_accum_trace(_diam, 0, _L), row=1, col=1)  # 1
-    _fig.add_trace(_cur_trace(_diam, 0, _L), row=1, col=1)  # 2
+    _fig.add_trace(_accum_trace(_diam, 0, _P1), row=1, col=1)  # 1
+    _fig.add_trace(_cur_trace(_diam, 0, _P1), row=1, col=1)  # 2
 
     _bxo, _byo = _deltoid_pt(np.linspace(0, 2 * np.pi, 400))
-    _fig.add_trace(  # 3: deltoid region (static fill, right)
+    _fig.add_trace(  # 3: deltoid region (static fill)
         go.Scatter(
             x=_bxo, y=_byo, mode="lines", fill="toself",
             fillcolor="rgba(255, 230, 109, 0.10)", line={"color": COLORS["grid"], "width": 1.5},
@@ -884,14 +997,18 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         ),
         row=1, col=2,
     )
-    _fig.add_trace(_accum_trace(_chord, 0, _R), row=1, col=2)  # 4
-    _fig.add_trace(_cur_trace(_chord, 0, _R), row=1, col=2)  # 5
+    _fig.add_trace(_accum_trace(_chord, 0, _P2), row=1, col=2)  # 4
+    _fig.add_trace(_cur_trace(_chord, 0, _P2), row=1, col=2)  # 5
+
+    _fig.add_trace(_perron_trace(0, _P3), row=1, col=3)  # 6
+    _fig.add_trace(_perron_label(0, _P3), row=1, col=3)  # 7
 
     _fig.frames = [
         go.Frame(
-            data=[_accum_trace(_diam, _k, _L), _cur_trace(_diam, _k, _L),
-                  _accum_trace(_chord, _k, _R), _cur_trace(_chord, _k, _R)],
-            traces=[1, 2, 4, 5],
+            data=[_accum_trace(_diam, _k, _P1), _cur_trace(_diam, _k, _P1),
+                  _accum_trace(_chord, _k, _P2), _cur_trace(_chord, _k, _P2),
+                  _perron_trace(_k, _P3), _perron_label(_k, _P3)],
+            traces=[1, 2, 4, 5, 6, 7],
             name=str(_k),
         )
         for _k in range(1, _n)
@@ -899,14 +1016,16 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
 
     _fig.update_layout(
         **base_layout(
-            title="Rotating in a Circle vs. Sliding as You Turn — Same Directions, Less Area",
-            height=470,
+            title="Same Directions, Very Different Area: Disk vs. Deltoid vs. Perron Tree",
+            height=430,
         )
     )
-    _fig.update_xaxes(range=[-0.8, 0.8], row=1, col=1, scaleanchor="y", constrain="domain")
-    _fig.update_yaxes(range=[-0.8, 0.8], row=1, col=1)
-    _fig.update_xaxes(range=[-0.8, 0.8], row=1, col=2, scaleanchor="y2", constrain="domain")
-    _fig.update_yaxes(range=[-0.8, 0.8], row=1, col=2)
+    for _col in (1, 2, 3):
+        _fig.update_xaxes(
+            range=[-0.8, 0.8], row=1, col=_col,
+            scaleanchor="y" if _col == 1 else f"y{_col}", constrain="domain",
+        )
+        _fig.update_yaxes(range=[-0.8, 0.8], row=1, col=_col)
     style_subplot_axes(_fig)
     _fig.update_layout(updatemenus=play_pause("▶ Turn"))
     _fig
