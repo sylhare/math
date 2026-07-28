@@ -508,63 +508,146 @@ def _(mo):
     the overlap is now counted only once. Repeat this recursively (the **Perron tree**)
     and the area tumbles toward zero while the directional coverage is untouched.
 
-    Press **▶ Iterate** to run the **Perron tree**: each round slices *every* triangle in
-    half and slides the halves to overlap. Because translation never changes the directions
-    inside a piece, the full fan of directions stays covered the whole time — yet the shared
-    area keeps tumbling (watch the readout). One slice alone barely dents it; the shrinking
-    only really bites once you iterate, and in the limit of infinitely many slices it reaches
-    **zero**.
+    Press **▶ Slide** below to close the two halves together. The thin needles inside each
+    half mark a fan of directions that half contains — watch them **keep their exact angles**
+    (directions preserved) even as the overlapping footprint, and its area, visibly shrink.
+    One slice only gets you so far; iterating it (the Perron tree) is what drives the area to
+    zero — and you'll see that full slice-and-slide-to-nothing in the three-way comparison in
+    Part VI.
     """)
     return
 
 
 @app.cell
-def _(COLORS, base_layout, go, np, perron_stages, play_pause, union_area):
-    # The Perron tree (built in the shared helpers): recursively slice every triangle in half
-    # and slide the halves to overlap. Each slice preserves the direction-fan, yet the shared
-    # area keeps dropping. We rasterise the true union area so the readout is honest.
-    _gx = np.linspace(-0.65, 0.65, 220)
-    _gy = np.linspace(-0.05, 1.05, 180)
+def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
+    # Slice a unit triangle down the middle and slide the halves together. Translating a
+    # half never changes the DIRECTIONS inside it (the thin needles keep their angles),
+    # yet the overlap makes the shared footprint shrink -> why a Kakeya set can have area 0.
+    _apex = np.array([0.5, 1.0])
+    _left = np.array([[0.0, 0.0], [0.5, 0.0], _apex])  # left half-triangle
+    _right = np.array([[0.5, 0.0], [1.0, 0.0], _apex])  # right half-triangle
+
+    def _shift(tri, dx):
+        out = tri.copy()
+        out[:, 0] = out[:, 0] + dx
+        return out
+
+    def _in_triangle(px, py, tri):
+        (ax, ay), (bx, by), (cx, cy) = tri
+        v0x, v0y = cx - ax, cy - ay
+        v1x, v1y = bx - ax, by - ay
+        v2x, v2y = px - ax, py - ay
+        d00 = v0x * v0x + v0y * v0y
+        d01 = v0x * v1x + v0y * v1y
+        d11 = v1x * v1x + v1y * v1y
+        d20 = v2x * v0x + v2y * v0y
+        d21 = v2x * v1x + v2y * v1y
+        denom = d00 * d11 - d01 * d01
+        u = (d11 * d20 - d01 * d21) / denom
+        v = (d00 * d21 - d01 * d20) / denom
+        return (u >= 0) & (v >= 0) & (u + v <= 1)
+
+    _gx = np.linspace(-0.3, 1.3, 320)
+    _gy = np.linspace(-0.05, 1.05, 230)
     _GX, _GY = np.meshgrid(_gx, _gy)
+    _cell = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
 
-    _base = [np.array([[-0.5, 0.0], [0.5, 0.0], [0.0, 1.0]])]
-    _stages = perron_stages(_base, levels=5)
+    def _union_area(s):
+        _ins = _in_triangle(_GX, _GY, _shift(_left, s)) | _in_triangle(_GX, _GY, _shift(_right, -s))
+        return float(_ins.sum() * _cell)
 
-    def _poly_trace(tris):
-        _x, _y = [], []
-        for _t in tris:
-            _x += [_t[0, 0], _t[1, 0], _t[2, 0], _t[0, 0], None]
-            _y += [_t[0, 1], _t[1, 1], _t[2, 1], _t[0, 1], None]
+    # "Direction fans": needles from each half's outer base vertex to its cut edge. Each
+    # slides horizontally with its half, so its angle (its direction) never changes.
+    _ys = np.array([0.15, 0.4, 0.65, 0.9])
+
+    def _fan(base_x, edge_x, s):
+        _xs, _ys_out = [], []
+        for _y in _ys:
+            _xs += [base_x + s, edge_x + s, None]
+            _ys_out += [0.0, _y, None]
+        return _xs, _ys_out
+
+    def _tri_trace(tri, col, fill):
         return go.Scatter(
-            x=_x, y=_y, mode="lines", fill="toself", fillcolor="rgba(0, 212, 255, 0.18)",
-            line={"color": COLORS["primary"], "width": 1}, showlegend=False, name="Perron tree",
+            x=[*list(tri[:, 0]), tri[0, 0]],
+            y=[*list(tri[:, 1]), tri[0, 1]],
+            mode="lines",
+            fill="toself",
+            fillcolor=fill,
+            line={"color": col, "width": 2},
+            xaxis="x",
+            yaxis="y",
+            name="left half" if col == COLORS["primary"] else "right half",
         )
 
-    def _label_trace(tris, level):
-        _n = 2**level
+    def _fan_trace(xs, ys, col):
         return go.Scatter(
-            x=[0.0], y=[1.14], mode="text",
-            text=[f"level {level}  ·  {_n} triangle{'s' if _n > 1 else ''}  ·  area ≈ {union_area(tris, _GX, _GY):.3f}"],
-            textfont={"color": COLORS["highlight"], "size": 15}, showlegend=False,
+            x=xs, y=ys, mode="lines", line={"color": col, "width": 1.5}, opacity=0.95,
+            xaxis="x", yaxis="y", showlegend=False, name="needle directions",
         )
 
-    _fig = go.Figure()
-    _fig.add_trace(_poly_trace(_stages[0][0]))  # trace 0
-    _fig.add_trace(_label_trace(*_stages[0]))  # trace 1
+    def _frame_traces(s):
+        _area = _union_area(s)
+        _lx, _lyy = _fan(0.0, 0.5, s)
+        _rx, _ryy = _fan(1.0, 0.5, -s)
+        return [
+            _tri_trace(_shift(_left, s), COLORS["primary"], "rgba(0, 212, 255, 0.22)"),
+            _tri_trace(_shift(_right, -s), COLORS["secondary"], "rgba(255, 107, 107, 0.22)"),
+            _fan_trace(_lx, _lyy, COLORS["accent1"]),
+            _fan_trace(_rx, _ryy, COLORS["quaternary"]),
+            go.Scatter(
+                x=[s], y=[_area], mode="markers", xaxis="x2", yaxis="y2",
+                marker={"color": COLORS["accent1"], "size": 14, "symbol": "star"}, name="current",
+            ),
+            go.Scatter(
+                x=[s], y=[_area + 0.03], mode="text", text=[f"area {_area:.3f}"], xaxis="x2", yaxis="y2",
+                textfont={"color": COLORS["text"], "size": 13}, showlegend=False,
+            ),
+        ]
+
+    _slides = np.linspace(0.0, 0.18, 20)  # stop at maximal overlap (the area minimum for one slice)
+    _areas = [_union_area(_sv) for _sv in _slides]
+
+    _fig = make_subplots(
+        rows=1,
+        cols=2,
+        column_widths=[0.55, 0.45],
+        subplot_titles=("Two halves sliding together — needles keep their angles", "Union area vs. slide"),
+    )
+
+    _init = _frame_traces(0.0)
+    _fig.add_trace(_init[0], row=1, col=1)
+    _fig.add_trace(_init[1], row=1, col=1)
+    _fig.add_trace(_init[2], row=1, col=1)
+    _fig.add_trace(_init[3], row=1, col=1)
+    _fig.add_trace(  # index 4: static area curve
+        go.Scatter(
+            x=_slides, y=_areas, mode="lines+markers",
+            line={"color": COLORS["muted"], "width": 3}, marker={"size": 5}, name="union area",
+        ),
+        row=1,
+        col=2,
+    )
+    _fig.add_trace(_init[4], row=1, col=2)  # index 5: moving star
+    _fig.add_trace(_init[5], row=1, col=2)  # index 6: area readout
+
     _fig.frames = [
-        go.Frame(data=[_poly_trace(_t), _label_trace(_t, _lv)], traces=[0, 1], name=str(_i))
-        for _i, (_t, _lv) in enumerate(_stages)
+        go.Frame(data=_frame_traces(_sv), traces=[0, 1, 2, 3, 5, 6], name=str(_i))
+        for _i, _sv in enumerate(_slides)
     ]
 
     _fig.update_layout(
         **base_layout(
-            title="Perron Tree: Keep Slicing & Sliding — the Area Tumbles Toward Zero",
-            height=520,
-            xaxis={"range": [-0.65, 0.65], "scaleanchor": "y", "constrain": "domain", "showticklabels": False},
-            yaxis={"range": [-0.05, 1.25], "showticklabels": False},
+            title="Slice-and-Slide: the Overlap Shrinks the Area, the Directions Stay Put",
+            height=460,
         )
     )
-    _fig.update_layout(updatemenus=play_pause("▶ Iterate"))
+    _fig.update_xaxes(range=[-0.15, 1.15], row=1, col=1, scaleanchor="y", constrain="domain")
+    _fig.update_yaxes(range=[-0.05, 1.1], row=1, col=1)
+    _fig.update_xaxes(title_text="slide amount", range=[-0.01, 0.19], row=1, col=2)
+    _fig.update_yaxes(title_text="area", range=[0.3, 0.56], row=1, col=2)
+    style_subplot_axes(_fig, show_ticklabels=True)
+    _fig.update_layout(updatemenus=play_pause("▶ Slide"))
     _fig
     return
 
@@ -587,19 +670,24 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ### An intuition: "stealing" the third dimension
+    ### A tempting cheat — that is *not* allowed
 
-    Here's a great way to *feel* why zero area isn't absurd — think of **folding the needle
-    up out of the plane**. Pin one end to the table and tip the needle upward: its **shadow
-    on the floor shrinks toward a single point**. Now swing it over the top and lay it back
-    down pointing a completely new way. The needle has **changed direction**, but its shadow
-    only ever traced two thin lines — so on the floor it used **essentially zero area**.
+    Here is a picture that makes "zero area" feel obvious — and it is **wrong** for Kakeya, so
+    treat it only as a loose intuition, never a method. The needle may **never leave the table**;
+    the move below lifts it into the air, which the problem forbids.
 
-    That's a genuine 3D move (a segment really can be reoriented while sweeping almost no
-    footprint). The catch: Kakeya's puzzle forbids leaving the table. So Besicovitch has to
-    pull off the *same* zero-area magic staying perfectly flat — by sliding the needle along
-    its **own length**, which is the in-the-plane version of "shrinking it to a dot" (a needle
-    gliding along the line it already sits on paints no new area).
+    It is still worth seeing. Pin one end of the needle to the table and tip it upward: its
+    **shadow on the floor shrinks toward a single point**. Swing it over the top and lay it back
+    down facing a new way, and that shadow only ever traces two thin lines — so the needle
+    changes direction while its **floor footprint stays essentially zero**. The animation below
+    is exactly this (illegal) maneuver.
+
+    The real, *in-plane* trick is the one from Part IV — **overlapping translated copies**. Since
+    sliding a shape within the plane never changes the directions inside it, the pieces pile onto
+    one another so every direction survives while the shared area is counted only once, and
+    iterating drives that area to zero. (Relatedly, in the *turning* version of the puzzle, a
+    needle sliding along its own length paints no new area — a legitimate, perfectly flat "free"
+    move for repositioning between tiny rotations.)
     """)
     return
 
@@ -673,14 +761,118 @@ def _(COLORS, SCENE_THEME, base_layout, go, np, play_pause):
         "aspectmode": "manual",
         "aspectratio": {"x": 2, "y": 2, "z": 1},
     }
-    _fig.update_layout(
-        **base_layout(
-            title="Change Direction for Free: Stand the Needle Up → its Floor Shadow Vanishes",
-            height=560,
-            scene=_scene,
-        )
-    )
+    _fig.update_layout(**base_layout(height=560, scene=_scene))
     _fig.update_layout(updatemenus=play_pause("▶ Fold & turn"))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ### What if you rotate the *table* instead?
+
+    A natural next guess: leave the needle alone and **spin the table** underneath it. Does
+    turning the plane dodge the area?
+
+    No — and it is worth seeing why. Area is always measured **on the table**, and spinning
+    the table merely relabels which way is "north." Relative to the table the needle still
+    points every way and still sweeps the **whole disk**, area $\pi/4$ all over again. On the
+    left we hold the needle fixed and rotate the table; on the right is that exact motion drawn
+    in the table's own frame — the naive circle, no shortcut.
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
+    # Rotating the table is NOT a shortcut: area is measured on the table, so in the table's
+    # own frame the fixed needle still sweeps the full disk (pi/4) -- same as plain spinning.
+    _n = 36
+    _ang = np.linspace(0, np.pi, _n)
+
+    _vals = [-0.6, -0.3, 0.0, 0.3, 0.6]
+    _segs = []
+    for _c in _vals:
+        _segs.append(((_c, -0.6), (_c, 0.6)))
+        _segs.append(((-0.6, _c), (0.6, _c)))
+
+    def _grid_trace(th, ax):
+        _co, _si = np.cos(th), np.sin(th)
+        _xs, _ys = [], []
+        for _p0, _p1 in _segs:
+            _xs += [_co * _p0[0] - _si * _p0[1], _co * _p1[0] - _si * _p1[1], None]
+            _ys += [_si * _p0[0] + _co * _p0[1], _si * _p1[0] + _co * _p1[1], None]
+        return go.Scatter(
+            x=_xs, y=_ys, mode="lines", line={"color": COLORS["grid"], "width": 1},
+            xaxis=ax[0], yaxis=ax[1], showlegend=False, name="table",
+        )
+
+    def _diam(k):  # the fixed lab needle, expressed in the table's (rotating) frame
+        _th = -_ang[k]
+        return [-0.5 * np.cos(_th), 0.5 * np.cos(_th)], [-0.5 * np.sin(_th), 0.5 * np.sin(_th)]
+
+    def _accum_disk(k, ax):
+        _xs, _ys = [], []
+        for _j in range(k + 1):
+            _x, _y = _diam(_j)
+            _xs += [_x[0], _x[1], None]
+            _ys += [_y[0], _y[1], None]
+        return go.Scatter(
+            x=_xs, y=_ys, mode="lines", line={"color": COLORS["primary"], "width": 1},
+            opacity=0.35, xaxis=ax[0], yaxis=ax[1], showlegend=False, name="swept",
+        )
+
+    def _cur_disk(k, ax):
+        _x, _y = _diam(k)
+        return go.Scatter(
+            x=_x, y=_y, mode="lines", line={"color": COLORS["secondary"], "width": 5},
+            xaxis=ax[0], yaxis=ax[1], showlegend=False, name="needle",
+        )
+
+    _LA, _TB = ("x", "y"), ("x2", "y2")
+    _fig = make_subplots(
+        rows=1,
+        cols=2,
+        subplot_titles=("Lab frame: spin the table, hold the needle", "On the table: still the whole disk (π/4)"),
+    )
+
+    _fig.add_trace(_grid_trace(0.0, _LA), row=1, col=1)  # 0: rotating table (anim)
+    _fig.add_trace(  # 1: fixed lab needle (static)
+        go.Scatter(
+            x=[-0.5, 0.5], y=[0, 0], mode="lines", line={"color": COLORS["secondary"], "width": 6},
+            xaxis="x", yaxis="y", showlegend=False, name="needle",
+        ),
+        row=1, col=1,
+    )
+
+    _dt = np.linspace(0, 2 * np.pi, 200)
+    _fig.add_trace(  # 2: disk outline (static)
+        go.Scatter(
+            x=0.5 * np.cos(_dt), y=0.5 * np.sin(_dt), mode="lines", fill="toself",
+            fillcolor="rgba(0, 212, 255, 0.10)", line={"color": COLORS["grid"], "width": 1.5},
+            xaxis="x2", yaxis="y2", showlegend=False, name="disk",
+        ),
+        row=1, col=2,
+    )
+    _fig.add_trace(_accum_disk(0, _TB), row=1, col=2)  # 3
+    _fig.add_trace(_cur_disk(0, _TB), row=1, col=2)  # 4
+
+    _fig.frames = [
+        go.Frame(data=[_grid_trace(_ang[_k], _LA), _accum_disk(_k, _TB), _cur_disk(_k, _TB)],
+                 traces=[0, 3, 4], name=str(_k))
+        for _k in range(1, _n)
+    ]
+
+    _fig.update_layout(
+        **base_layout(title="Rotating the Table Is No Shortcut — On the Table It's Still the Full Disk", height=440)
+    )
+    _fig.update_xaxes(range=[-0.9, 0.9], row=1, col=1, scaleanchor="y", constrain="domain")
+    _fig.update_yaxes(range=[-0.9, 0.9], row=1, col=1)
+    _fig.update_xaxes(range=[-0.8, 0.8], row=1, col=2, scaleanchor="y2", constrain="domain")
+    _fig.update_yaxes(range=[-0.8, 0.8], row=1, col=2)
+    style_subplot_axes(_fig)
+    _fig.update_layout(updatemenus=play_pause("▶ Spin table"))
     _fig
     return
 
@@ -965,6 +1157,15 @@ def _(COLORS, base_layout, go, make_subplots, np, perron_stages, play_pause, sty
             textfont={"color": COLORS["highlight"], "size": 13}, xaxis=ax[0], yaxis=ax[1], showlegend=False,
         )
 
+    def _perron_needle(k, ax):
+        # A unit needle pivoting about the apex, turning through the fan of directions the
+        # region supports — so you can see a needle turning inside the shrinking area.
+        _psi = -0.46 + 0.92 * k / (_n - 1)  # ~ ±27deg, the triangle's edge directions
+        return go.Scatter(
+            x=[0.0, np.sin(_psi)], y=[0.5, 0.5 - np.cos(_psi)], mode="lines",
+            line={"color": COLORS["secondary"], "width": 5}, xaxis=ax[0], yaxis=ax[1], showlegend=False, name="needle",
+        )
+
     _P1, _P2, _P3 = ("x", "y"), ("x2", "y2"), ("x3", "y3")
     _fig = make_subplots(
         rows=1,
@@ -1002,13 +1203,14 @@ def _(COLORS, base_layout, go, make_subplots, np, perron_stages, play_pause, sty
 
     _fig.add_trace(_perron_trace(0, _P3), row=1, col=3)  # 6
     _fig.add_trace(_perron_label(0, _P3), row=1, col=3)  # 7
+    _fig.add_trace(_perron_needle(0, _P3), row=1, col=3)  # 8
 
     _fig.frames = [
         go.Frame(
             data=[_accum_trace(_diam, _k, _P1), _cur_trace(_diam, _k, _P1),
                   _accum_trace(_chord, _k, _P2), _cur_trace(_chord, _k, _P2),
-                  _perron_trace(_k, _P3), _perron_label(_k, _P3)],
-            traces=[1, 2, 4, 5, 6, 7],
+                  _perron_trace(_k, _P3), _perron_label(_k, _P3), _perron_needle(_k, _P3)],
+            traces=[1, 2, 4, 5, 6, 7, 8],
             name=str(_k),
         )
         for _k in range(1, _n)
