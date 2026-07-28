@@ -1,4 +1,13 @@
-from math_explorations.visualization.animations import create_secant_to_tangent, create_tangent_line_plot
+from math_explorations.visualization.animations import (
+    animate_area_accumulation,
+    animate_chain_rule,
+    animate_limit_process,
+    animate_power_rule,
+    animate_projectile_motion,
+    create_optimization_plot,
+    create_secant_to_tangent,
+    create_tangent_line_plot,
+)
 from math_explorations.visualization.function_plots import plot_derivative_comparison, plot_function
 from math_explorations.visualization.styles import COLORS, base_layout, get_color_palette, get_trace_style
 
@@ -59,3 +68,44 @@ def test_create_tangent_line_plot():
     fig = create_tangent_line_plot(f, df, initial_x=1.0)
     assert len(fig.data) == 3
     assert "sliders" in fig.layout
+
+
+def test_animate_limit_process():
+    fig = animate_limit_process(lambda x: x**2, lambda x: 2 * x, x0=1.0)
+    assert len(fig.data) >= 1
+    assert len(fig.frames) > 0
+
+
+def test_animate_power_rule():
+    fig = animate_power_rule(max_n=4)
+    assert len(fig.data) >= 1
+    assert len(fig.frames) > 0
+
+
+def test_animate_chain_rule():
+    import numpy as np
+
+    fig = animate_chain_rule(np.sin, lambda x: x**2, np.cos, lambda x: 2 * x)
+    assert len(fig.data) >= 1
+    assert fig.layout.title.text
+
+
+def test_animate_projectile_motion():
+    fig = animate_projectile_motion(v0=20.0, angle=45.0)
+    assert len(fig.data) >= 1
+    assert fig.layout.title.text
+
+
+def test_create_optimization_plot():
+    fig = create_optimization_plot(lambda x: x**3 - 3 * x, lambda x: 3 * x**2 - 3, lambda x: 6 * x)
+    assert len(fig.data) >= 1
+    assert fig.layout.title.text
+
+
+def test_animate_area_accumulation():
+    # Regression: DARK_THEME already carries a "title" key, so passing title=
+    # in the same update_layout call raised TypeError. Must build without error.
+    fig = animate_area_accumulation(lambda x: x**2, x_range=(0, 2))
+    assert len(fig.data) >= 1
+    assert len(fig.frames) > 0
+    assert fig.layout.title.text == "Riemann Sum: n = 5 rectangles"
