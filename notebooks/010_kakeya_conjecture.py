@@ -1585,6 +1585,330 @@ def _(COLORS, SCENE_THEME, base_layout, go, play_pause, spherical_spiral, sphere
 @app.cell
 def _(mo):
     mo.md(r"""
+    ### Three ways to picture why the dimension is forced up
+
+    You have seen what a 3D Kakeya set looks like. So why must it stay fully three-dimensional,
+    however thin it appears? Every argument — the first ones and the 2025 proof alike — rests on
+    one building block and then gets cleverer about using it. The three views below are that
+    escalation, so read them in order; the two parts after this turn them into real theorems.
+
+    A needle is a line segment; thicken it a little and it becomes a thin **tube**, the strip of
+    space one needle covers.
+
+    1. **Two tubes barely overlap** — the raw fact everything is built on.
+    2. **Bush → hairbrush** — the simplest ways to spend that fact, and how the first bounds
+       (dimension $2$, then $5/2$) were won.
+    3. **Comb it sticky** — the arrangement that finally forced the dimension all the way to $3$.
+
+    Each plays slowly; press a button and watch the needles move.
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    **1 — the raw fact.** Two needles that point in different directions can only cross in a tiny
+    patch. Widen the angle between the two needles below and the patch they share (highlighted)
+    shrinks fast; the right panel plots that shared area. Because every pair of differently-aimed
+    needles shares so little, you cannot stack a needle for every direction onto one spot — the
+    tubes are pushed apart and end up covering real area. Everything below is a way of spending
+    this one fact.
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
+    # LENS 1 -- two needles, thickened into tubes, and the patch they share. Widening the angle
+    # theta shrinks the shared patch like w^2 / sin(theta): differently-aimed needles barely
+    # overlap, so a needle for every direction must spread out and cover real area.
+    _w = 0.22  # needle thickness (the tube width)
+    _L = 2.6  # needle length
+
+    def _menu(label, dur):
+        return [{"type": "buttons", "showactive": False, "y": 1.12, "x": 0.5, "xanchor": "center", "buttons": [
+            {"label": label, "method": "animate",
+             "args": [None, {"frame": {"duration": dur, "redraw": True}, "fromcurrent": True,
+                             "transition": {"duration": int(dur * 0.6)}}]},
+            {"label": "❚❚ Pause", "method": "animate",
+             "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]},
+        ]}]
+
+    def _dirvec(a):
+        return np.array([np.cos(a), np.sin(a)]), np.array([-np.sin(a), np.cos(a)])
+
+    def _tube(a, col, fill):
+        _u, _v = _dirvec(a)
+        _c = np.array([(_L / 2) * _u + (_w / 2) * _v, (_L / 2) * _u - (_w / 2) * _v,
+                       -(_L / 2) * _u - (_w / 2) * _v, -(_L / 2) * _u + (_w / 2) * _v])
+        return go.Scatter(x=[*_c[:, 0], _c[0, 0]], y=[*_c[:, 1], _c[0, 1]], mode="lines",
+                          fill="toself", fillcolor=fill, line={"color": col, "width": 1},
+                          xaxis="x", yaxis="y", showlegend=False)
+
+    def _needle(a, col):
+        _u, _ = _dirvec(a)
+        return go.Scatter(x=[-(_L / 2) * _u[0], (_L / 2) * _u[0]], y=[-(_L / 2) * _u[1], (_L / 2) * _u[1]],
+                          mode="lines", line={"color": col, "width": 4}, xaxis="x", yaxis="y", showlegend=False)
+
+    def _patch(theta):
+        _H = theta / 2
+        _M = np.array([[-np.sin(_H), np.cos(_H)], [np.sin(_H), np.cos(_H)]])
+        _pts = np.array([np.linalg.solve(_M, np.array([_s1 * _w / 2, _s2 * _w / 2]))
+                         for _s1 in (1, -1) for _s2 in (1, -1)])
+        _pts = _pts[np.argsort(np.arctan2(_pts[:, 1], _pts[:, 0]))]
+        return go.Scatter(x=[*_pts[:, 0], _pts[0, 0]], y=[*_pts[:, 1], _pts[0, 1]], mode="lines",
+                          fill="toself", fillcolor=COLORS["quaternary"],
+                          line={"color": COLORS["quaternary"], "width": 1},
+                          xaxis="x", yaxis="y", showlegend=False)
+
+    def _tiplabel(a, col, txt):
+        _u, _ = _dirvec(a)
+        return go.Scatter(x=[(_L / 2 + 0.14) * _u[0]], y=[(_L / 2 + 0.14) * _u[1]], mode="text",
+                          text=[txt], textfont={"color": col, "size": 12}, xaxis="x", yaxis="y", showlegend=False)
+
+    def _anglelabel(theta):
+        return go.Scatter(x=[0.0], y=[1.72], mode="text",
+                          text=[f"<b>the two needles differ by {np.degrees(theta):.0f}°</b>"],
+                          textfont={"color": COLORS["text"], "size": 14}, xaxis="x", yaxis="y", showlegend=False)
+
+    def _share(theta):
+        return _w * _w / np.sin(theta)
+
+    def _frame(theta):
+        return [
+            _tube(theta / 2, COLORS["primary"], "rgba(0,212,255,0.20)"),
+            _tube(-theta / 2, COLORS["secondary"], "rgba(255,107,107,0.20)"),
+            _patch(theta),
+            _needle(theta / 2, COLORS["primary"]),
+            _needle(-theta / 2, COLORS["secondary"]),
+            _tiplabel(theta / 2, COLORS["primary"], "needle A"),
+            _tiplabel(-theta / 2, COLORS["secondary"], "needle B"),
+            _anglelabel(theta),
+            go.Scatter(x=[np.degrees(theta)], y=[_share(theta)], mode="markers",
+                       marker={"color": COLORS["quaternary"], "size": 14, "symbol": "star"},
+                       xaxis="x2", yaxis="y2", showlegend=False),
+        ]
+
+    _thetas = np.linspace(np.radians(16), np.radians(90), 26)
+    _shares = [_share(_t) for _t in _thetas]
+
+    _fig = make_subplots(rows=1, cols=2, column_widths=[0.55, 0.45],
+        subplot_titles=("Two needles and the patch they share", "Shared patch shrinks as the angle grows"))
+    _fig.add_trace(go.Scatter(x=np.degrees(_thetas), y=_shares, mode="lines",
+        line={"color": COLORS["muted"], "width": 3}, showlegend=False), row=1, col=2)  # 0 static curve
+    _init = _frame(_thetas[0])
+    for _t in _init[:-1]:
+        _fig.add_trace(_t, row=1, col=1)  # 1..8 left panel
+    _fig.add_trace(_init[-1], row=1, col=2)  # 9 moving star
+
+    _fig.frames = [go.Frame(data=_frame(_t), traces=[1, 2, 3, 4, 5, 6, 7, 8, 9], name=str(_i))
+                   for _i, _t in enumerate(_thetas)]
+
+    _fig.update_layout(**base_layout(title="Lens 1 — Two needles, different directions, tiny overlap", height=470))
+    _fig.update_xaxes(range=[-1.5, 1.5], row=1, col=1, scaleanchor="y", constrain="domain")
+    _fig.update_yaxes(range=[-1.5, 1.95], row=1, col=1)
+    _fig.update_xaxes(title_text="angle between the needles (degrees)", range=[12, 94], row=1, col=2)
+    _fig.update_yaxes(title_text="shared area", range=[0, max(_shares) * 1.1], row=1, col=2)
+    style_subplot_axes(_fig, show_ticklabels=True)
+    _fig.update_layout(updatemenus=_menu("▶ Widen the angle (slow)", 260))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    **2 — the first ways to spend it.** Pin a needle at one point and turn it through every
+    direction: the faint copies it leaves fill out a **bush**. By the fact above those tubes
+    can't all pile up, so the bush is forced to spread — which already pins the dimension at
+    $\ge 2$. Now let the needle keep turning while its pinned end slides along a line: the bushes
+    stack into a **hairbrush**, and accounting for that extra spread pushed the bound up to
+    $5/2$. Same fact as Lens 1, arranged to squeeze out more.
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
+    # LENS 2 -- a turning needle traces out the classical shapes. Left: pivot in place, one
+    # sweep -> a "bush" (Cordoba, dim >= 2). Right: pivot while the root slides along a handle,
+    # several sweeps -> a "hairbrush" (Wolff 1995, dim >= 5/2). The bold needle is the current
+    # position; faint copies are where it has already been.
+    _K = 44
+    _sweeps = 3
+    _hx0, _hx1 = -1.05, 1.05
+
+    def _menu(label, dur):
+        return [{"type": "buttons", "showactive": False, "y": 1.12, "x": 0.5, "xanchor": "center", "buttons": [
+            {"label": label, "method": "animate",
+             "args": [None, {"frame": {"duration": dur, "redraw": True}, "fromcurrent": True}]},
+            {"label": "❚❚ Pause", "method": "animate",
+             "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]},
+        ]}]
+
+    def _seg(cx, cy, a, half):
+        return [cx - half * np.cos(a), cx + half * np.cos(a)], [cy - half * np.sin(a), cy + half * np.sin(a)]
+
+    def _trail(states, half, ax, opacity):
+        _xs, _ys = [], []
+        for _cx, _cy, _a in states:
+            _x, _y = _seg(_cx, _cy, _a, half)
+            _xs += [_x[0], _x[1], None]
+            _ys += [_y[0], _y[1], None]
+        return go.Scatter(x=_xs, y=_ys, mode="lines", line={"color": COLORS["accent3"], "width": 1},
+                          opacity=opacity, xaxis=ax[0], yaxis=ax[1], showlegend=False)
+
+    def _cur(cx, cy, a, half, ax):
+        _x, _y = _seg(cx, cy, a, half)
+        return go.Scatter(x=_x, y=_y, mode="lines", line={"color": COLORS["secondary"], "width": 5},
+                          xaxis=ax[0], yaxis=ax[1], showlegend=False)
+
+    def _left_states(k):
+        return [(0.0, 0.0, np.pi * _j / _K) for _j in range(k + 1)]
+
+    def _right_states(k):
+        return [(_hx0 + (_hx1 - _hx0) * _j / _K, 0.0, (np.pi * _sweeps * _j / _K) % np.pi) for _j in range(k + 1)]
+
+    def _frame(k):
+        _ls, _rs = _left_states(k), _right_states(k)
+        return [
+            _trail(_ls, 0.5, ("x", "y"), 0.55),
+            _cur(*_ls[-1], 0.5, ("x", "y")),
+            _trail(_rs, 0.42, ("x2", "y2"), 0.4),
+            _cur(*_rs[-1], 0.42, ("x2", "y2")),
+        ]
+
+    _fig = make_subplots(rows=1, cols=2,
+        subplot_titles=("Bush — pivot in place, face every direction  (dim ≥ 2)",
+                        "Hairbrush — pivot while sliding along a handle  (dim ≥ 5/2)"))
+    _init = _frame(0)
+    _fig.add_trace(_init[0], row=1, col=1)  # 0 left trail
+    _fig.add_trace(_init[1], row=1, col=1)  # 1 left needle
+    _fig.add_trace(go.Scatter(x=[0.0], y=[0.0], mode="markers", marker={"color": COLORS["quaternary"], "size": 10},
+                              xaxis="x", yaxis="y", showlegend=False), row=1, col=1)  # 2 pivot
+    _fig.add_trace(_init[2], row=1, col=2)  # 3 right trail
+    _fig.add_trace(_init[3], row=1, col=2)  # 4 right needle
+    _fig.add_trace(go.Scatter(x=[_hx0, _hx1], y=[0.0, 0.0], mode="lines",
+                              line={"color": COLORS["quaternary"], "width": 4},
+                              xaxis="x2", yaxis="y2", showlegend=False), row=1, col=2)  # 5 handle
+
+    _fig.frames = [go.Frame(data=_frame(_k), traces=[0, 1, 3, 4], name=str(_k)) for _k in range(_K + 1)]
+
+    _fig.update_layout(**base_layout(title="Lens 2 — A turning needle builds a bush, then a hairbrush", height=460))
+    _fig.update_xaxes(range=[-0.8, 0.8], row=1, col=1, scaleanchor="y", constrain="domain")
+    _fig.update_yaxes(range=[-0.8, 0.8], row=1, col=1)
+    _fig.update_xaxes(range=[-1.6, 1.6], row=1, col=2, scaleanchor="y2", constrain="domain")
+    _fig.update_yaxes(range=[-0.75, 0.75], row=1, col=2)
+    style_subplot_axes(_fig)
+    _fig.update_layout(updatemenus=_menu("▶ Turn the needle (slow)", 130))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    **3 — the arrangement that finished it.** Bush and hairbrush are blunt, and they stall short
+    of $3$. The last push needs the tubes laid out so the overlap-accounting from Lens 1 is as
+    tight as it can possibly be. Sliding a needle never changes the direction it points — only
+    where it sits — and Wang and Zahl use that freedom to comb a messy pile of needles into a tidy
+    one. Watch the needles slide from scattered positions into groups where needles pointing
+    almost the same way end up almost on top of each other — a **sticky** set. Colour tracks
+    direction, so the tidy state is the one where each colour gathers together. Proving the bound
+    for these combed sets, then showing that *any* set can be combed this way without losing
+    dimension, is the 2025 result — dimension exactly $3$.
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, np):
+    # LENS 3 -- the sticky reduction as a physical "combing". Each needle keeps its DIRECTION
+    # (angle fixed) while its centre slides from a scattered layout to a clustered one where
+    # needles of nearby direction sit nearby (a Cantor-like map of angle -> position). Colour
+    # encodes direction, so clustering shows up as colours gathering together.
+    _N = 22
+    _dirs = np.linspace(0.0, np.pi, _N, endpoint=False)
+    _half = 0.26
+
+    _gen_cx = 0.85 * np.cos(3.0 * _dirs)
+    _gen_cy = 0.55 * np.sin(2.0 * _dirs)
+
+    def _cantor(t, depth=4):
+        _lo, _hi = -1.0, 1.0
+        for _ in range(depth):
+            _third = (_hi - _lo) / 3.0
+            if t < 0.5:
+                _hi, t = _lo + _third, t * 2.0
+            else:
+                _lo, t = _hi - _third, (t - 0.5) * 2.0
+        return (_lo + _hi) / 2.0
+
+    _stk_cx = np.array([_cantor(_d / np.pi) for _d in _dirs])
+
+    def _menu(label, dur):
+        return [{"type": "buttons", "showactive": False, "y": 1.12, "x": 0.5, "xanchor": "center", "buttons": [
+            {"label": label, "method": "animate",
+             "args": [None, {"frame": {"duration": dur, "redraw": True}, "fromcurrent": True,
+                             "transition": {"duration": int(dur * 0.7)}}]},
+            {"label": "❚❚ Pause", "method": "animate",
+             "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]},
+        ]}]
+
+    def _lerp(c1, c2, f):
+        return tuple(int(round(c1[_i] + (c2[_i] - c1[_i]) * f)) for _i in range(3))
+
+    def _col(t):
+        _stops = [(0, 212, 255), (255, 230, 109), (255, 107, 107)]
+        _r = _lerp(_stops[0], _stops[1], t * 2) if t < 0.5 else _lerp(_stops[1], _stops[2], (t - 0.5) * 2)
+        return f"rgb{_r}"
+
+    _cols = [_col(_i / (_N - 1)) for _i in range(_N)]
+
+    def _needles(p):
+        _out = []
+        for _i in range(_N):
+            _cx = (1 - p) * _gen_cx[_i] + p * _stk_cx[_i]
+            _cy = (1 - p) * _gen_cy[_i]
+            _a = _dirs[_i]
+            _out.append(go.Scatter(
+                x=[_cx - _half * np.cos(_a), _cx + _half * np.cos(_a)],
+                y=[_cy - _half * np.sin(_a), _cy + _half * np.sin(_a)],
+                mode="lines", line={"color": _cols[_i], "width": 4}, showlegend=False))
+        return _out
+
+    def _label(p):
+        if p < 0.02:
+            _t = "scattered — nearby directions land anywhere"
+        elif p > 0.98:
+            _t = "combed neat — nearby directions sit together (sticky)"
+        else:
+            _t = "sliding into place — every needle keeps its direction"
+        return go.Scatter(x=[0.0], y=[1.5], mode="text", text=[f"<b>{_t}</b>"],
+                          textfont={"color": COLORS["text"], "size": 14}, showlegend=False)
+
+    _ps = [0.0] * 4 + list(np.linspace(0.0, 1.0, 22)) + [1.0] * 6
+
+    _fig = go.Figure()
+    for _tr in _needles(0.0):
+        _fig.add_trace(_tr)
+    _fig.add_trace(_label(0.0))
+
+    _fig.frames = [go.Frame(data=[*_needles(_p), _label(_p)], name=str(_i)) for _i, _p in enumerate(_ps)]
+
+    _fig.update_layout(**base_layout(title="Lens 3 — Comb any set sticky: the needles slide, directions stay", height=520))
+    _fig.update_xaxes(range=[-1.35, 1.35], scaleanchor="y", constrain="domain",
+                      gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
+    _fig.update_yaxes(range=[-1.0, 1.7], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
+    _fig.update_layout(updatemenus=_menu("▶ Comb it neat (slow)", 220))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
     ---
 
     ## Part VIII: Fifty Years of Chipping Away
@@ -1693,315 +2017,6 @@ def _(mo):
     intermediate statements. The full Kakeya conjecture for $n \ge 4$ remains **open** —
     the needle has only just begun to turn.
     """)
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    ### Three ways to picture why the dimension is forced up
-
-    A needle is a line segment. Thicken it a little and it becomes a thin **tube** — the strip
-    of table one needle actually covers. A Kakeya set needs a needle in *every* direction at
-    once, and those tubes won't fit into a small, low-dimensional set. The three views below
-    show why, each a different way. They play slowly; press a button and watch the needles move.
-    """)
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    Two needles that point in different directions can only cross in a tiny patch. Widen the
-    angle between the two needles below and the patch they share (highlighted) shrinks fast;
-    the right panel plots that shared area. Because every pair of differently-aimed needles
-    shares so little, you cannot stack a needle for every direction onto one spot — the tubes
-    are pushed apart and end up covering real area.
-    """)
-    return
-
-
-@app.cell
-def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
-    # LENS 1 -- two needles, thickened into tubes, and the patch they share. Widening the angle
-    # theta shrinks the shared patch like w^2 / sin(theta): differently-aimed needles barely
-    # overlap, so a needle for every direction must spread out and cover real area.
-    _w = 0.22  # needle thickness (the tube width)
-    _L = 2.6  # needle length
-
-    def _menu(label, dur):
-        return [{"type": "buttons", "showactive": False, "y": 1.12, "x": 0.5, "xanchor": "center", "buttons": [
-            {"label": label, "method": "animate",
-             "args": [None, {"frame": {"duration": dur, "redraw": True}, "fromcurrent": True,
-                             "transition": {"duration": int(dur * 0.6)}}]},
-            {"label": "❚❚ Pause", "method": "animate",
-             "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]},
-        ]}]
-
-    def _dirvec(a):
-        return np.array([np.cos(a), np.sin(a)]), np.array([-np.sin(a), np.cos(a)])
-
-    def _tube(a, col, fill):
-        _u, _v = _dirvec(a)
-        _c = np.array([(_L / 2) * _u + (_w / 2) * _v, (_L / 2) * _u - (_w / 2) * _v,
-                       -(_L / 2) * _u - (_w / 2) * _v, -(_L / 2) * _u + (_w / 2) * _v])
-        return go.Scatter(x=[*_c[:, 0], _c[0, 0]], y=[*_c[:, 1], _c[0, 1]], mode="lines",
-                          fill="toself", fillcolor=fill, line={"color": col, "width": 1},
-                          xaxis="x", yaxis="y", showlegend=False)
-
-    def _needle(a, col):
-        _u, _ = _dirvec(a)
-        return go.Scatter(x=[-(_L / 2) * _u[0], (_L / 2) * _u[0]], y=[-(_L / 2) * _u[1], (_L / 2) * _u[1]],
-                          mode="lines", line={"color": col, "width": 4}, xaxis="x", yaxis="y", showlegend=False)
-
-    def _patch(theta):
-        _H = theta / 2
-        _M = np.array([[-np.sin(_H), np.cos(_H)], [np.sin(_H), np.cos(_H)]])
-        _pts = np.array([np.linalg.solve(_M, np.array([_s1 * _w / 2, _s2 * _w / 2]))
-                         for _s1 in (1, -1) for _s2 in (1, -1)])
-        _pts = _pts[np.argsort(np.arctan2(_pts[:, 1], _pts[:, 0]))]
-        return go.Scatter(x=[*_pts[:, 0], _pts[0, 0]], y=[*_pts[:, 1], _pts[0, 1]], mode="lines",
-                          fill="toself", fillcolor=COLORS["quaternary"],
-                          line={"color": COLORS["quaternary"], "width": 1},
-                          xaxis="x", yaxis="y", showlegend=False)
-
-    def _tiplabel(a, col, txt):
-        _u, _ = _dirvec(a)
-        return go.Scatter(x=[(_L / 2 + 0.14) * _u[0]], y=[(_L / 2 + 0.14) * _u[1]], mode="text",
-                          text=[txt], textfont={"color": col, "size": 12}, xaxis="x", yaxis="y", showlegend=False)
-
-    def _anglelabel(theta):
-        return go.Scatter(x=[0.0], y=[1.72], mode="text",
-                          text=[f"<b>the two needles differ by {np.degrees(theta):.0f}°</b>"],
-                          textfont={"color": COLORS["text"], "size": 14}, xaxis="x", yaxis="y", showlegend=False)
-
-    def _share(theta):
-        return _w * _w / np.sin(theta)
-
-    def _frame(theta):
-        return [
-            _tube(theta / 2, COLORS["primary"], "rgba(0,212,255,0.20)"),
-            _tube(-theta / 2, COLORS["secondary"], "rgba(255,107,107,0.20)"),
-            _patch(theta),
-            _needle(theta / 2, COLORS["primary"]),
-            _needle(-theta / 2, COLORS["secondary"]),
-            _tiplabel(theta / 2, COLORS["primary"], "needle A"),
-            _tiplabel(-theta / 2, COLORS["secondary"], "needle B"),
-            _anglelabel(theta),
-            go.Scatter(x=[np.degrees(theta)], y=[_share(theta)], mode="markers",
-                       marker={"color": COLORS["quaternary"], "size": 14, "symbol": "star"},
-                       xaxis="x2", yaxis="y2", showlegend=False),
-        ]
-
-    _thetas = np.linspace(np.radians(16), np.radians(90), 26)
-    _shares = [_share(_t) for _t in _thetas]
-
-    _fig = make_subplots(rows=1, cols=2, column_widths=[0.55, 0.45],
-        subplot_titles=("Two needles and the patch they share", "Shared patch shrinks as the angle grows"))
-    _fig.add_trace(go.Scatter(x=np.degrees(_thetas), y=_shares, mode="lines",
-        line={"color": COLORS["muted"], "width": 3}, showlegend=False), row=1, col=2)  # 0 static curve
-    _init = _frame(_thetas[0])
-    for _t in _init[:-1]:
-        _fig.add_trace(_t, row=1, col=1)  # 1..8 left panel
-    _fig.add_trace(_init[-1], row=1, col=2)  # 9 moving star
-
-    _fig.frames = [go.Frame(data=_frame(_t), traces=[1, 2, 3, 4, 5, 6, 7, 8, 9], name=str(_i))
-                   for _i, _t in enumerate(_thetas)]
-
-    _fig.update_layout(**base_layout(title="Lens 1 — Two needles, different directions, tiny overlap", height=470))
-    _fig.update_xaxes(range=[-1.5, 1.5], row=1, col=1, scaleanchor="y", constrain="domain")
-    _fig.update_yaxes(range=[-1.5, 1.95], row=1, col=1)
-    _fig.update_xaxes(title_text="angle between the needles (degrees)", range=[12, 94], row=1, col=2)
-    _fig.update_yaxes(title_text="shared area", range=[0, max(_shares) * 1.1], row=1, col=2)
-    style_subplot_axes(_fig, show_ticklabels=True)
-    _fig.update_layout(updatemenus=_menu("▶ Widen the angle (slow)", 260))
-    _fig
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    Pin a needle at one point and turn it through every direction: the faint copies it leaves
-    behind fill out a **bush**. Now let the needle keep turning while its pinned end slides along
-    a line — the bushes it leaves stack up into a **hairbrush**. Each step crowds more directions
-    into the picture, and measuring how much room that forces is exactly how the pre-2025
-    arguments pushed the guaranteed dimension from $2$ up to $5/2$.
-    """)
-    return
-
-
-@app.cell
-def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
-    # LENS 2 -- a turning needle traces out the classical shapes. Left: pivot in place, one
-    # sweep -> a "bush" (Cordoba, dim >= 2). Right: pivot while the root slides along a handle,
-    # several sweeps -> a "hairbrush" (Wolff 1995, dim >= 5/2). The bold needle is the current
-    # position; faint copies are where it has already been.
-    _K = 44
-    _sweeps = 3
-    _hx0, _hx1 = -1.05, 1.05
-
-    def _menu(label, dur):
-        return [{"type": "buttons", "showactive": False, "y": 1.12, "x": 0.5, "xanchor": "center", "buttons": [
-            {"label": label, "method": "animate",
-             "args": [None, {"frame": {"duration": dur, "redraw": True}, "fromcurrent": True}]},
-            {"label": "❚❚ Pause", "method": "animate",
-             "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]},
-        ]}]
-
-    def _seg(cx, cy, a, half):
-        return [cx - half * np.cos(a), cx + half * np.cos(a)], [cy - half * np.sin(a), cy + half * np.sin(a)]
-
-    def _trail(states, half, ax, opacity):
-        _xs, _ys = [], []
-        for _cx, _cy, _a in states:
-            _x, _y = _seg(_cx, _cy, _a, half)
-            _xs += [_x[0], _x[1], None]
-            _ys += [_y[0], _y[1], None]
-        return go.Scatter(x=_xs, y=_ys, mode="lines", line={"color": COLORS["accent3"], "width": 1},
-                          opacity=opacity, xaxis=ax[0], yaxis=ax[1], showlegend=False)
-
-    def _cur(cx, cy, a, half, ax):
-        _x, _y = _seg(cx, cy, a, half)
-        return go.Scatter(x=_x, y=_y, mode="lines", line={"color": COLORS["secondary"], "width": 5},
-                          xaxis=ax[0], yaxis=ax[1], showlegend=False)
-
-    def _left_states(k):
-        return [(0.0, 0.0, np.pi * _j / _K) for _j in range(k + 1)]
-
-    def _right_states(k):
-        return [(_hx0 + (_hx1 - _hx0) * _j / _K, 0.0, (np.pi * _sweeps * _j / _K) % np.pi) for _j in range(k + 1)]
-
-    def _frame(k):
-        _ls, _rs = _left_states(k), _right_states(k)
-        return [
-            _trail(_ls, 0.5, ("x", "y"), 0.55),
-            _cur(*_ls[-1], 0.5, ("x", "y")),
-            _trail(_rs, 0.42, ("x2", "y2"), 0.4),
-            _cur(*_rs[-1], 0.42, ("x2", "y2")),
-        ]
-
-    _fig = make_subplots(rows=1, cols=2,
-        subplot_titles=("Bush — pivot in place, face every direction  (dim ≥ 2)",
-                        "Hairbrush — pivot while sliding along a handle  (dim ≥ 5/2)"))
-    _init = _frame(0)
-    _fig.add_trace(_init[0], row=1, col=1)  # 0 left trail
-    _fig.add_trace(_init[1], row=1, col=1)  # 1 left needle
-    _fig.add_trace(go.Scatter(x=[0.0], y=[0.0], mode="markers", marker={"color": COLORS["quaternary"], "size": 10},
-                              xaxis="x", yaxis="y", showlegend=False), row=1, col=1)  # 2 pivot
-    _fig.add_trace(_init[2], row=1, col=2)  # 3 right trail
-    _fig.add_trace(_init[3], row=1, col=2)  # 4 right needle
-    _fig.add_trace(go.Scatter(x=[_hx0, _hx1], y=[0.0, 0.0], mode="lines",
-                              line={"color": COLORS["quaternary"], "width": 4},
-                              xaxis="x2", yaxis="y2", showlegend=False), row=1, col=2)  # 5 handle
-
-    _fig.frames = [go.Frame(data=_frame(_k), traces=[0, 1, 3, 4], name=str(_k)) for _k in range(_K + 1)]
-
-    _fig.update_layout(**base_layout(title="Lens 2 — A turning needle builds a bush, then a hairbrush", height=460))
-    _fig.update_xaxes(range=[-0.8, 0.8], row=1, col=1, scaleanchor="y", constrain="domain")
-    _fig.update_yaxes(range=[-0.8, 0.8], row=1, col=1)
-    _fig.update_xaxes(range=[-1.6, 1.6], row=1, col=2, scaleanchor="y2", constrain="domain")
-    _fig.update_yaxes(range=[-0.75, 0.75], row=1, col=2)
-    style_subplot_axes(_fig)
-    _fig.update_layout(updatemenus=_menu("▶ Turn the needle (slow)", 130))
-    _fig
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    Sliding a needle never changes the direction it points — only where it sits. Wang and Zahl
-    use that freedom to comb a messy pile of needles into a tidy one. Watch the needles
-    slide from scattered positions into groups where needles pointing almost the same way end up
-    almost on top of each other — a **sticky** set. Colour tracks direction, so the tidy state is
-    the one where each colour gathers together. Proving the bound for these combed sets, and then
-    showing that *any* set can be combed this way without losing dimension, is the 2025 result.
-    """)
-    return
-
-
-@app.cell
-def _(COLORS, base_layout, go, np):
-    # LENS 3 -- the sticky reduction as a physical "combing". Each needle keeps its DIRECTION
-    # (angle fixed) while its centre slides from a scattered layout to a clustered one where
-    # needles of nearby direction sit nearby (a Cantor-like map of angle -> position). Colour
-    # encodes direction, so clustering shows up as colours gathering together.
-    _N = 22
-    _dirs = np.linspace(0.0, np.pi, _N, endpoint=False)
-    _half = 0.26
-
-    _gen_cx = 0.85 * np.cos(3.0 * _dirs)
-    _gen_cy = 0.55 * np.sin(2.0 * _dirs)
-
-    def _cantor(t, depth=4):
-        _lo, _hi = -1.0, 1.0
-        for _ in range(depth):
-            _third = (_hi - _lo) / 3.0
-            if t < 0.5:
-                _hi, t = _lo + _third, t * 2.0
-            else:
-                _lo, t = _hi - _third, (t - 0.5) * 2.0
-        return (_lo + _hi) / 2.0
-
-    _stk_cx = np.array([_cantor(_d / np.pi) for _d in _dirs])
-
-    def _menu(label, dur):
-        return [{"type": "buttons", "showactive": False, "y": 1.12, "x": 0.5, "xanchor": "center", "buttons": [
-            {"label": label, "method": "animate",
-             "args": [None, {"frame": {"duration": dur, "redraw": True}, "fromcurrent": True,
-                             "transition": {"duration": int(dur * 0.7)}}]},
-            {"label": "❚❚ Pause", "method": "animate",
-             "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]},
-        ]}]
-
-    def _lerp(c1, c2, f):
-        return tuple(int(round(c1[_i] + (c2[_i] - c1[_i]) * f)) for _i in range(3))
-
-    def _col(t):
-        _stops = [(0, 212, 255), (255, 230, 109), (255, 107, 107)]
-        _r = _lerp(_stops[0], _stops[1], t * 2) if t < 0.5 else _lerp(_stops[1], _stops[2], (t - 0.5) * 2)
-        return f"rgb{_r}"
-
-    _cols = [_col(_i / (_N - 1)) for _i in range(_N)]
-
-    def _needles(p):
-        _out = []
-        for _i in range(_N):
-            _cx = (1 - p) * _gen_cx[_i] + p * _stk_cx[_i]
-            _cy = (1 - p) * _gen_cy[_i]
-            _a = _dirs[_i]
-            _out.append(go.Scatter(
-                x=[_cx - _half * np.cos(_a), _cx + _half * np.cos(_a)],
-                y=[_cy - _half * np.sin(_a), _cy + _half * np.sin(_a)],
-                mode="lines", line={"color": _cols[_i], "width": 4}, showlegend=False))
-        return _out
-
-    def _label(p):
-        if p < 0.02:
-            _t = "scattered — nearby directions land anywhere"
-        elif p > 0.98:
-            _t = "combed neat — nearby directions sit together (sticky)"
-        else:
-            _t = "sliding into place — every needle keeps its direction"
-        return go.Scatter(x=[0.0], y=[1.5], mode="text", text=[f"<b>{_t}</b>"],
-                          textfont={"color": COLORS["text"], "size": 14}, showlegend=False)
-
-    _ps = [0.0] * 4 + list(np.linspace(0.0, 1.0, 22)) + [1.0] * 6
-
-    _fig = go.Figure()
-    for _tr in _needles(0.0):
-        _fig.add_trace(_tr)
-    _fig.add_trace(_label(0.0))
-
-    _fig.frames = [go.Frame(data=[*_needles(_p), _label(_p)], name=str(_i)) for _i, _p in enumerate(_ps)]
-
-    _fig.update_layout(**base_layout(title="Lens 3 — Comb any set sticky: the needles slide, directions stay", height=520))
-    _fig.update_xaxes(range=[-1.35, 1.35], scaleanchor="y", constrain="domain",
-                      gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
-    _fig.update_yaxes(range=[-1.0, 1.7], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
-    _fig.update_layout(updatemenus=_menu("▶ Comb it neat (slow)", 220))
-    _fig
     return
 
 
