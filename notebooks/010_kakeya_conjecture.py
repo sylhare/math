@@ -1585,12 +1585,12 @@ def _(COLORS, SCENE_THEME, base_layout, go, play_pause, spherical_spiral, sphere
 @app.cell
 def _(mo):
     mo.md(r"""
-    ### Three ways to picture why the dimension is forced up
+    ### Picturing why the dimension is forced up
 
     You have seen what a 3D Kakeya set looks like. So why must it stay fully three-dimensional,
     however thin it appears? Every argument — the first ones and the 2025 proof alike — rests on
-    one building block and then gets cleverer about using it. The three views below are that
-    escalation, so read them in order; the two parts after this turn them into real theorems.
+    one building block and then gets cleverer about using it. The two views here are the start of
+    that escalation; the parts that follow turn them into real theorems.
 
     A needle is a line segment; thicken it a little and it becomes a thin **tube**, the strip of
     space one needle covers.
@@ -1598,9 +1598,10 @@ def _(mo):
     1. **Two tubes barely overlap** — the raw fact everything is built on.
     2. **Bush → hairbrush** — the simplest ways to spend that fact, and how the first bounds
        (dimension $2$, then $5/2$) were won.
-    3. **Comb it sticky** — the arrangement that finally forced the dimension all the way to $3$.
 
-    Each plays slowly; press a button and watch the needles move.
+    A third idea — combing the tubes into a *sticky* arrangement — is what finally reached $3$,
+    but it belongs with the 2025 proof, so it waits for Part IX. Each view plays slowly; press a
+    button and watch the needles move.
     """)
     return
 
@@ -1809,15 +1810,121 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
 @app.cell
 def _(mo):
     mo.md(r"""
-    **3 — the arrangement that finished it.** Bush and hairbrush are blunt, and they stall short
-    of $3$. The last push needs the tubes laid out so the overlap-accounting from Lens 1 is as
-    tight as it can possibly be. Sliding a needle never changes the direction it points — only
-    where it sits — and Wang and Zahl use that freedom to comb a messy pile of needles into a tidy
-    one. Watch the needles slide from scattered positions into groups where needles pointing
-    almost the same way end up almost on top of each other — a **sticky** set. Colour tracks
-    direction, so the tidy state is the one where each colour gathers together. Proving the bound
-    for these combed sets, then showing that *any* set can be combed this way without losing
-    dimension, is the 2025 result — dimension exactly $3$.
+    ---
+
+    ## Part VIII: Fifty Years of Chipping Away
+
+    > Like climbers inching up a rock face, each team plants a
+    > flag a little higher — dimension 2, then 2½ — until the summit at 3.
+
+    In 3D, mathematicians could not reach dimension $3$ directly — they crept up on it
+    with better and better *lower bounds*. Each new idea proved "the dimension is at
+    least $d$" for a larger $d$:
+
+    - **Bush argument** (Córdoba-style): every direction gives a segment through a busy
+      point, forcing $\dim \ge \tfrac{n+1}{2} = 2$ in 3D.
+    - **Wolff's hairbrush** (1995): stack many bushes along a segment to get
+      $\dim \ge \tfrac{n+2}{2} = \tfrac{5}{2}$.
+    - **Katz–Łaba–Tao** (2000): a hard-won $\tfrac{5}{2} + \varepsilon$, showing $5/2$
+      was not the end.
+
+    And then it stalled. For a quarter-century the bar climbed no higher: the summit at
+    dimension $3$ sat just out of reach, provable by no one. The chart below is that stall —
+    every rung up to $5/2 + \varepsilon$, and the dashed line at $3$ that nobody could touch.
+    Closing that last gap is the next part.
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go):
+    # Proven Hausdorff-dimension lower bounds for Kakeya sets in R^3 over time.
+    _labels = [
+        "Trivial\n(contains a line)",
+        "Bush\n(n+1)/2",
+        "Wolff hairbrush\n(n+2)/2",
+        "Katz–Łaba–Tao\n5/2 + ε",
+    ]
+    _values = [1.0, 2.0, 2.5, 2.51]
+    _colors = [COLORS["muted"], COLORS["accent3"], COLORS["tertiary"], COLORS["quaternary"]]
+
+    _fig = go.Figure()
+    _fig.add_trace(
+        go.Bar(
+            x=_labels,
+            y=_values,
+            marker_color=_colors,
+            text=[f"{v:.2f}".rstrip("0").rstrip(".") if v != 2.51 else "5/2 + ε" for v in _values],
+            textposition="outside",
+            name="proven lower bound",
+        )
+    )
+    _fig.add_hline(
+        y=3.0,
+        line_dash="dash",
+        line_color=COLORS["highlight"],
+        annotation_text="conjectured dimension = 3",
+        annotation_font_color=COLORS["highlight"],
+    )
+    _fig.update_layout(
+        **base_layout(
+            title="Lower Bounds on Kakeya Dimension in ℝ³ — Stalled at 5/2 + ε for 25 Years",
+            height=460,
+            yaxis={"title": "proven dim_H ≥", "range": [0, 3.3]},
+        )
+    )
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ---
+
+    ## Part IX: The 2025 Breakthrough
+
+    > The final pitch: Wang and Zahl showed any wild tangle of
+    > needles can be quietly combed neat without losing its size — planting the flag at
+    > the summit, dimension 3.
+
+    In February 2025, **Hong Wang** and **Joshua Zahl** posted
+    [*Volume estimates for unions of convex sets, and the Kakeya set conjecture in three
+    dimensions*](https://arxiv.org/abs/2502.17655) (127 pages), proving:
+
+    $$\text{Every Kakeya set } K \subset \mathbb{R}^3 \text{ has } \dim_{\mathrm H}(K) = \dim_{\mathrm M}(K) = 3.$$
+
+    Two ideas carried the proof (see
+    [Tao's exposition](https://terrytao.wordpress.com/2025/02/25/the-three-dimensional-kakeya-conjecture-after-wang-and-zahl/)):
+
+    1. **The sticky case first.** Following a strategy of **Katz–Tao**, they first handle
+       *sticky* Kakeya sets — ones where nearby directions stay geometrically close, so
+       the tubes line up into an approximately self-similar structure. This case was
+       settled in earlier work with new *grains* and *induction-on-scales* estimates.
+    2. **Reducing the general case to the sticky case.** The genuinely new step —
+       described by Larry Guth as the part that "seemed completely out of reach" — shows
+       any Kakeya set can be deformed toward a sticky one without shrinking its dimension.
+
+    In July **2026**, the [International Mathematical Union awarded Hong Wang a Fields
+    Medal](https://www.nyu.edu/about/news-publications/news/2026/july/nyu-professor-hong-wang-wins-fields-medal.html)
+    at the Philadelphia ICM, largely for this work — making her the third woman to win
+    mathematics' most famous prize.
+
+    That full $3$ is the bar the previous chart was missing — the leap up from Katz–Łaba–Tao's
+    $5/2 + \varepsilon$, which had stood untouched for a quarter-century.
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    Here is that combing as a picture. Colour tracks each needle's direction. Press play and the
+    needles slide from a scattered pile into groups where needles pointing almost the same way end
+    up almost on top of each other — the **sticky** arrangement. Nothing rotates: sliding a needle
+    changes only where it sits, never which way it points, so every direction is still there once
+    the pile is tidy. That is the shape in which the volume estimate finally bites — and the
+    genuinely new step is showing *any* Kakeya set can be combed into it without losing dimension.
     """)
     return
 
@@ -1897,7 +2004,7 @@ def _(COLORS, base_layout, go, np):
 
     _fig.frames = [go.Frame(data=[*_needles(_p), _label(_p)], name=str(_i)) for _i, _p in enumerate(_ps)]
 
-    _fig.update_layout(**base_layout(title="Lens 3 — Comb any set sticky: the needles slide, directions stay", height=520))
+    _fig.update_layout(**base_layout(title="Combing a Kakeya Set 'Sticky' — the Needles Slide, Directions Stay", height=520))
     _fig.update_xaxes(range=[-1.35, 1.35], scaleanchor="y", constrain="domain",
                       gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
     _fig.update_yaxes(range=[-1.0, 1.7], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
@@ -1909,106 +2016,6 @@ def _(COLORS, base_layout, go, np):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ---
-
-    ## Part VIII: Fifty Years of Chipping Away
-
-    > Like climbers inching up a rock face, each team plants a
-    > flag a little higher — dimension 2, then 2½ — until the summit at 3.
-
-    In 3D, mathematicians could not reach dimension $3$ directly — they crept up on it
-    with better and better *lower bounds*. Each new idea proved "the dimension is at
-    least $d$" for a larger $d$:
-
-    - **Bush argument** (Córdoba-style): every direction gives a segment through a busy
-      point, forcing $\dim \ge \tfrac{n+1}{2} = 2$ in 3D.
-    - **Wolff's hairbrush** (1995): stack many bushes along a segment to get
-      $\dim \ge \tfrac{n+2}{2} = \tfrac{5}{2}$.
-    - **Katz–Łaba–Tao** (2000): a hard-won $\tfrac{5}{2} + \varepsilon$, showing $5/2$
-      was not the end.
-    - **Wang–Zahl** (2025): the finish line, $\dim = 3$.
-
-    The bar chart shows how each method moved the needle — and how the last step closed
-    a gap that had stood for a quarter-century.
-    """)
-    return
-
-
-@app.cell
-def _(COLORS, base_layout, go):
-    # Proven Hausdorff-dimension lower bounds for Kakeya sets in R^3 over time.
-    _labels = [
-        "Trivial\n(contains a line)",
-        "Bush\n(n+1)/2",
-        "Wolff hairbrush\n(n+2)/2",
-        "Katz–Łaba–Tao\n5/2 + ε",
-        "Wang–Zahl 2025\n(full)",
-    ]
-    _values = [1.0, 2.0, 2.5, 2.51, 3.0]
-    _colors = [COLORS["muted"], COLORS["accent3"], COLORS["tertiary"], COLORS["quaternary"], COLORS["secondary"]]
-
-    _fig = go.Figure()
-    _fig.add_trace(
-        go.Bar(
-            x=_labels,
-            y=_values,
-            marker_color=_colors,
-            text=[f"{v:.2f}".rstrip("0").rstrip(".") if v != 2.51 else "5/2 + ε" for v in _values],
-            textposition="outside",
-            name="proven lower bound",
-        )
-    )
-    _fig.add_hline(
-        y=3.0,
-        line_dash="dash",
-        line_color=COLORS["highlight"],
-        annotation_text="conjectured dimension = 3",
-        annotation_font_color=COLORS["highlight"],
-    )
-    _fig.update_layout(
-        **base_layout(
-            title="Lower Bounds on Kakeya Dimension in ℝ³ Through Time",
-            height=460,
-            yaxis={"title": "proven dim_H ≥", "range": [0, 3.3]},
-        )
-    )
-    _fig
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    ---
-
-    ## Part IX: The 2025 Breakthrough
-
-    > The final pitch: Wang and Zahl showed any wild tangle of
-    > needles can be quietly combed neat without losing its size — planting the flag at
-    > the summit, dimension 3.
-
-    In February 2025, **Hong Wang** and **Joshua Zahl** posted
-    [*Volume estimates for unions of convex sets, and the Kakeya set conjecture in three
-    dimensions*](https://arxiv.org/abs/2502.17655) (127 pages), proving:
-
-    $$\text{Every Kakeya set } K \subset \mathbb{R}^3 \text{ has } \dim_{\mathrm H}(K) = \dim_{\mathrm M}(K) = 3.$$
-
-    Two ideas carried the proof (see
-    [Tao's exposition](https://terrytao.wordpress.com/2025/02/25/the-three-dimensional-kakeya-conjecture-after-wang-and-zahl/)):
-
-    1. **The sticky case first.** Following a strategy of **Katz–Tao**, they first handle
-       *sticky* Kakeya sets — ones where nearby directions stay geometrically close, so
-       the tubes line up into an approximately self-similar structure. This case was
-       settled in earlier work with new *grains* and *induction-on-scales* estimates.
-    2. **Reducing the general case to the sticky case.** The genuinely new step —
-       described by Larry Guth as the part that "seemed completely out of reach" — shows
-       any Kakeya set can be deformed toward a sticky one without shrinking its dimension.
-
-    In July **2026**, the [International Mathematical Union awarded Hong Wang a Fields
-    Medal](https://www.nyu.edu/about/news-publications/news/2026/july/nyu-professor-hong-wang-wins-fields-medal.html)
-    at the Philadelphia ICM, largely for this work — making her the third woman to win
-    mathematics' most famous prize.
-
     ### Why it stops at three
 
     Strikingly, the theorem is **special to $n = 3$**. In dimensions $n \ge 4$ the direct
