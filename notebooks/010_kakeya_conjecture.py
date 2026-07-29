@@ -497,172 +497,10 @@ def _(mo):
     > the slices like two paper cut-outs laid on the same spot: every direction is still
     > there, but the shared area is counted only once, letting the footprint melt toward zero.
 
-    The deltoid and triangle are pretty, but Besicovitch showed there is **no lower
-    bound at all**. The engine is a single observation:
-
-    > **Translating a shape does not change the set of directions it contains.**
-
-    So take a triangle (it contains needles pointing across a whole fan of directions),
-    slice it down the middle into two sub-triangles, and **slide them so they overlap**.
-    The union still covers every direction in the fan — but its area has shrunk, because
-    the overlap is now counted only once. Repeat this recursively (the **Perron tree**)
-    and the area tumbles toward zero while the directional coverage is untouched.
-
-    Press **▶ Slide** below to close the two halves together. The thin needles inside each
-    half mark a fan of directions that half contains — watch them **keep their exact angles**
-    (directions preserved) even as the overlapping footprint, and its area, visibly shrink.
-    One slice only gets you so far; iterating it (the Perron tree) is what drives the area to
-    zero — and you'll see that full slice-and-slide-to-nothing in the three-way comparison in
-    Part VI.
-    """)
-    return
-
-
-@app.cell
-def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
-    # Slice a unit triangle down the middle and slide the halves together. Translating a
-    # half never changes the DIRECTIONS inside it (the thin needles keep their angles),
-    # yet the overlap makes the shared footprint shrink -> why a Kakeya set can have area 0.
-    _apex = np.array([0.5, 1.0])
-    _left = np.array([[0.0, 0.0], [0.5, 0.0], _apex])  # left half-triangle
-    _right = np.array([[0.5, 0.0], [1.0, 0.0], _apex])  # right half-triangle
-
-    def _shift(tri, dx):
-        out = tri.copy()
-        out[:, 0] = out[:, 0] + dx
-        return out
-
-    def _in_triangle(px, py, tri):
-        (ax, ay), (bx, by), (cx, cy) = tri
-        v0x, v0y = cx - ax, cy - ay
-        v1x, v1y = bx - ax, by - ay
-        v2x, v2y = px - ax, py - ay
-        d00 = v0x * v0x + v0y * v0y
-        d01 = v0x * v1x + v0y * v1y
-        d11 = v1x * v1x + v1y * v1y
-        d20 = v2x * v0x + v2y * v0y
-        d21 = v2x * v1x + v2y * v1y
-        denom = d00 * d11 - d01 * d01
-        u = (d11 * d20 - d01 * d21) / denom
-        v = (d00 * d21 - d01 * d20) / denom
-        return (u >= 0) & (v >= 0) & (u + v <= 1)
-
-    _gx = np.linspace(-0.3, 1.3, 320)
-    _gy = np.linspace(-0.05, 1.05, 230)
-    _GX, _GY = np.meshgrid(_gx, _gy)
-    _cell = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
-
-    def _union_area(s):
-        _ins = _in_triangle(_GX, _GY, _shift(_left, s)) | _in_triangle(_GX, _GY, _shift(_right, -s))
-        return float(_ins.sum() * _cell)
-
-    # "Direction fans": needles from each half's outer base vertex to its cut edge. Each
-    # slides horizontally with its half, so its angle (its direction) never changes.
-    _ys = np.array([0.15, 0.4, 0.65, 0.9])
-
-    def _fan(base_x, edge_x, s):
-        _xs, _ys_out = [], []
-        for _y in _ys:
-            _xs += [base_x + s, edge_x + s, None]
-            _ys_out += [0.0, _y, None]
-        return _xs, _ys_out
-
-    def _tri_trace(tri, col, fill):
-        return go.Scatter(
-            x=[*list(tri[:, 0]), tri[0, 0]],
-            y=[*list(tri[:, 1]), tri[0, 1]],
-            mode="lines",
-            fill="toself",
-            fillcolor=fill,
-            line={"color": col, "width": 2},
-            xaxis="x",
-            yaxis="y",
-            name="left half" if col == COLORS["primary"] else "right half",
-        )
-
-    def _fan_trace(xs, ys, col):
-        return go.Scatter(
-            x=xs, y=ys, mode="lines", line={"color": col, "width": 1.5}, opacity=0.95,
-            xaxis="x", yaxis="y", showlegend=False, name="needle directions",
-        )
-
-    def _frame_traces(s):
-        _area = _union_area(s)
-        _lx, _lyy = _fan(0.0, 0.5, s)
-        _rx, _ryy = _fan(1.0, 0.5, -s)
-        return [
-            _tri_trace(_shift(_left, s), COLORS["primary"], "rgba(0, 212, 255, 0.22)"),
-            _tri_trace(_shift(_right, -s), COLORS["secondary"], "rgba(255, 107, 107, 0.22)"),
-            _fan_trace(_lx, _lyy, COLORS["accent1"]),
-            _fan_trace(_rx, _ryy, COLORS["quaternary"]),
-            go.Scatter(
-                x=[s], y=[_area], mode="markers", xaxis="x2", yaxis="y2",
-                marker={"color": COLORS["accent1"], "size": 14, "symbol": "star"}, name="current",
-            ),
-            go.Scatter(
-                x=[s], y=[_area + 0.03], mode="text", text=[f"area {_area:.3f}"], xaxis="x2", yaxis="y2",
-                textfont={"color": COLORS["text"], "size": 13}, showlegend=False,
-            ),
-        ]
-
-    _slides = np.linspace(0.0, 0.18, 20)  # stop at maximal overlap (the area minimum for one slice)
-    _areas = [_union_area(_sv) for _sv in _slides]
-
-    _fig = make_subplots(
-        rows=1,
-        cols=2,
-        column_widths=[0.55, 0.45],
-        subplot_titles=("Two halves sliding together — needles keep their angles", "Union area vs. slide"),
-    )
-
-    _init = _frame_traces(0.0)
-    _fig.add_trace(_init[0], row=1, col=1)
-    _fig.add_trace(_init[1], row=1, col=1)
-    _fig.add_trace(_init[2], row=1, col=1)
-    _fig.add_trace(_init[3], row=1, col=1)
-    _fig.add_trace(  # index 4: static area curve
-        go.Scatter(
-            x=_slides, y=_areas, mode="lines+markers",
-            line={"color": COLORS["muted"], "width": 3}, marker={"size": 5}, name="union area",
-        ),
-        row=1,
-        col=2,
-    )
-    _fig.add_trace(_init[4], row=1, col=2)  # index 5: moving star
-    _fig.add_trace(_init[5], row=1, col=2)  # index 6: area readout
-
-    _fig.frames = [
-        go.Frame(data=_frame_traces(_sv), traces=[0, 1, 2, 3, 5, 6], name=str(_i))
-        for _i, _sv in enumerate(_slides)
-    ]
-
-    _fig.update_layout(
-        **base_layout(
-            title="Slice-and-Slide: the Overlap Shrinks the Area, the Directions Stay Put",
-            height=460,
-        )
-    )
-    _fig.update_xaxes(range=[-0.15, 1.15], row=1, col=1, scaleanchor="y", constrain="domain")
-    _fig.update_yaxes(range=[-0.05, 1.1], row=1, col=1)
-    _fig.update_xaxes(title_text="slide amount", range=[-0.01, 0.19], row=1, col=2)
-    _fig.update_yaxes(title_text="area", range=[0.3, 0.56], row=1, col=2)
-    style_subplot_axes(_fig, show_ticklabels=True)
-    _fig.update_layout(updatemenus=play_pause("▶ Slide"))
-    _fig
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    Each slide keeps every direction the two halves originally covered, yet the union
-    shrinks. Iterating this on ever-finer slices is the **Perron tree**, and in the
-    limit it produces a genuine **Besicovitch set**:
-
-    $$K \subset \mathbb{R}^2, \quad K \text{ contains a unit segment in every direction}, \quad |K| = 0.$$
-
-    So *measure* is a dead end — every Besicovitch set has area zero. To measure how
-    "big" these thorny sets really are, we need a finer ruler: **dimension**.
+    The deltoid got the area down to $\pi/8$. **Besicovitch** showed you can do far better:
+    there is no smallest area at all — a needle can point in every direction while sweeping as
+    little area as you want. Two shortcuts look like they should get you there. Neither works,
+    and it is worth seeing why before the real construction.
     """)
     return
 
@@ -670,7 +508,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ### A tempting cheat — that is *not* allowed
+    ### Tempting shortcut #1 — fold it out of the plane (against the rules)
 
     Here is a picture that makes "zero area" feel obvious — and it is **wrong** for Kakeya, so
     treat it only as a loose intuition, never a method. The needle may **never leave the table**;
@@ -682,7 +520,8 @@ def _(mo):
     changes direction while its **floor footprint stays essentially zero**. The animation below
     is exactly this (illegal) maneuver.
 
-    The real, *in-plane* trick is the one from Part IV — **overlapping translated copies**. Since
+    The real, *in-plane* trick — **overlapping translated copies** — is the one we build in a
+    moment. Since
     sliding a shape within the plane never changes the directions inside it, the pieces pile onto
     one another so every direction survives while the shared area is counted only once, and
     iterating drives that area to zero. (Relatedly, in the *turning* version of the puzzle, a
@@ -770,7 +609,7 @@ def _(COLORS, SCENE_THEME, base_layout, go, np, play_pause):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ### What if you rotate the *table* instead?
+    ### Tempting shortcut #2 — spin the *table* instead
 
     A natural next guess: leave the needle alone and **spin the table** underneath it. Does
     turning the plane dodge the area?
@@ -804,7 +643,7 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
             _xs += [_co * _p0[0] - _si * _p0[1], _co * _p1[0] - _si * _p1[1], None]
             _ys += [_si * _p0[0] + _co * _p0[1], _si * _p1[0] + _co * _p1[1], None]
         return go.Scatter(
-            x=_xs, y=_ys, mode="lines", line={"color": COLORS["grid"], "width": 1},
+            x=_xs, y=_ys, mode="lines", line={"color": "#7d8ba3", "width": 1.2},
             xaxis=ax[0], yaxis=ax[1], showlegend=False, name="table",
         )
 
@@ -880,26 +719,382 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
 @app.cell
 def _(mo):
     mo.md(r"""
+    ### The real trick — slice and slide
+
+    Both shortcuts fail for the same reason: you can't dodge area by leaving the table or
+    turning it. So stay in the plane and use one fact:
+
+    > **Translating a shape does not change the set of directions it contains.**
+
+    Take a triangle — it holds needles pointing across a whole fan of directions — slice it
+    down the middle into two sub-triangles, and **slide them until they overlap**. The union
+    still covers every direction in the fan, but its area is smaller, because the overlap is
+    counted once instead of twice. Do this on finer and finer slices (the **Perron tree**) and
+    the total area keeps dropping toward zero while the directions stay put.
+
+    Press **▶ Slice & Slide**: the triangle is cut down the middle, then the halves slide
+    together and overlap. The bold needles in each half start on their own side and *land on
+    the other*, yet keep their exact angle the whole way — even as the shared footprint, and
+    its area, shrink against the dotted outline of the original triangle.
+
+    **Reading the two panels.** *Left* is the geometry: the two halves and their needles. The
+    halves close together **once** — they do not wobble back and forth — and each needle just
+    **slides sideways, keeping its tilt**; nothing here turns. This is not the tiny-back-and-forth
+    of turning a needle; it is the area trick, and what changes is only the shared footprint.
+    *Right* keeps score — it plots the **total area the halves cover together** (their union,
+    the *y*-axis) against **how far you've slid them** (the *x*-axis: `s = 0` is flush into the
+    whole triangle, negative is pulled apart, positive is overlapping). The moving star marks
+    where the left panel is right now: as the halves overlap it slides **down** the curve, the
+    area dropping from `0.5` (the full triangle, no savings) toward its minimum, while the
+    needles never turn. **Area shrinks; directions stay.**
+
+    One slice only gets you so far; iterating it (the Perron tree) is what drives the area to
+    zero — you'll see that full slice-and-slide-to-nothing in the three-way comparison in Part VI.
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
+    # Show the construction *happening*: start from ONE triangle, cut it down the middle,
+    # then slide the two halves together until they overlap. Each half only ever TRANSLATES
+    # -- so a needle that starts on one side lands on the other side pointing the exact same
+    # way (its direction never changes), yet the shared footprint (and its area) shrinks.
+    _apex = np.array([0.5, 1.0])
+    _whole = np.array([[0.0, 0.0], [1.0, 0.0], _apex])  # the original, un-cut triangle
+    _left = np.array([[0.0, 0.0], [0.5, 0.0], _apex])  # left half-triangle
+    _right = np.array([[0.5, 0.0], [1.0, 0.0], _apex])  # right half-triangle
+
+    def _shift(tri, dx):
+        out = tri.copy()
+        out[:, 0] = out[:, 0] + dx
+        return out
+
+    def _in_triangle(px, py, tri):
+        (ax, ay), (bx, by), (cx, cy) = tri
+        v0x, v0y = cx - ax, cy - ay
+        v1x, v1y = bx - ax, by - ay
+        v2x, v2y = px - ax, py - ay
+        d00 = v0x * v0x + v0y * v0y
+        d01 = v0x * v1x + v0y * v1y
+        d11 = v1x * v1x + v1y * v1y
+        d20 = v2x * v0x + v2y * v0y
+        d21 = v2x * v1x + v2y * v1y
+        denom = d00 * d11 - d01 * d01
+        u = (d11 * d20 - d01 * d21) / denom
+        v = (d00 * d21 - d01 * d20) / denom
+        return (u >= 0) & (v >= 0) & (u + v <= 1)
+
+    _gx = np.linspace(-0.4, 1.4, 340)
+    _gy = np.linspace(-0.05, 1.05, 230)
+    _GX, _GY = np.meshgrid(_gx, _gy)
+    _cell = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
+
+    def _union_area(s):
+        _ins = _in_triangle(_GX, _GY, _shift(_left, s)) | _in_triangle(_GX, _GY, _shift(_right, -s))
+        return float(_ins.sum() * _cell)
+
+    # A few BOLD needles inside each half -- a small fan of directions. Each rides rigidly
+    # with its half: it starts on one side and lands on the other, angle unchanged.
+    _tips = np.array([0.35, 0.7, 0.95])
+
+    def _needles(base_x, edge_x, s):
+        _xs, _ys_out = [], []
+        for _y in _tips:
+            _xs += [base_x + s, edge_x + s, None]
+            _ys_out += [0.0, _y, None]
+        return _xs, _ys_out
+
+    def _outline(tri):
+        return [*list(tri[:, 0]), tri[0, 0]], [*list(tri[:, 1]), tri[0, 1]]
+
+    def _tri_trace(tri, col, fill):
+        _ox, _oy = _outline(tri)
+        return go.Scatter(
+            x=_ox, y=_oy, mode="lines", fill="toself", fillcolor=fill,
+            line={"color": col, "width": 2}, xaxis="x", yaxis="y", showlegend=False,
+        )
+
+    def _needle_trace(xs, ys, col):
+        return go.Scatter(
+            x=xs, y=ys, mode="lines", line={"color": col, "width": 4},
+            xaxis="x", yaxis="y", showlegend=False, name="needles",
+        )
+
+    def _label_trace(text):
+        return go.Scatter(
+            x=[0.5], y=[1.2], mode="text", text=[f"<b>{text}</b>"],
+            textfont={"color": COLORS["text"], "size": 14}, xaxis="x", yaxis="y", showlegend=False,
+        )
+
+    def _frame_traces(s, label):
+        _lx, _lyy = _needles(0.0, 0.5, s)
+        _rx, _ryy = _needles(1.0, 0.5, -s)
+        _area = _union_area(s)
+        return [
+            _tri_trace(_shift(_left, s), COLORS["primary"], "rgba(0, 212, 255, 0.28)"),
+            _tri_trace(_shift(_right, -s), COLORS["secondary"], "rgba(255, 107, 107, 0.28)"),
+            _needle_trace(_lx, _lyy, COLORS["accent1"]),
+            _needle_trace(_rx, _ryy, COLORS["quaternary"]),
+            _label_trace(label),
+            go.Scatter(
+                x=[s], y=[_area], mode="markers", xaxis="x2", yaxis="y2",
+                marker={"color": COLORS["accent1"], "size": 14, "symbol": "star"}, name="current",
+            ),
+            go.Scatter(
+                x=[s], y=[_area + 0.02], mode="text", text=[f"area {_area:.3f}"], xaxis="x2", yaxis="y2",
+                textfont={"color": COLORS["text"], "size": 13}, showlegend=False,
+            ),
+        ]
+
+    # Frame schedule: first a "slice" phase (halves sit slightly apart so you see the cut),
+    # then a "slide" phase (halves close in and overlap). s < 0 = apart, s > 0 = overlapping.
+    _slice_label = "1. Slice the triangle down the middle → two halves"
+    _slide_label = "2. Slide the halves together → they overlap, area shrinks"
+    _steps = [(_sv, _slice_label) for _sv in np.linspace(-0.09, 0.0, 6)]
+    _steps += [(_sv, _slide_label) for _sv in np.linspace(0.0, 0.25, 22)[1:]]
+
+    _curve_s = np.linspace(-0.09, 0.25, 70)
+    _curve_a = [_union_area(_sv) for _sv in _curve_s]
+
+    _fig = make_subplots(
+        rows=1,
+        cols=2,
+        column_widths=[0.58, 0.42],
+        subplot_titles=("Cut one triangle, slide the halves to overlap", "Total area covered as they overlap"),
+    )
+
+    # index 0: static dotted outline of the ORIGINAL triangle, so the shrinkage is visible.
+    _wx, _wy = _outline(_whole)
+    _fig.add_trace(
+        go.Scatter(
+            x=_wx, y=_wy, mode="lines", line={"color": COLORS["muted"], "width": 1.5, "dash": "dot"},
+            xaxis="x", yaxis="y", showlegend=False, name="original triangle",
+        ),
+        row=1,
+        col=1,
+    )
+
+    _init = _frame_traces(_steps[0][0], _steps[0][1])
+    _fig.add_trace(_init[0], row=1, col=1)  # 1: left half
+    _fig.add_trace(_init[1], row=1, col=1)  # 2: right half
+    _fig.add_trace(_init[2], row=1, col=1)  # 3: left needles
+    _fig.add_trace(_init[3], row=1, col=1)  # 4: right needles
+    _fig.add_trace(_init[4], row=1, col=1)  # 5: phase label
+    _fig.add_trace(  # 6: static area curve
+        go.Scatter(
+            x=_curve_s, y=_curve_a, mode="lines",
+            line={"color": COLORS["muted"], "width": 3}, name="union area",
+        ),
+        row=1,
+        col=2,
+    )
+    _fig.add_trace(_init[5], row=1, col=2)  # 7: moving star
+    _fig.add_trace(_init[6], row=1, col=2)  # 8: area readout
+
+    _fig.frames = [
+        go.Frame(data=_frame_traces(_sv, _lbl), traces=[1, 2, 3, 4, 5, 7, 8], name=str(_i))
+        for _i, (_sv, _lbl) in enumerate(_steps)
+    ]
+
+    _fig.update_layout(
+        **base_layout(
+            title="Slice-and-Slide: Overlapping the Halves Shrinks the Area",
+            height=470,
+        )
+    )
+    _fig.update_xaxes(range=[-0.4, 1.4], row=1, col=1, scaleanchor="y", constrain="domain")
+    _fig.update_yaxes(range=[-0.08, 1.32], row=1, col=1)
+    _fig.update_xaxes(title_text="slide s  (apart ← 0 → overlapping)", range=[-0.11, 0.27], row=1, col=2)
+    _fig.update_yaxes(title_text="area", range=[min(_curve_a) - 0.03, max(_curve_a) + 0.03], row=1, col=2)
+    style_subplot_axes(_fig, show_ticklabels=True)
+    _fig.update_layout(updatemenus=play_pause("▶ Slice & Slide"))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    Each slide keeps every direction the two halves originally covered, yet the union
+    shrinks. Iterating this on ever-finer slices is the **Perron tree**, and in the
+    limit it produces a genuine **Besicovitch set**:
+
+    $$K \subset \mathbb{R}^2, \quad K \text{ contains a unit segment in every direction}, \quad |K| = 0.$$
+
+    So *measure* is a dead end — every Besicovitch set has area zero. To measure how
+    "big" these thorny sets really are, we need a finer ruler: **dimension**.
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ### Could you actually turn a real needle this way?
+
+    **On a flat table, yes — really.** Take an ordinary rigid needle and you can turn it through
+    every direction while sweeping less area than any amount you name: a hundredth of a square
+    inch, a millionth, less. It is the same back-and-forth you do reversing a car out of a tight
+    spot — lots of small slides between tiny turns. Sliding a needle along its own length adds no
+    area, so most of the motion is free, and the more you break it up the smaller the swept area
+    gets. Area *exactly* zero is the limit of infinitely many ever-smaller slides: you can get as
+    close as you want, but you cannot finish it by hand.
+
+    **The conjecture asks something else, and it is abstract.** Kakeya, Davies, and Wang–Zahl do
+    not ask what motion you make. They ask how big the set of points the needle touches is —
+    measured by dimension, not by anything you can act out. Dimension is not something you do; it
+    is a property of the finished set.
+
+    Say the needle glows and scorches the table everywhere it passes. Turn it through every
+    direction as tightly as you can and the scorch can end up covering no area at all — yet zoom
+    in anywhere and it is still as detailed and space-filling as a solid patch, the detail growing
+    under magnification just like a full 2D region. No area, but as two-dimensional as the table.
+    That is the contradiction the conjecture is about.
+
+    **In 3D it is the same thing one step up.** Now the needle points at every direction on a
+    sphere; the scorch still fills no volume, but Wang and Zahl proved it stays fully
+    three-dimensional. There is no neat motion to act out here — think of a laser you swing to hit
+    every star in the sky, and ask how tangled the set of beams has to be. That is what the 2025
+    proof pinned down.
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    Here is that motion. The needle turns all the way around by a run of small moves: a tiny
+    turn, then a free slide along its own length (out, then back), then the next tiny turn. Pick a
+    step size — the smaller it is, the more turns and slides it takes, and the smoother the sweep.
+    The faint spokes are every direction the needle has pointed so far.
+
+    Watch what a smaller step does *not* do: the swept region stays a full **disk**, and it does
+    not shrink. That is the honest catch — here every turn pivots around the same spot, so the
+    needle always sweeps the whole fan no matter how fine the steps. Making the turns tiny is not
+    what saves area. What saves area is sliding overlapping copies onto each other — the
+    slice-and-slide trick from earlier. Turning small and shrinking the area are two different
+    moves; the full construction combines them, doing each tiny turn inside one of the thin,
+    overlapping triangles so the trail never fills the disk.
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, np):
+    # The turning motion itself: swing the needle around by MANY small in-place turns, with a
+    # free slide along its own length (out and back) between turns. Buttons pick the step size;
+    # smaller step -> more turns and slides. Faint spokes = every direction struck so far. (This
+    # is the motion; shrinking the trail's AREA is the slice-and-slide trick from Part IV.)
+    _half = 0.5
+    _slide = 0.6
+    _theta = np.pi  # turn through 180 deg -> every direction
+    _steps_deg = [30, 15, 7.5]
+
+    def _dvec(a):
+        return np.array([np.cos(a), np.sin(a)])
+
+    def _needle(a, off):
+        _d = _dvec(a)
+        _c = off * _d
+        return go.Scatter(x=[_c[0] - _half * _d[0], _c[0] + _half * _d[0]],
+                          y=[_c[1] - _half * _d[1], _c[1] + _half * _d[1]],
+                          mode="lines", line={"color": COLORS["secondary"], "width": 6}, showlegend=False)
+
+    def _trail(angles):
+        _xs, _ys = [], []
+        for _a in angles:
+            _d = _dvec(_a)
+            _xs += [-_half * _d[0], _half * _d[0], None]
+            _ys += [-_half * _d[1], _half * _d[1], None]
+        return go.Scatter(x=_xs, y=_ys, mode="lines", line={"color": COLORS["accent3"], "width": 1},
+                          opacity=0.45, showlegend=False)
+
+    def _label(a, turns):
+        return go.Scatter(x=[0.0], y=[0.9], mode="text",
+                          text=[f"<b>pointed in {np.degrees(a):.0f}° so far · {turns} tiny turns</b>"],
+                          textfont={"color": COLORS["text"], "size": 13}, showlegend=False)
+
+    # Build one time-sequence of poses per step size: each turn = rotate in place, slide out, slide back.
+    _groups = []
+    for _sd in _steps_deg:
+        _n = int(round(np.degrees(_theta) / _sd))
+        _poses = []
+        for _i in range(_n + 1):
+            _a = _theta * _i / _n
+            _poses.append((_a, 0.0, _i))
+            if _i < _n:
+                _poses.append((_a, _slide, _i))
+                _poses.append((_a, 0.0, _i))
+        _groups.append((_sd, _n, _poses))
+
+    def _angles_upto(i, n):
+        return [_theta * _j / n for _j in range(i + 1)]
+
+    _fig = go.Figure()
+    _a0, _off0, _i0 = _groups[0][2][0]
+    _fig.add_trace(_trail(_angles_upto(0, _groups[0][1])))  # 0 trail
+    _fig.add_trace(_needle(_a0, _off0))  # 1 needle
+    _fig.add_trace(_label(0.0, 1))  # 2 label
+    _fig.add_trace(go.Scatter(x=[0.0], y=[0.0], mode="markers",
+                              marker={"color": COLORS["quaternary"], "size": 7}, showlegend=False))  # 3 pivot
+
+    _frames, _names = [], {}
+    for _gi, (_sd, _n, _poses) in enumerate(_groups):
+        _keys = []
+        for _k, (_a, _off, _i) in enumerate(_poses):
+            _nm = f"g{_gi}_{_k}"
+            _keys.append(_nm)
+            _frames.append(go.Frame(
+                data=[_trail(_angles_upto(_i, _n)), _needle(_a, _off), _label(_a, max(_i, 1))],
+                traces=[0, 1, 2], name=_nm))
+        _names[_sd] = _keys
+    _fig.frames = _frames
+
+    def _btn(sd):
+        return {"label": f"▶ {sd:g}° steps", "method": "animate",
+                "args": [_names[sd], {"frame": {"duration": 80, "redraw": True},
+                                      "transition": {"duration": 55}, "mode": "immediate", "fromcurrent": False}]}
+
+    _buttons = [_btn(_sd) for _sd in _steps_deg] + [
+        {"label": "❚❚ Pause", "method": "animate",
+         "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]}]
+
+    _fig.update_layout(**base_layout(title="Tiny Steps Make the Turn Smooth — but Not Smaller", height=470))
+    _fig.update_xaxes(range=[-1.2, 1.2], scaleanchor="y", constrain="domain",
+                      gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
+    _fig.update_yaxes(range=[-0.8, 1.05], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
+    _fig.update_layout(updatemenus=[{"type": "buttons", "showactive": False, "y": 1.15, "x": 0.5,
+                                     "xanchor": "center", "direction": "right", "buttons": _buttons}])
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
     ---
 
     ## Part V: What Does "Dimension" Even Mean?
 
-    > Dimension is a shape's *appetite for space* as you zoom in:
-    > how fast the number of tiles needed to cover it grows as the tiles shrink.
+    > Zoom into a shape and watch how fast new detail keeps showing up. Along a line it shows up
+    > slowly; across a filled patch it shows up fast. **Dimension is the number that measures that
+    > rate** — and it need not be a whole number.
 
-    A line has dimension 1, a filled square dimension 2. The
-    [**box-counting dimension**](https://en.wikipedia.org/wiki/Minkowski%E2%80%93Bouligand_dimension)
-    makes this precise: cover the set with a grid of boxes of side $\varepsilon$ and
-    count how many boxes $N(\varepsilon)$ the set touches. The dimension is the rate at
-    which that count grows as the boxes shrink:
+    Take the glowing needle's scorch again. Is it "really" a thin 1D scribble, or a 2D region?
+    Zooming in decides it: if the scorch keeps looking as packed with detail as a solid patch, no
+    matter how far you magnify, it is two-dimensional — even when it covers no area.
+
+    The [**box-counting dimension**](https://en.wikipedia.org/wiki/Minkowski%E2%80%93Bouligand_dimension)
+    turns "how fast detail shows up" into a number. Lay a grid of tiles of side $\varepsilon$ over
+    the shape, count how many tiles it touches, $N(\varepsilon)$, then shrink the tiles and see how
+    fast that count climbs:
 
     $$\dim_{\mathrm B}(E) = \lim_{\varepsilon \to 0} \frac{\log N(\varepsilon)}{\log(1/\varepsilon)}.$$
 
-    The closely related **Hausdorff dimension** is defined through coverings by sets of
-    varying size, $\dim_{\mathrm H}(E) = \inf\{\, s \ge 0 : \mathcal H^{s}(E) = 0 \,\}$,
-    and is the one used in the conjecture. On the log–log plot below, the **slope** of
-    the line *is* the dimension: a segment gives slope $\approx 1$, a filled triangle
-    slope $\approx 2$.
+    The closely related **Hausdorff dimension** ($\dim_{\mathrm H}(E) = \inf\{\, s \ge 0 :
+    \mathcal H^{s}(E) = 0 \,\}$) is the one used in the conjecture. On the log–log plot below the
+    **slope** *is* the dimension: a segment gives slope $\approx 1$, a filled triangle $\approx 2$.
     """)
     return
 
@@ -1498,6 +1693,315 @@ def _(mo):
     intermediate statements. The full Kakeya conjecture for $n \ge 4$ remains **open** —
     the needle has only just begun to turn.
     """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ### Three ways to picture why the dimension is forced up
+
+    A needle is a line segment. Thicken it a little and it becomes a thin **tube** — the strip
+    of table one needle actually covers. A Kakeya set needs a needle in *every* direction at
+    once, and those tubes won't fit into a small, low-dimensional set. The three views below
+    show why, each a different way. They play slowly; press a button and watch the needles move.
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    Two needles that point in different directions can only cross in a tiny patch. Widen the
+    angle between the two needles below and the patch they share (highlighted) shrinks fast;
+    the right panel plots that shared area. Because every pair of differently-aimed needles
+    shares so little, you cannot stack a needle for every direction onto one spot — the tubes
+    are pushed apart and end up covering real area.
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
+    # LENS 1 -- two needles, thickened into tubes, and the patch they share. Widening the angle
+    # theta shrinks the shared patch like w^2 / sin(theta): differently-aimed needles barely
+    # overlap, so a needle for every direction must spread out and cover real area.
+    _w = 0.22  # needle thickness (the tube width)
+    _L = 2.6  # needle length
+
+    def _menu(label, dur):
+        return [{"type": "buttons", "showactive": False, "y": 1.12, "x": 0.5, "xanchor": "center", "buttons": [
+            {"label": label, "method": "animate",
+             "args": [None, {"frame": {"duration": dur, "redraw": True}, "fromcurrent": True,
+                             "transition": {"duration": int(dur * 0.6)}}]},
+            {"label": "❚❚ Pause", "method": "animate",
+             "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]},
+        ]}]
+
+    def _dirvec(a):
+        return np.array([np.cos(a), np.sin(a)]), np.array([-np.sin(a), np.cos(a)])
+
+    def _tube(a, col, fill):
+        _u, _v = _dirvec(a)
+        _c = np.array([(_L / 2) * _u + (_w / 2) * _v, (_L / 2) * _u - (_w / 2) * _v,
+                       -(_L / 2) * _u - (_w / 2) * _v, -(_L / 2) * _u + (_w / 2) * _v])
+        return go.Scatter(x=[*_c[:, 0], _c[0, 0]], y=[*_c[:, 1], _c[0, 1]], mode="lines",
+                          fill="toself", fillcolor=fill, line={"color": col, "width": 1},
+                          xaxis="x", yaxis="y", showlegend=False)
+
+    def _needle(a, col):
+        _u, _ = _dirvec(a)
+        return go.Scatter(x=[-(_L / 2) * _u[0], (_L / 2) * _u[0]], y=[-(_L / 2) * _u[1], (_L / 2) * _u[1]],
+                          mode="lines", line={"color": col, "width": 4}, xaxis="x", yaxis="y", showlegend=False)
+
+    def _patch(theta):
+        _H = theta / 2
+        _M = np.array([[-np.sin(_H), np.cos(_H)], [np.sin(_H), np.cos(_H)]])
+        _pts = np.array([np.linalg.solve(_M, np.array([_s1 * _w / 2, _s2 * _w / 2]))
+                         for _s1 in (1, -1) for _s2 in (1, -1)])
+        _pts = _pts[np.argsort(np.arctan2(_pts[:, 1], _pts[:, 0]))]
+        return go.Scatter(x=[*_pts[:, 0], _pts[0, 0]], y=[*_pts[:, 1], _pts[0, 1]], mode="lines",
+                          fill="toself", fillcolor=COLORS["quaternary"],
+                          line={"color": COLORS["quaternary"], "width": 1},
+                          xaxis="x", yaxis="y", showlegend=False)
+
+    def _tiplabel(a, col, txt):
+        _u, _ = _dirvec(a)
+        return go.Scatter(x=[(_L / 2 + 0.14) * _u[0]], y=[(_L / 2 + 0.14) * _u[1]], mode="text",
+                          text=[txt], textfont={"color": col, "size": 12}, xaxis="x", yaxis="y", showlegend=False)
+
+    def _anglelabel(theta):
+        return go.Scatter(x=[0.0], y=[1.72], mode="text",
+                          text=[f"<b>the two needles differ by {np.degrees(theta):.0f}°</b>"],
+                          textfont={"color": COLORS["text"], "size": 14}, xaxis="x", yaxis="y", showlegend=False)
+
+    def _share(theta):
+        return _w * _w / np.sin(theta)
+
+    def _frame(theta):
+        return [
+            _tube(theta / 2, COLORS["primary"], "rgba(0,212,255,0.20)"),
+            _tube(-theta / 2, COLORS["secondary"], "rgba(255,107,107,0.20)"),
+            _patch(theta),
+            _needle(theta / 2, COLORS["primary"]),
+            _needle(-theta / 2, COLORS["secondary"]),
+            _tiplabel(theta / 2, COLORS["primary"], "needle A"),
+            _tiplabel(-theta / 2, COLORS["secondary"], "needle B"),
+            _anglelabel(theta),
+            go.Scatter(x=[np.degrees(theta)], y=[_share(theta)], mode="markers",
+                       marker={"color": COLORS["quaternary"], "size": 14, "symbol": "star"},
+                       xaxis="x2", yaxis="y2", showlegend=False),
+        ]
+
+    _thetas = np.linspace(np.radians(16), np.radians(90), 26)
+    _shares = [_share(_t) for _t in _thetas]
+
+    _fig = make_subplots(rows=1, cols=2, column_widths=[0.55, 0.45],
+        subplot_titles=("Two needles and the patch they share", "Shared patch shrinks as the angle grows"))
+    _fig.add_trace(go.Scatter(x=np.degrees(_thetas), y=_shares, mode="lines",
+        line={"color": COLORS["muted"], "width": 3}, showlegend=False), row=1, col=2)  # 0 static curve
+    _init = _frame(_thetas[0])
+    for _t in _init[:-1]:
+        _fig.add_trace(_t, row=1, col=1)  # 1..8 left panel
+    _fig.add_trace(_init[-1], row=1, col=2)  # 9 moving star
+
+    _fig.frames = [go.Frame(data=_frame(_t), traces=[1, 2, 3, 4, 5, 6, 7, 8, 9], name=str(_i))
+                   for _i, _t in enumerate(_thetas)]
+
+    _fig.update_layout(**base_layout(title="Lens 1 — Two needles, different directions, tiny overlap", height=470))
+    _fig.update_xaxes(range=[-1.5, 1.5], row=1, col=1, scaleanchor="y", constrain="domain")
+    _fig.update_yaxes(range=[-1.5, 1.95], row=1, col=1)
+    _fig.update_xaxes(title_text="angle between the needles (degrees)", range=[12, 94], row=1, col=2)
+    _fig.update_yaxes(title_text="shared area", range=[0, max(_shares) * 1.1], row=1, col=2)
+    style_subplot_axes(_fig, show_ticklabels=True)
+    _fig.update_layout(updatemenus=_menu("▶ Widen the angle (slow)", 260))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    Pin a needle at one point and turn it through every direction: the faint copies it leaves
+    behind fill out a **bush**. Now let the needle keep turning while its pinned end slides along
+    a line — the bushes it leaves stack up into a **hairbrush**. Each step crowds more directions
+    into the picture, and measuring how much room that forces is exactly how the pre-2025
+    arguments pushed the guaranteed dimension from $2$ up to $5/2$.
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
+    # LENS 2 -- a turning needle traces out the classical shapes. Left: pivot in place, one
+    # sweep -> a "bush" (Cordoba, dim >= 2). Right: pivot while the root slides along a handle,
+    # several sweeps -> a "hairbrush" (Wolff 1995, dim >= 5/2). The bold needle is the current
+    # position; faint copies are where it has already been.
+    _K = 44
+    _sweeps = 3
+    _hx0, _hx1 = -1.05, 1.05
+
+    def _menu(label, dur):
+        return [{"type": "buttons", "showactive": False, "y": 1.12, "x": 0.5, "xanchor": "center", "buttons": [
+            {"label": label, "method": "animate",
+             "args": [None, {"frame": {"duration": dur, "redraw": True}, "fromcurrent": True}]},
+            {"label": "❚❚ Pause", "method": "animate",
+             "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]},
+        ]}]
+
+    def _seg(cx, cy, a, half):
+        return [cx - half * np.cos(a), cx + half * np.cos(a)], [cy - half * np.sin(a), cy + half * np.sin(a)]
+
+    def _trail(states, half, ax, opacity):
+        _xs, _ys = [], []
+        for _cx, _cy, _a in states:
+            _x, _y = _seg(_cx, _cy, _a, half)
+            _xs += [_x[0], _x[1], None]
+            _ys += [_y[0], _y[1], None]
+        return go.Scatter(x=_xs, y=_ys, mode="lines", line={"color": COLORS["accent3"], "width": 1},
+                          opacity=opacity, xaxis=ax[0], yaxis=ax[1], showlegend=False)
+
+    def _cur(cx, cy, a, half, ax):
+        _x, _y = _seg(cx, cy, a, half)
+        return go.Scatter(x=_x, y=_y, mode="lines", line={"color": COLORS["secondary"], "width": 5},
+                          xaxis=ax[0], yaxis=ax[1], showlegend=False)
+
+    def _left_states(k):
+        return [(0.0, 0.0, np.pi * _j / _K) for _j in range(k + 1)]
+
+    def _right_states(k):
+        return [(_hx0 + (_hx1 - _hx0) * _j / _K, 0.0, (np.pi * _sweeps * _j / _K) % np.pi) for _j in range(k + 1)]
+
+    def _frame(k):
+        _ls, _rs = _left_states(k), _right_states(k)
+        return [
+            _trail(_ls, 0.5, ("x", "y"), 0.55),
+            _cur(*_ls[-1], 0.5, ("x", "y")),
+            _trail(_rs, 0.42, ("x2", "y2"), 0.4),
+            _cur(*_rs[-1], 0.42, ("x2", "y2")),
+        ]
+
+    _fig = make_subplots(rows=1, cols=2,
+        subplot_titles=("Bush — pivot in place, face every direction  (dim ≥ 2)",
+                        "Hairbrush — pivot while sliding along a handle  (dim ≥ 5/2)"))
+    _init = _frame(0)
+    _fig.add_trace(_init[0], row=1, col=1)  # 0 left trail
+    _fig.add_trace(_init[1], row=1, col=1)  # 1 left needle
+    _fig.add_trace(go.Scatter(x=[0.0], y=[0.0], mode="markers", marker={"color": COLORS["quaternary"], "size": 10},
+                              xaxis="x", yaxis="y", showlegend=False), row=1, col=1)  # 2 pivot
+    _fig.add_trace(_init[2], row=1, col=2)  # 3 right trail
+    _fig.add_trace(_init[3], row=1, col=2)  # 4 right needle
+    _fig.add_trace(go.Scatter(x=[_hx0, _hx1], y=[0.0, 0.0], mode="lines",
+                              line={"color": COLORS["quaternary"], "width": 4},
+                              xaxis="x2", yaxis="y2", showlegend=False), row=1, col=2)  # 5 handle
+
+    _fig.frames = [go.Frame(data=_frame(_k), traces=[0, 1, 3, 4], name=str(_k)) for _k in range(_K + 1)]
+
+    _fig.update_layout(**base_layout(title="Lens 2 — A turning needle builds a bush, then a hairbrush", height=460))
+    _fig.update_xaxes(range=[-0.8, 0.8], row=1, col=1, scaleanchor="y", constrain="domain")
+    _fig.update_yaxes(range=[-0.8, 0.8], row=1, col=1)
+    _fig.update_xaxes(range=[-1.6, 1.6], row=1, col=2, scaleanchor="y2", constrain="domain")
+    _fig.update_yaxes(range=[-0.75, 0.75], row=1, col=2)
+    style_subplot_axes(_fig)
+    _fig.update_layout(updatemenus=_menu("▶ Turn the needle (slow)", 130))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    Sliding a needle never changes the direction it points — only where it sits. Wang and Zahl
+    use that freedom to comb a messy pile of needles into a tidy one. Watch the needles
+    slide from scattered positions into groups where needles pointing almost the same way end up
+    almost on top of each other — a **sticky** set. Colour tracks direction, so the tidy state is
+    the one where each colour gathers together. Proving the bound for these combed sets, and then
+    showing that *any* set can be combed this way without losing dimension, is the 2025 result.
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, np):
+    # LENS 3 -- the sticky reduction as a physical "combing". Each needle keeps its DIRECTION
+    # (angle fixed) while its centre slides from a scattered layout to a clustered one where
+    # needles of nearby direction sit nearby (a Cantor-like map of angle -> position). Colour
+    # encodes direction, so clustering shows up as colours gathering together.
+    _N = 22
+    _dirs = np.linspace(0.0, np.pi, _N, endpoint=False)
+    _half = 0.26
+
+    _gen_cx = 0.85 * np.cos(3.0 * _dirs)
+    _gen_cy = 0.55 * np.sin(2.0 * _dirs)
+
+    def _cantor(t, depth=4):
+        _lo, _hi = -1.0, 1.0
+        for _ in range(depth):
+            _third = (_hi - _lo) / 3.0
+            if t < 0.5:
+                _hi, t = _lo + _third, t * 2.0
+            else:
+                _lo, t = _hi - _third, (t - 0.5) * 2.0
+        return (_lo + _hi) / 2.0
+
+    _stk_cx = np.array([_cantor(_d / np.pi) for _d in _dirs])
+
+    def _menu(label, dur):
+        return [{"type": "buttons", "showactive": False, "y": 1.12, "x": 0.5, "xanchor": "center", "buttons": [
+            {"label": label, "method": "animate",
+             "args": [None, {"frame": {"duration": dur, "redraw": True}, "fromcurrent": True,
+                             "transition": {"duration": int(dur * 0.7)}}]},
+            {"label": "❚❚ Pause", "method": "animate",
+             "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]},
+        ]}]
+
+    def _lerp(c1, c2, f):
+        return tuple(int(round(c1[_i] + (c2[_i] - c1[_i]) * f)) for _i in range(3))
+
+    def _col(t):
+        _stops = [(0, 212, 255), (255, 230, 109), (255, 107, 107)]
+        _r = _lerp(_stops[0], _stops[1], t * 2) if t < 0.5 else _lerp(_stops[1], _stops[2], (t - 0.5) * 2)
+        return f"rgb{_r}"
+
+    _cols = [_col(_i / (_N - 1)) for _i in range(_N)]
+
+    def _needles(p):
+        _out = []
+        for _i in range(_N):
+            _cx = (1 - p) * _gen_cx[_i] + p * _stk_cx[_i]
+            _cy = (1 - p) * _gen_cy[_i]
+            _a = _dirs[_i]
+            _out.append(go.Scatter(
+                x=[_cx - _half * np.cos(_a), _cx + _half * np.cos(_a)],
+                y=[_cy - _half * np.sin(_a), _cy + _half * np.sin(_a)],
+                mode="lines", line={"color": _cols[_i], "width": 4}, showlegend=False))
+        return _out
+
+    def _label(p):
+        if p < 0.02:
+            _t = "scattered — nearby directions land anywhere"
+        elif p > 0.98:
+            _t = "combed neat — nearby directions sit together (sticky)"
+        else:
+            _t = "sliding into place — every needle keeps its direction"
+        return go.Scatter(x=[0.0], y=[1.5], mode="text", text=[f"<b>{_t}</b>"],
+                          textfont={"color": COLORS["text"], "size": 14}, showlegend=False)
+
+    _ps = [0.0] * 4 + list(np.linspace(0.0, 1.0, 22)) + [1.0] * 6
+
+    _fig = go.Figure()
+    for _tr in _needles(0.0):
+        _fig.add_trace(_tr)
+    _fig.add_trace(_label(0.0))
+
+    _fig.frames = [go.Frame(data=[*_needles(_p), _label(_p)], name=str(_i)) for _i, _p in enumerate(_ps)]
+
+    _fig.update_layout(**base_layout(title="Lens 3 — Comb any set sticky: the needles slide, directions stay", height=520))
+    _fig.update_xaxes(range=[-1.35, 1.35], scaleanchor="y", constrain="domain",
+                      gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
+    _fig.update_yaxes(range=[-1.0, 1.7], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
+    _fig.update_layout(updatemenus=_menu("▶ Comb it neat (slow)", 220))
+    _fig
     return
 
 
