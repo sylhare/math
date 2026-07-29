@@ -380,7 +380,7 @@ def _(COLORS, base_layout, go, np, play_pause):
 
     _fig.update_layout(
         **base_layout(
-            title="Naive Solution: Spin the Needle → Disk of Area π/4 ≈ 0.785",
+            title="Spinning in place sweeps a disk, area π/4 ≈ 0.785",
             height=460,
             xaxis={"range": [-0.75, 0.75], "scaleanchor": "y", "constrain": "domain"},
             yaxis={"range": [-0.75, 0.75]},
@@ -475,7 +475,7 @@ def _(COLORS, base_layout, go, np, play_pause):
 
     _fig.update_layout(
         **base_layout(
-            title="A Needle Turning Inside a Deltoid → Area π/8 ≈ 0.393",
+            title="A needle turning inside a deltoid, area π/8 ≈ 0.393",
             height=480,
             xaxis={"range": [-0.9, 0.9], "scaleanchor": "y", "constrain": "domain"},
             yaxis={"range": [-0.9, 0.9]},
@@ -704,7 +704,7 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
     ]
 
     _fig.update_layout(
-        **base_layout(title="Rotating the Table Is No Shortcut — On the Table It's Still the Full Disk", height=440)
+        **base_layout(title="Spinning the table: on the table, still the full disk", height=440)
     )
     _fig.update_xaxes(range=[-0.9, 0.9], row=1, col=1, scaleanchor="y", constrain="domain")
     _fig.update_yaxes(range=[-0.9, 0.9], row=1, col=1)
@@ -897,7 +897,7 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
 
     _fig.update_layout(
         **base_layout(
-            title="Slice-and-Slide: Overlapping the Halves Shrinks the Area",
+            title="Sliding the two halves together to overlap",
             height=470,
         )
     )
@@ -962,25 +962,25 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    Here is the real motion, and it matches slice-and-slide. Instead of pivoting in one spot, the
-    needle makes each small turn inside one of the thin, overlapping triangles from slice-and-slide,
-    then slides along its own length — a free move — to reach the next one. So it turns through the
-    whole fan of directions while staying inside the small, **tree-shaped** region, never a disk.
-    Choose how many slices: more slices means thinner, more-overlapping triangles, so the area the
-    needle sweeps gets *smaller* (the running number tracks it, and it would head to zero if we
-    kept slicing). The faint dotted fan behind is the naïve spin — pivoting in one spot — for size.
+    This is the real motion, the one slice-and-slide stands for. The needle works through the thin,
+    overlapping pieces the slicing built. Inside each piece it swings through a small range of
+    directions; to reach the next piece it slides along its own length, which retraces the line it
+    already covers and so adds no area. That keeps the whole turn packed into the small overlapping
+    region instead of a fat wedge. Add slices and the pieces get thinner and overlap more, so the
+    swept region shrinks — the number keeps count. (One fan like this covers a wide sweep but not a
+    full half-turn; reaching every direction stitches a few fans together, the same trick repeated.)
     """)
     return
 
 
 @app.cell
 def _(COLORS, base_layout, go, np):
-    # THE REAL SMALL-AREA TURN. The needle does each small turn inside one thin triangle of a
-    # Perron tree (built by slice-and-slide), then slides along its own length to the next -- so
-    # it turns through the whole fan while confined to the small TREE region, not a disk. More
-    # slices -> thinner, more-overlapping triangles -> smaller swept area (verified numerically:
-    # 0.53 -> 0.42 -> 0.34 -> 0.29), and the needle stays inside every piece.
-    _H, _B, _alpha, _L0 = 1.0, 1.0, 0.34, 0.82
+    # The needle turns inside a Perron tree: it swings through a small range of directions in each
+    # thin, overlapping piece, sliding along its own length (free) to the next. The faint fans are
+    # the pieces (radius = needle length) -- exactly what the needle sweeps; they overlap, so their
+    # union is smaller than one plain fan, and smaller still with more slices. Fit and shrink were
+    # checked numerically. One fan spans < 180 deg; a full half-turn stitches several together.
+    _H, _B, _alpha, _L0 = 1.0, 1.7, 0.34, 0.9
     _apex0 = np.array([0.0, _H])
 
     def _ang(a, p):
@@ -1001,7 +1001,7 @@ def _(COLORS, base_layout, go, np):
         _leaves.sort(key=lambda lf: lf["aL"] + lf["aR"])
         return _leaves
 
-    _gx = np.linspace(-1.3, 1.3, 200)
+    _gx = np.linspace(-1.2, 1.2, 240)
     _gy = np.linspace(-0.05, 1.05, 130)
     _GX, _GY = np.meshgrid(_gx, _gy)
     _cellA = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
@@ -1020,44 +1020,24 @@ def _(COLORS, base_layout, go, np):
     def _u(t):
         return np.array([np.cos(t), np.sin(t)])
 
+    def _sectors(leaves):
+        _xs, _ys = [], []
+        for _lf in leaves:
+            _arc = np.linspace(_lf["aL"], _lf["aR"], 16)
+            _xs += [_lf["apex"][0], *(_lf["apex"][0] + _L0 * np.cos(_arc)), _lf["apex"][0], None]
+            _ys += [_lf["apex"][1], *(_lf["apex"][1] + _L0 * np.sin(_arc)), _lf["apex"][1], None]
+        return go.Scatter(x=_xs, y=_ys, mode="lines", fill="toself", fillcolor="rgba(149,225,211,0.13)",
+                          line={"color": COLORS["accent1"], "width": 0.8}, opacity=0.85, showlegend=False)
+
     def _needle(apex, t):
         _e = apex + _L0 * _u(t)
         return go.Scatter(x=[apex[0], _e[0]], y=[apex[1], _e[1]], mode="lines",
                           line={"color": COLORS["secondary"], "width": 6}, showlegend=False)
 
-    def _spokes(poses):
-        _xs, _ys = [], []
-        for _a, _t in poses:
-            _e = _a + _L0 * _u(_t)
-            _xs += [_a[0], _e[0], None]
-            _ys += [_a[1], _e[1], None]
-        return go.Scatter(x=_xs, y=_ys, mode="lines", line={"color": COLORS["accent1"], "width": 1},
-                          opacity=0.4, showlegend=False)
-
-    def _tree(leaves):
-        _xs, _ys = [], []
-        for _lf in leaves:
-            for _p in (_lf["apex"], _lf["bL"], _lf["bR"], _lf["apex"]):
-                _xs.append(_p[0])
-                _ys.append(_p[1])
-            _xs.append(None)
-            _ys.append(None)
-        return go.Scatter(x=_xs, y=_ys, mode="lines", line={"color": COLORS["accent3"], "width": 1, "dash": "dot"},
-                          opacity=0.65, showlegend=False)
-
     def _label(level, area):
         return go.Scatter(x=[0.0], y=[1.3], mode="text",
-                          text=[f"<b>{2 ** level} slices · the needle sweeps ≈ {area:.2f}  "
-                                f"(naïve spin ≈ {_naive:.2f})</b>"],
+                          text=[f"<b>{2 ** level} slices · swept area ≈ {area:.2f}  (one plain fan ≈ {_naive:.2f})</b>"],
                           textfont={"color": COLORS["text"], "size": 13}, showlegend=False)
-
-    _l0 = _build(0)[0]
-    _arc = np.linspace(_l0["aL"], _l0["aR"], 40)
-    _ref = go.Scatter(
-        x=[_apex0[0], *(_apex0[0] + _L0 * np.cos(_arc)), _apex0[0]],
-        y=[_apex0[1], *(_apex0[1] + _L0 * np.sin(_arc)), _apex0[1]],
-        mode="lines", fill="toself", fillcolor="rgba(74,85,104,0.18)",
-        line={"color": COLORS["muted"], "width": 1, "dash": "dot"}, showlegend=False)
 
     def _poses_for(level):
         _leaves = _build(level)
@@ -1076,12 +1056,10 @@ def _(COLORS, base_layout, go, np):
     _areas = {_L: _swept_area(_data[_L][0]) for _L in _levels}
 
     _fig = go.Figure()
-    _fig.add_trace(_ref)  # 0 static naive-spin reference
     _lv1, _seq1 = _data[1]
-    _fig.add_trace(_tree(_lv1))  # 1 tree outline
-    _fig.add_trace(_spokes(_seq1[:1]))  # 2 accumulated spokes
-    _fig.add_trace(_needle(*_seq1[0]))  # 3 current needle
-    _fig.add_trace(_label(1, _areas[1]))  # 4 label
+    _fig.add_trace(_sectors(_lv1))  # 0 the overlapping pieces (what the needle sweeps)
+    _fig.add_trace(_needle(*_seq1[0]))  # 1 current needle
+    _fig.add_trace(_label(1, _areas[1]))  # 2 label
 
     _frames, _names = [], {}
     for _L in _levels:
@@ -1090,23 +1068,22 @@ def _(COLORS, base_layout, go, np):
         for _k in range(len(_seq)):
             _nm = f"L{_L}_{_k}"
             _keys.append(_nm)
-            _frames.append(go.Frame(
-                data=[_tree(_leaves), _spokes(_seq[:_k + 1]), _needle(*_seq[_k]), _label(_L, _areas[_L])],
-                traces=[1, 2, 3, 4], name=_nm))
+            _frames.append(go.Frame(data=[_sectors(_leaves), _needle(*_seq[_k]), _label(_L, _areas[_L])],
+                                    traces=[0, 1, 2], name=_nm))
         _names[_L] = _keys
     _fig.frames = _frames
 
     def _btn(level):
         return {"label": f"▶ {2 ** level} slices", "method": "animate",
-                "args": [_names[level], {"frame": {"duration": 90, "redraw": True},
+                "args": [_names[level], {"frame": {"duration": 85, "redraw": True},
                                          "transition": {"duration": 0}, "mode": "immediate", "fromcurrent": False}]}
 
     _buttons = [_btn(_L) for _L in _levels] + [
         {"label": "❚❚ Pause", "method": "animate",
          "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]}]
 
-    _fig.update_layout(**base_layout(title="Turning the Needle Inside a Perron Tree — Not a Disk", height=500))
-    _fig.update_xaxes(range=[-1.3, 1.3], scaleanchor="y", constrain="domain",
+    _fig.update_layout(**base_layout(title="Turning the needle inside a Perron tree", height=470))
+    _fig.update_xaxes(range=[-1.15, 1.15], scaleanchor="y", constrain="domain",
                       gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
     _fig.update_yaxes(range=[-0.1, 1.42], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
     _fig.update_layout(updatemenus=[{"type": "buttons", "showactive": False, "y": 1.14, "x": 0.5,
@@ -1195,7 +1172,7 @@ def _(COLORS, base_layout, go, np):
     )
     _fig.update_layout(
         **base_layout(
-            title="Box-Counting: the Slope of log N(ε) vs log(1/ε) Is the Dimension",
+            title="Box-counting: log N(ε) versus log(1/ε)",
             height=440,
             xaxis={"title": "log(1/ε)"},
             yaxis={"title": "log N(ε)"},
@@ -1290,7 +1267,7 @@ def _(COLORS, base_layout, go, needle_segments, np):
     )
     _fig.update_layout(
         **base_layout(
-            title="A 2D 'Bush': a Unit Segment in Every Direction",
+            title="A 2D bush: a segment in every direction",
             height=440,
             xaxis={"range": [-0.65, 0.65], "scaleanchor": "y", "constrain": "domain"},
             yaxis={"range": [-0.65, 0.65]},
@@ -1458,7 +1435,7 @@ def _(COLORS, base_layout, go, make_subplots, np, perron_stages, play_pause, sty
 
     _fig.update_layout(
         **base_layout(
-            title="Same Directions, Very Different Area: Disk vs. Deltoid vs. Perron Tree",
+            title="Disk, deltoid, Perron tree — same directions, different area",
             height=430,
         )
     )
@@ -1517,7 +1494,7 @@ def _(COLORS, SCENE_THEME, base_layout, fibonacci_sphere, go, needle_segments, s
     )
     _fig.update_layout(
         **base_layout(
-            title="A 3D Kakeya 'Bush' — a Unit Segment in Every Direction (drag to rotate)",
+            title="A 3D bush: a segment in every direction (drag to rotate)",
             height=560,
             scene=SCENE_THEME,
         )
@@ -1617,7 +1594,7 @@ def _(COLORS, SCENE_THEME, base_layout, go, play_pause, spherical_spiral, sphere
 
     _fig.update_layout(
         **base_layout(
-            title="One Needle Sweeping Every 3D Direction — its Tip Paints the Sphere",
+            title="One needle sweeping every 3D direction",
             height=560,
             scene=_scene,
         )
@@ -1751,7 +1728,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _fig.frames = [go.Frame(data=_frame(_t), traces=[1, 2, 3, 4, 5, 6, 7, 8, 9], name=str(_i))
                    for _i, _t in enumerate(_thetas)]
 
-    _fig.update_layout(**base_layout(title="Lens 1 — Two needles, different directions, tiny overlap", height=470))
+    _fig.update_layout(**base_layout(title="Two needles pointing different ways, tiny overlap", height=470))
     _fig.update_xaxes(range=[-1.5, 1.5], row=1, col=1, scaleanchor="y", constrain="domain")
     _fig.update_yaxes(range=[-1.5, 1.95], row=1, col=1)
     _fig.update_xaxes(title_text="angle between the needles (degrees)", range=[12, 94], row=1, col=2)
@@ -1841,7 +1818,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
 
     _fig.frames = [go.Frame(data=_frame(_k), traces=[0, 1, 3, 4], name=str(_k)) for _k in range(_K + 1)]
 
-    _fig.update_layout(**base_layout(title="Lens 2 — A turning needle builds a bush, then a hairbrush", height=460))
+    _fig.update_layout(**base_layout(title="A turning needle builds a bush, then a hairbrush", height=460))
     _fig.update_xaxes(range=[-0.8, 0.8], row=1, col=1, scaleanchor="y", constrain="domain")
     _fig.update_yaxes(range=[-0.8, 0.8], row=1, col=1)
     _fig.update_xaxes(range=[-1.6, 1.6], row=1, col=2, scaleanchor="y2", constrain="domain")
@@ -1913,7 +1890,7 @@ def _(COLORS, base_layout, go):
     )
     _fig.update_layout(
         **base_layout(
-            title="Lower Bounds on Kakeya Dimension in ℝ³ — Stalled at 5/2 + ε for 25 Years",
+            title="Proven lower bounds on Kakeya dimension in ℝ³",
             height=460,
             yaxis={"title": "proven dim_H ≥", "range": [0, 3.3]},
         )
@@ -2049,7 +2026,7 @@ def _(COLORS, base_layout, go, np):
 
     _fig.frames = [go.Frame(data=[*_needles(_p), _label(_p)], name=str(_i)) for _i, _p in enumerate(_ps)]
 
-    _fig.update_layout(**base_layout(title="Combing a Kakeya Set 'Sticky' — the Needles Slide, Directions Stay", height=520))
+    _fig.update_layout(**base_layout(title="Combing the needles into a sticky set", height=520))
     _fig.update_xaxes(range=[-1.35, 1.35], scaleanchor="y", constrain="domain",
                       gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
     _fig.update_yaxes(range=[-1.0, 1.7], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
