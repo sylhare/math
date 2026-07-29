@@ -737,16 +737,14 @@ def _(mo):
     the other*, yet keep their exact angle the whole way — even as the shared footprint, and
     its area, shrink against the dotted outline of the original triangle.
 
-    **Reading the two panels.** *Left* is the geometry: the two halves and their needles. The
-    halves close together **once** — they do not wobble back and forth — and each needle just
-    **slides sideways, keeping its tilt**; nothing here turns. This is not the tiny-back-and-forth
-    of turning a needle; it is the area trick, and what changes is only the shared footprint.
-    *Right* keeps score — it plots the **total area the halves cover together** (their union,
-    the *y*-axis) against **how far you've slid them** (the *x*-axis: `s = 0` is flush into the
-    whole triangle, negative is pulled apart, positive is overlapping). The moving star marks
-    where the left panel is right now: as the halves overlap it slides **down** the curve, the
-    area dropping from `0.5` (the full triangle, no savings) toward its minimum, while the
-    needles never turn. **Area shrinks; directions stay.**
+    The left panel is the geometry: the two halves and their needles. The halves close together
+    in one smooth motion, and each needle just slides sideways, keeping its tilt — nothing turns.
+    This is the area step, not the turning motion; all that changes is the shared footprint. The
+    right panel plots the **total area the halves cover together** (their union) against **how far
+    you've slid them** (`s = 0` is flush into the whole triangle, negative is pulled apart,
+    positive is overlapping). The moving star tracks the left panel: as the halves overlap it
+    slides down the curve, the area falling from `0.5` toward its minimum while the needles never
+    turn.
 
     One slice only gets you so far; iterating it (the Perron tree) is what drives the area to
     zero — you'll see that full slice-and-slide-to-nothing in the three-way comparison in Part VI.
@@ -964,107 +962,154 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    Here is that motion. The needle turns all the way around by a run of small moves: a tiny
-    turn, then a free slide along its own length (out, then back), then the next tiny turn. Pick a
-    step size — the smaller it is, the more turns and slides it takes, and the smoother the sweep.
-    The faint spokes are every direction the needle has pointed so far.
-
-    Watch what a smaller step does *not* do: the swept region stays a full **disk**, and it does
-    not shrink. That is the honest catch — here every turn pivots around the same spot, so the
-    needle always sweeps the whole fan no matter how fine the steps. Making the turns tiny is not
-    what saves area. What saves area is sliding overlapping copies onto each other — the
-    slice-and-slide trick from earlier. Turning small and shrinking the area are two different
-    moves; the full construction combines them, doing each tiny turn inside one of the thin,
-    overlapping triangles so the trail never fills the disk.
+    Here is the real motion, and it matches slice-and-slide. Instead of pivoting in one spot, the
+    needle makes each small turn inside one of the thin, overlapping triangles from slice-and-slide,
+    then slides along its own length — a free move — to reach the next one. So it turns through the
+    whole fan of directions while staying inside the small, **tree-shaped** region, never a disk.
+    Choose how many slices: more slices means thinner, more-overlapping triangles, so the area the
+    needle sweeps gets *smaller* (the running number tracks it, and it would head to zero if we
+    kept slicing). The faint dotted fan behind is the naïve spin — pivoting in one spot — for size.
     """)
     return
 
 
 @app.cell
 def _(COLORS, base_layout, go, np):
-    # The turning motion itself: swing the needle around by MANY small in-place turns, with a
-    # free slide along its own length (out and back) between turns. Buttons pick the step size;
-    # smaller step -> more turns and slides. Faint spokes = every direction struck so far. (This
-    # is the motion; shrinking the trail's AREA is the slice-and-slide trick from Part IV.)
-    _half = 0.5
-    _slide = 0.6
-    _theta = np.pi  # turn through 180 deg -> every direction
-    _steps_deg = [30, 15, 7.5]
+    # THE REAL SMALL-AREA TURN. The needle does each small turn inside one thin triangle of a
+    # Perron tree (built by slice-and-slide), then slides along its own length to the next -- so
+    # it turns through the whole fan while confined to the small TREE region, not a disk. More
+    # slices -> thinner, more-overlapping triangles -> smaller swept area (verified numerically:
+    # 0.53 -> 0.42 -> 0.34 -> 0.29), and the needle stays inside every piece.
+    _H, _B, _alpha, _L0 = 1.0, 1.0, 0.34, 0.82
+    _apex0 = np.array([0.0, _H])
 
-    def _dvec(a):
-        return np.array([np.cos(a), np.sin(a)])
+    def _ang(a, p):
+        return np.arctan2(p[1] - a[1], p[0] - a[0])
 
-    def _needle(a, off):
-        _d = _dvec(a)
-        _c = off * _d
-        return go.Scatter(x=[_c[0] - _half * _d[0], _c[0] + _half * _d[0]],
-                          y=[_c[1] - _half * _d[1], _c[1] + _half * _d[1]],
-                          mode="lines", line={"color": COLORS["secondary"], "width": 6}, showlegend=False)
+    def _build(level):
+        _leaves = [dict(apex=_apex0.copy(), bL=np.array([-_B, 0.0]), bR=np.array([_B, 0.0]),
+                        aL=_ang(_apex0, np.array([-_B, 0.0])), aR=_ang(_apex0, np.array([_B, 0.0])))]
+        for _ in range(level):
+            _nxt = []
+            for _lf in _leaves:
+                _a, _bL, _bR = _lf["apex"], _lf["bL"], _lf["bR"]
+                _m = (_bL + _bR) / 2.0
+                _s = np.array([_alpha * (_bR[0] - _m[0]), 0.0])
+                _nxt.append(dict(apex=_a + _s, bL=_bL + _s, bR=_m + _s, aL=_ang(_a, _bL), aR=_ang(_a, _m)))
+                _nxt.append(dict(apex=_a - _s, bL=_m - _s, bR=_bR - _s, aL=_ang(_a, _m), aR=_ang(_a, _bR)))
+            _leaves = _nxt
+        _leaves.sort(key=lambda lf: lf["aL"] + lf["aR"])
+        return _leaves
 
-    def _trail(angles):
+    _gx = np.linspace(-1.3, 1.3, 200)
+    _gy = np.linspace(-0.05, 1.05, 130)
+    _GX, _GY = np.meshgrid(_gx, _gy)
+    _cellA = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
+
+    def _swept_area(leaves):
+        _mask = np.zeros(_GX.shape, bool)
+        for _lf in leaves:
+            _dx, _dy = _GX - _lf["apex"][0], _GY - _lf["apex"][1]
+            _lo, _hi = min(_lf["aL"], _lf["aR"]), max(_lf["aL"], _lf["aR"])
+            _mask |= (np.hypot(_dx, _dy) <= _L0) & (np.arctan2(_dy, _dx) >= _lo - 1e-9) & \
+                     (np.arctan2(_dy, _dx) <= _hi + 1e-9)
+        return float(_mask.sum() * _cellA)
+
+    _naive = _swept_area(_build(0))
+
+    def _u(t):
+        return np.array([np.cos(t), np.sin(t)])
+
+    def _needle(apex, t):
+        _e = apex + _L0 * _u(t)
+        return go.Scatter(x=[apex[0], _e[0]], y=[apex[1], _e[1]], mode="lines",
+                          line={"color": COLORS["secondary"], "width": 6}, showlegend=False)
+
+    def _spokes(poses):
         _xs, _ys = [], []
-        for _a in angles:
-            _d = _dvec(_a)
-            _xs += [-_half * _d[0], _half * _d[0], None]
-            _ys += [-_half * _d[1], _half * _d[1], None]
-        return go.Scatter(x=_xs, y=_ys, mode="lines", line={"color": COLORS["accent3"], "width": 1},
-                          opacity=0.45, showlegend=False)
+        for _a, _t in poses:
+            _e = _a + _L0 * _u(_t)
+            _xs += [_a[0], _e[0], None]
+            _ys += [_a[1], _e[1], None]
+        return go.Scatter(x=_xs, y=_ys, mode="lines", line={"color": COLORS["accent1"], "width": 1},
+                          opacity=0.4, showlegend=False)
 
-    def _label(a, turns):
-        return go.Scatter(x=[0.0], y=[0.9], mode="text",
-                          text=[f"<b>pointed in {np.degrees(a):.0f}° so far · {turns} tiny turns</b>"],
+    def _tree(leaves):
+        _xs, _ys = [], []
+        for _lf in leaves:
+            for _p in (_lf["apex"], _lf["bL"], _lf["bR"], _lf["apex"]):
+                _xs.append(_p[0])
+                _ys.append(_p[1])
+            _xs.append(None)
+            _ys.append(None)
+        return go.Scatter(x=_xs, y=_ys, mode="lines", line={"color": COLORS["accent3"], "width": 1, "dash": "dot"},
+                          opacity=0.65, showlegend=False)
+
+    def _label(level, area):
+        return go.Scatter(x=[0.0], y=[1.3], mode="text",
+                          text=[f"<b>{2 ** level} slices · the needle sweeps ≈ {area:.2f}  "
+                                f"(naïve spin ≈ {_naive:.2f})</b>"],
                           textfont={"color": COLORS["text"], "size": 13}, showlegend=False)
 
-    # Build one time-sequence of poses per step size: each turn = rotate in place, slide out, slide back.
-    _groups = []
-    for _sd in _steps_deg:
-        _n = int(round(np.degrees(_theta) / _sd))
-        _poses = []
-        for _i in range(_n + 1):
-            _a = _theta * _i / _n
-            _poses.append((_a, 0.0, _i))
-            if _i < _n:
-                _poses.append((_a, _slide, _i))
-                _poses.append((_a, 0.0, _i))
-        _groups.append((_sd, _n, _poses))
+    _l0 = _build(0)[0]
+    _arc = np.linspace(_l0["aL"], _l0["aR"], 40)
+    _ref = go.Scatter(
+        x=[_apex0[0], *(_apex0[0] + _L0 * np.cos(_arc)), _apex0[0]],
+        y=[_apex0[1], *(_apex0[1] + _L0 * np.sin(_arc)), _apex0[1]],
+        mode="lines", fill="toself", fillcolor="rgba(74,85,104,0.18)",
+        line={"color": COLORS["muted"], "width": 1, "dash": "dot"}, showlegend=False)
 
-    def _angles_upto(i, n):
-        return [_theta * _j / n for _j in range(i + 1)]
+    def _poses_for(level):
+        _leaves = _build(level)
+        _seq = []
+        for _li, _lf in enumerate(_leaves):
+            for _t in np.linspace(_lf["aL"], _lf["aR"], 7):
+                _seq.append((_lf["apex"], _t))
+            if _li < len(_leaves) - 1:
+                _nx = _leaves[_li + 1]
+                for _f in np.linspace(0.0, 1.0, 3)[1:]:
+                    _seq.append((_lf["apex"] + _f * (_nx["apex"] - _lf["apex"]), _lf["aR"]))
+        return _leaves, _seq
+
+    _levels = [1, 2, 3]
+    _data = {_L: _poses_for(_L) for _L in _levels}
+    _areas = {_L: _swept_area(_data[_L][0]) for _L in _levels}
 
     _fig = go.Figure()
-    _a0, _off0, _i0 = _groups[0][2][0]
-    _fig.add_trace(_trail(_angles_upto(0, _groups[0][1])))  # 0 trail
-    _fig.add_trace(_needle(_a0, _off0))  # 1 needle
-    _fig.add_trace(_label(0.0, 1))  # 2 label
-    _fig.add_trace(go.Scatter(x=[0.0], y=[0.0], mode="markers",
-                              marker={"color": COLORS["quaternary"], "size": 7}, showlegend=False))  # 3 pivot
+    _fig.add_trace(_ref)  # 0 static naive-spin reference
+    _lv1, _seq1 = _data[1]
+    _fig.add_trace(_tree(_lv1))  # 1 tree outline
+    _fig.add_trace(_spokes(_seq1[:1]))  # 2 accumulated spokes
+    _fig.add_trace(_needle(*_seq1[0]))  # 3 current needle
+    _fig.add_trace(_label(1, _areas[1]))  # 4 label
 
     _frames, _names = [], {}
-    for _gi, (_sd, _n, _poses) in enumerate(_groups):
+    for _L in _levels:
+        _leaves, _seq = _data[_L]
         _keys = []
-        for _k, (_a, _off, _i) in enumerate(_poses):
-            _nm = f"g{_gi}_{_k}"
+        for _k in range(len(_seq)):
+            _nm = f"L{_L}_{_k}"
             _keys.append(_nm)
             _frames.append(go.Frame(
-                data=[_trail(_angles_upto(_i, _n)), _needle(_a, _off), _label(_a, max(_i, 1))],
-                traces=[0, 1, 2], name=_nm))
-        _names[_sd] = _keys
+                data=[_tree(_leaves), _spokes(_seq[:_k + 1]), _needle(*_seq[_k]), _label(_L, _areas[_L])],
+                traces=[1, 2, 3, 4], name=_nm))
+        _names[_L] = _keys
     _fig.frames = _frames
 
-    def _btn(sd):
-        return {"label": f"▶ {sd:g}° steps", "method": "animate",
-                "args": [_names[sd], {"frame": {"duration": 80, "redraw": True},
-                                      "transition": {"duration": 55}, "mode": "immediate", "fromcurrent": False}]}
+    def _btn(level):
+        return {"label": f"▶ {2 ** level} slices", "method": "animate",
+                "args": [_names[level], {"frame": {"duration": 90, "redraw": True},
+                                         "transition": {"duration": 0}, "mode": "immediate", "fromcurrent": False}]}
 
-    _buttons = [_btn(_sd) for _sd in _steps_deg] + [
+    _buttons = [_btn(_L) for _L in _levels] + [
         {"label": "❚❚ Pause", "method": "animate",
          "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]}]
 
-    _fig.update_layout(**base_layout(title="Tiny Steps Make the Turn Smooth — but Not Smaller", height=470))
-    _fig.update_xaxes(range=[-1.2, 1.2], scaleanchor="y", constrain="domain",
+    _fig.update_layout(**base_layout(title="Turning the Needle Inside a Perron Tree — Not a Disk", height=500))
+    _fig.update_xaxes(range=[-1.3, 1.3], scaleanchor="y", constrain="domain",
                       gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
-    _fig.update_yaxes(range=[-0.8, 1.05], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
-    _fig.update_layout(updatemenus=[{"type": "buttons", "showactive": False, "y": 1.15, "x": 0.5,
+    _fig.update_yaxes(range=[-0.1, 1.42], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
+    _fig.update_layout(updatemenus=[{"type": "buttons", "showactive": False, "y": 1.14, "x": 0.5,
                                      "xanchor": "center", "direction": "right", "buttons": _buttons}])
     _fig
     return
