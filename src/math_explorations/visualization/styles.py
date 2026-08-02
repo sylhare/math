@@ -20,6 +20,7 @@ COLORS = {
     "highlight": "#ffd93d",  # Gold - highlights and labels
     "muted": "#4a5568",  # Dark gray - subtle lines
     "surface": "#2a2a3e",  # Dark navy - card/surface backgrounds
+    "muted_fill": "rgba(100,100,100,0.3)",  # Translucent gray - empty/neutral fill regions
 }
 
 # Plotly layout template

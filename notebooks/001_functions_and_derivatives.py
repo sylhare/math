@@ -13,9 +13,38 @@ def _():
     import sympy as sp
     from sympy import Symbol, cos, exp, log, sin, sqrt
 
-    from math_explorations.visualization import COLORS, base_layout
+    from math_explorations.visualization import (
+        COLORS,
+        animate_chain_rule,
+        animate_limit_process,
+        animate_power_rule,
+        base_layout,
+        create_optimization_plot,
+        create_secant_to_tangent,
+        create_tangent_line_plot,
+    )
 
-    return COLORS, base_layout, go, mo, np, pl, sp, cos, exp, log, sin, sqrt, Symbol
+    return (
+        COLORS,
+        animate_chain_rule,
+        animate_limit_process,
+        animate_power_rule,
+        base_layout,
+        create_optimization_plot,
+        create_secant_to_tangent,
+        create_tangent_line_plot,
+        go,
+        mo,
+        np,
+        pl,
+        sp,
+        cos,
+        exp,
+        log,
+        sin,
+        sqrt,
+        Symbol,
+    )
 
 
 @app.cell
@@ -378,126 +407,15 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
-    def _create_secant_demo():
-        """Create interactive secant-to-tangent visualization."""
-        x = np.linspace(-1, 3, 300)
-        y = x**2  # f(x) = x²
-
-        x0 = 1.0  # Point of tangency
-        y0 = x0**2
-        true_slope = 2 * x0  # Derivative of x² at x=1 is 2
-
-        h_values = [2.0, 1.5, 1.0, 0.5, 0.25, 0.1, 0.05, 0.01]
-
-        fig = go.Figure()
-
-        # Function curve
-        fig.add_trace(
-            go.Scatter(
-                x=x,
-                y=y,
-                mode="lines",
-                line={"color": COLORS["primary"], "width": 3},
-                name="f(x) = x²",
-            )
-        )
-
-        # Tangent line (target)
-        x_tan = np.array([-1, 3])
-        y_tan = y0 + true_slope * (x_tan - x0)
-        fig.add_trace(
-            go.Scatter(
-                x=x_tan,
-                y=y_tan,
-                mode="lines",
-                line={"color": COLORS["tertiary"], "width": 2, "dash": "dash"},
-                name=f"Tangent (slope = {true_slope:.1f})",
-            )
-        )
-
-        # Initial secant line
-        h = h_values[0]
-        x1 = x0 + h
-        y1 = x1**2
-        slope = (y1 - y0) / h
-        y_sec = y0 + slope * (x_tan - x0)
-
-        fig.add_trace(
-            go.Scatter(
-                x=x_tan,
-                y=y_sec,
-                mode="lines",
-                line={"color": COLORS["quaternary"], "width": 2},
-                name=f"Secant (h = {h:.2f})",
-            )
-        )
-
-        # Points
-        fig.add_trace(
-            go.Scatter(
-                x=[x0],
-                y=[y0],
-                mode="markers",
-                marker={"color": COLORS["secondary"], "size": 12},
-                name="Fixed point (1, 1)",
-            )
-        )
-
-        fig.add_trace(
-            go.Scatter(
-                x=[x1],
-                y=[y1],
-                mode="markers",
-                marker={"color": COLORS["quaternary"], "size": 10},
-                name="Moving point",
-            )
-        )
-
-        # Create slider steps
-        steps = []
-        for h in h_values:
-            x1 = x0 + h
-            y1 = x1**2
-            slope = (y1 - y0) / h
-            y_sec = y0 + slope * (x_tan - x0)
-
-            step = {
-                "method": "update",
-                "args": [
-                    {"x": [x, x_tan, x_tan, [x0], [x1]], "y": [y, y_tan, y_sec, [y0], [y1]]},
-                    {"title": f"h = {h:.2f} | Secant slope = {slope:.4f} | Tangent slope = {true_slope:.1f}"},
-                ],
-                "label": f"{h:.2f}",
-            }
-            steps.append(step)
-
-        fig.update_layout(
-            **base_layout(
-                title=f"h = {h_values[0]:.2f} | Secant slope = {((x0 + h_values[0]) ** 2 - y0) / h_values[0]:.4f} | Tangent slope = {true_slope:.1f}",
-                xaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "title": "x"},
-                yaxis={
-                    "gridcolor": COLORS["grid"],
-                    "zerolinecolor": COLORS["text_secondary"],
-                    "title": "y",
-                    "range": [-1, 10],
-                },
-                sliders=[
-                    {
-                        "active": 0,
-                        "currentvalue": {"prefix": "h = ", "visible": True},
-                        "pad": {"b": 10, "t": 50},
-                        "steps": steps,
-                        "bgcolor": COLORS["paper"],
-                        "font": {"color": COLORS["text"]},
-                    }
-                ],
-            )
-        )
-
-        return fig
-
-    _create_secant_demo()
+def _(create_secant_to_tangent):
+    _fig = create_secant_to_tangent(
+        f=lambda x: x**2,
+        f_prime=lambda x: 2 * x,
+        x0=1.0,
+        x_range=(-1, 3),
+        h_values=[2.0, 1.5, 1.0, 0.5, 0.25, 0.1, 0.05, 0.01],
+    )
+    _fig
     return
 
 
@@ -634,127 +552,15 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
-    def _animate_limit():
-        """Animate h approaching 0."""
-        x = np.linspace(-0.5, 2.5, 300)
-        y = x**2
-
-        x0 = 1.0
-        y0 = 1.0
-        true_slope = 2.0
-
-        num_frames = 60
-        h_values = np.exp(np.linspace(np.log(1.5), np.log(0.01), num_frames))
-
-        fig = go.Figure()
-
-        # Function
-        fig.add_trace(
-            go.Scatter(x=x, y=y, mode="lines", line={"color": COLORS["primary"], "width": 3}, name="f(x) = x²")
-        )
-
-        # Tangent
-        x_line = np.array([-0.5, 2.5])
-        y_tan = y0 + true_slope * (x_line - x0)
-        fig.add_trace(
-            go.Scatter(
-                x=x_line,
-                y=y_tan,
-                mode="lines",
-                line={"color": COLORS["tertiary"], "width": 2, "dash": "dash"},
-                name="Tangent",
-            )
-        )
-
-        # Secant
-        h = h_values[0]
-        slope = ((x0 + h) ** 2 - y0) / h
-        y_sec = y0 + slope * (x_line - x0)
-        fig.add_trace(
-            go.Scatter(x=x_line, y=y_sec, mode="lines", line={"color": COLORS["quaternary"], "width": 3}, name="Secant")
-        )
-
-        # Points
-        fig.add_trace(
-            go.Scatter(x=[x0], y=[y0], mode="markers", marker={"color": COLORS["secondary"], "size": 14}, name="(1, 1)")
-        )
-        fig.add_trace(
-            go.Scatter(
-                x=[x0 + h],
-                y=[(x0 + h) ** 2],
-                mode="markers",
-                marker={"color": COLORS["quaternary"], "size": 10},
-                name="Moving",
-            )
-        )
-
-        frames = []
-        for i, h in enumerate(h_values):
-            x1 = x0 + h
-            y1 = x1**2
-            slope = (y1 - y0) / h
-            y_sec = y0 + slope * (x_line - x0)
-
-            frame = go.Frame(
-                data=[
-                    go.Scatter(x=x, y=y),
-                    go.Scatter(x=x_line, y=y_tan),
-                    go.Scatter(x=x_line, y=y_sec),
-                    go.Scatter(x=[x0], y=[y0]),
-                    go.Scatter(x=[x1], y=[y1]),
-                ],
-                name=str(i),
-                layout={"title": f"h = {h:.4f} | Slope = {slope:.4f} → 2.0000"},
-            )
-            frames.append(frame)
-
-        fig.frames = frames
-
-        fig.update_layout(
-            **base_layout(
-                title="The Limit: h → 0",
-                xaxis={
-                    "gridcolor": COLORS["grid"],
-                    "zerolinecolor": COLORS["text_secondary"],
-                    "title": "x",
-                    "range": [-0.5, 2.5],
-                },
-                yaxis={
-                    "gridcolor": COLORS["grid"],
-                    "zerolinecolor": COLORS["text_secondary"],
-                    "title": "y",
-                    "range": [-0.5, 5],
-                },
-                updatemenus=[
-                    {
-                        "type": "buttons",
-                        "showactive": False,
-                        "y": 1.15,
-                        "x": 0.5,
-                        "xanchor": "center",
-                        "buttons": [
-                            {
-                                "label": "▶ Play",
-                                "method": "animate",
-                                "args": [None, {"frame": {"duration": 50}, "transition": {"duration": 30}}],
-                            },
-                            {
-                                "label": "⏸ Pause",
-                                "method": "animate",
-                                "args": [[None], {"frame": {"duration": 0}, "mode": "immediate"}],
-                            },
-                        ],
-                        "font": {"color": COLORS["text"]},
-                        "bgcolor": COLORS["paper"],
-                    }
-                ],
-            )
-        )
-
-        return fig
-
-    _animate_limit()
+def _(animate_limit_process):
+    _fig = animate_limit_process(
+        f=lambda x: x**2,
+        f_prime=lambda x: 2 * x,
+        x0=1.0,
+        x_range=(-0.5, 2.5),
+        num_frames=60,
+    )
+    _fig
     return
 
 
@@ -1002,76 +808,8 @@ def _(mo):
 
 
 @app.cell
-def _(mo):
-    power_slider = mo.ui.slider(
-        start=1,
-        stop=6,
-        step=1,
-        value=2,
-        label="Power n:",
-        show_value=True,
-    )
-    return (power_slider,)
-
-
-@app.cell
-def _(mo, power_slider):
-    mo.hstack(
-        [
-            mo.md("**Choose a power:**"),
-            power_slider,
-        ]
-    )
-    return
-
-
-@app.cell
-def _(COLORS, base_layout, go, np, power_slider):
-    _n = power_slider.value
-    _x = np.linspace(-2, 2, 300)
-
-    _y_f = _x**_n
-    _y_fp = _n * _x ** (_n - 1) if _n > 0 else np.zeros_like(_x)
-
-    # Clip for display
-    _y_f = np.clip(_y_f, -15, 15)
-    _y_fp = np.clip(_y_fp, -15, 15)
-
-    _fig = go.Figure()
-
-    _fig.add_trace(
-        go.Scatter(
-            x=_x,
-            y=_y_f,
-            mode="lines",
-            line={"color": COLORS["primary"], "width": 3},
-            name=f"f(x) = x^{_n}",
-        )
-    )
-
-    _fig.add_trace(
-        go.Scatter(
-            x=_x,
-            y=_y_fp,
-            mode="lines",
-            line={"color": COLORS["secondary"], "width": 3},
-            name=f"f'(x) = {_n}x^{_n - 1}",
-        )
-    )
-
-    _fig.update_layout(
-        **base_layout(
-            title=f"Power Rule: f(x) = x^{_n}, f'(x) = {_n}x^{_n - 1}",
-            xaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "title": "x"},
-            yaxis={
-                "gridcolor": COLORS["grid"],
-                "zerolinecolor": COLORS["text_secondary"],
-                "title": "y",
-                "range": [-10, 10],
-            },
-            showlegend=True,
-        )
-    )
+def _(animate_power_rule):
+    _fig = animate_power_rule(max_n=6, x_range=(-2, 2), num_points=300)
     _fig
     return
 
@@ -1222,58 +960,14 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
-    # Chain rule visualization: sin(x²)
-    _x = np.linspace(-2.5, 2.5, 400)
-
-    _inner = _x**2  # g(x) = x²
-    _composite = np.sin(_x**2)  # f(g(x)) = sin(x²)
-    _derivative = 2 * _x * np.cos(_x**2)  # f'(g(x)) * g'(x)
-
-    _fig = go.Figure()
-
-    _fig.add_trace(
-        go.Scatter(
-            x=_x,
-            y=np.clip(_inner, -5, 5),
-            mode="lines",
-            line={"color": COLORS["accent1"], "width": 2},
-            name="g(x) = x² (inner)",
-        )
-    )
-
-    _fig.add_trace(
-        go.Scatter(
-            x=_x,
-            y=_composite,
-            mode="lines",
-            line={"color": COLORS["primary"], "width": 3},
-            name="f(g(x)) = sin(x²)",
-        )
-    )
-
-    _fig.add_trace(
-        go.Scatter(
-            x=_x,
-            y=_derivative,
-            mode="lines",
-            line={"color": COLORS["secondary"], "width": 3},
-            name="(f∘g)'(x) = 2x·cos(x²)",
-        )
-    )
-
-    _fig.update_layout(
-        **base_layout(
-            title="Chain Rule: (f∘g)'(x) = f'(g(x)) · g'(x)",
-            xaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "title": "x"},
-            yaxis={
-                "gridcolor": COLORS["grid"],
-                "zerolinecolor": COLORS["text_secondary"],
-                "title": "y",
-                "range": [-5, 5],
-            },
-            showlegend=True,
-        )
+def _(animate_chain_rule, np):
+    _fig = animate_chain_rule(
+        outer=np.sin,
+        inner=lambda x: x**2,
+        outer_prime=np.cos,
+        inner_prime=lambda x: 2 * x,
+        x_range=(-2.5, 2.5),
+        title="Chain Rule: (f∘g)'(x) = f'(g(x)) · g'(x)",
     )
     _fig
     return
@@ -1343,11 +1037,11 @@ def _(mo):
         ### Interactive Exploration: Moving the Tangent Point
 
         The visualization below shows $f(x) = x^3 - x$ with a tangent line that you can move
-        along the curve. The stars mark the **critical points** where $f'(x) = 0$.
+        along the curve using the slider. Watch the reported slope as you drag it.
 
         As you move the slider, notice:
-        - The slope changes sign as you cross the critical points
-        - The tangent is horizontal (slope = 0) exactly at the stars
+        - The slope changes sign as you cross the **critical points** where $f'(x) = 0$
+        - The tangent becomes horizontal (slope = 0) exactly at $x = \pm\frac{1}{\sqrt{3}} \approx \pm 0.577$
         - The function is increasing where the slope is positive, decreasing where it's negative
         """
     )
@@ -1355,105 +1049,12 @@ def _(mo):
 
 
 @app.cell
-def _(mo):
-    tangent_point = mo.ui.slider(
-        start=-2.0,
-        stop=2.0,
-        step=0.1,
-        value=1.0,
-        label="Touch point x₀:",
-        show_value=True,
-    )
-    return (tangent_point,)
-
-
-@app.cell
-def _(mo, tangent_point):
-    mo.hstack(
-        [
-            mo.md("### Interactive Tangent Line"),
-            tangent_point,
-        ]
-    )
-    return
-
-
-@app.cell
-def _(COLORS, base_layout, go, np, tangent_point):
-    _x0 = tangent_point.value
-    _x = np.linspace(-3, 3, 300)
-    _y = _x**3 - _x  # f(x) = x³ - x
-
-    _y0 = _x0**3 - _x0
-    _slope = 3 * _x0**2 - 1  # f'(x) = 3x² - 1
-
-    # Tangent line
-    _x_tan = np.array([-3, 3])
-    _y_tan = _y0 + _slope * (_x_tan - _x0)
-
-    _fig = go.Figure()
-
-    _fig.add_trace(
-        go.Scatter(
-            x=_x,
-            y=_y,
-            mode="lines",
-            line={"color": COLORS["primary"], "width": 3},
-            name="f(x) = x³ - x",
-        )
-    )
-
-    _fig.add_trace(
-        go.Scatter(
-            x=_x_tan,
-            y=_y_tan,
-            mode="lines",
-            line={"color": COLORS["tertiary"], "width": 2, "dash": "dash"},
-            name=f"Tangent (slope = {_slope:.2f})",
-        )
-    )
-
-    _fig.add_trace(
-        go.Scatter(
-            x=[_x0],
-            y=[_y0],
-            mode="markers",
-            marker={"color": COLORS["quaternary"], "size": 14},
-            name=f"({_x0:.1f}, {_y0:.2f})",
-        )
-    )
-
-    # Mark critical points where f'(x) = 0
-    _crit_x = np.array([-1 / np.sqrt(3), 1 / np.sqrt(3)])
-    _crit_y = _crit_x**3 - _crit_x
-
-    _fig.add_trace(
-        go.Scatter(
-            x=_crit_x,
-            y=_crit_y,
-            mode="markers",
-            marker={"color": COLORS["accent2"], "size": 10, "symbol": "star"},
-            name="Critical points (f'=0)",
-        )
-    )
-
-    _fig.update_layout(
-        **base_layout(
-            title=f"Tangent at x = {_x0:.1f} | Slope = {_slope:.2f}",
-            xaxis={
-                "gridcolor": COLORS["grid"],
-                "zerolinecolor": COLORS["text_secondary"],
-                "title": "x",
-                "range": [-3, 3],
-            },
-            yaxis={
-                "gridcolor": COLORS["grid"],
-                "zerolinecolor": COLORS["text_secondary"],
-                "title": "y",
-                "range": [-4, 4],
-            },
-            showlegend=True,
-        )
+def _(create_tangent_line_plot):
+    _fig = create_tangent_line_plot(
+        f=lambda x: x**3 - x,
+        f_prime=lambda x: 3 * x**2 - 1,
+        x_range=(-3, 3),
+        initial_x=1.0,
     )
     _fig
     return
@@ -1463,13 +1064,13 @@ def _(COLORS, base_layout, go, np, tangent_point):
 def _(mo):
     mo.md(
         r"""
-        The blue curve is $f(x) = x^3 - x$, and the teal dashed line is the tangent line at the point you select with the slider. The yellow dot shows where the tangent touches the curve, and the red stars mark the critical points where the slope equals zero.
+        The blue curve is $f(x) = x^3 - x$, and the teal dashed line is the tangent line at the point you select with the slider. The marker shows where the tangent touches the curve, and the title reports the slope there.
 
         **Key observations:**
 
         - **Horizontal tangents** occur where the slope is zero. For $f(x) = x^3 - x$, we have
           $f'(x) = 3x^2 - 1 = 0$ when $x = \pm\frac{1}{\sqrt{3}} \approx \pm 0.577$.
-          These points are marked with stars.
+          Drag the slider to those values and watch the tangent flatten out.
 
         - At the **left critical point** ($x \approx -0.577$), the function reaches a **local maximum**
           — it's higher than nearby points.
@@ -1727,84 +1328,12 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
-    # Optimization example: f(x) = x³ - 3x
-    _x = np.linspace(-2.5, 2.5, 300)
-    _y = _x**3 - 3 * _x  # f(x)
-    _y_prime = 3 * _x**2 - 3  # f'(x)
-    _y_double_prime = 6 * _x  # f''(x)
-
-    _fig = go.Figure()
-
-    # Function
-    _fig.add_trace(
-        go.Scatter(
-            x=_x,
-            y=_y,
-            mode="lines",
-            line={"color": COLORS["primary"], "width": 3},
-            name="f(x) = x³ - 3x",
-        )
-    )
-
-    # First derivative
-    _fig.add_trace(
-        go.Scatter(
-            x=_x,
-            y=_y_prime,
-            mode="lines",
-            line={"color": COLORS["secondary"], "width": 2},
-            name="f'(x) = 3x² - 3",
-        )
-    )
-
-    # Second derivative
-    _fig.add_trace(
-        go.Scatter(
-            x=_x,
-            y=_y_double_prime,
-            mode="lines",
-            line={"color": COLORS["tertiary"], "width": 2, "dash": "dash"},
-            name="f''(x) = 6x",
-        )
-    )
-
-    # Critical points
-    # f'(x) = 0 when x = ±1
-    _crit_points = [
-        (-1, 2, "Maximum\nf''(-1) = -6 < 0"),
-        (1, -2, "Minimum\nf''(1) = 6 > 0"),
-    ]
-
-    for _xc, _yc, _label in _crit_points:
-        _color = COLORS["accent2"] if "Max" in _label else COLORS["accent1"]
-        _fig.add_trace(
-            go.Scatter(
-                x=[_xc],
-                y=[_yc],
-                mode="markers+text",
-                marker={"color": _color, "size": 14, "symbol": "star"},
-                text=[_label],
-                textposition="top center" if "Max" in _label else "bottom center",
-                textfont={"color": _color, "size": 11},
-                showlegend=False,
-            )
-        )
-
-    _fig.add_hline(y=0, line_dash="dot", line_color=COLORS["text_secondary"], opacity=0.5)
-
-    _fig.update_layout(
-        **base_layout(
-            title="Optimization: Finding Extrema with the Second Derivative Test",
-            xaxis={"gridcolor": COLORS["grid"], "zerolinecolor": COLORS["text_secondary"], "title": "x"},
-            yaxis={
-                "gridcolor": COLORS["grid"],
-                "zerolinecolor": COLORS["text_secondary"],
-                "title": "y",
-                "range": [-5, 5],
-            },
-            showlegend=True,
-        )
+def _(create_optimization_plot):
+    _fig = create_optimization_plot(
+        f=lambda x: x**3 - 3 * x,
+        f_prime=lambda x: 3 * x**2 - 3,
+        f_double_prime=lambda x: 6 * x,
+        x_range=(-2.5, 2.5),
     )
     _fig
     return

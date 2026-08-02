@@ -970,9 +970,9 @@ def animate_area_accumulation(
         for n in rect_counts
     ]
 
+    fig.update_layout(**DARK_THEME)
     fig.update_layout(
-        **DARK_THEME,
-        title="Riemann Sum: n = 5 rectangles",
+        title={"text": "Riemann Sum: n = 5 rectangles"},
         xaxis_title="x",
         yaxis_title="y",
         barmode="overlay",

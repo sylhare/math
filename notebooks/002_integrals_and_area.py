@@ -14,9 +14,25 @@ def _():
     from scipy import integrate as sci_integrate
     from sympy import Symbol, cos, exp, integrate, sin, sqrt
 
-    from math_explorations.visualization import COLORS, base_layout
+    from math_explorations.visualization import COLORS, animate_area_accumulation, base_layout
 
-    return COLORS, base_layout, go, mo, np, pl, sp, cos, exp, sin, sqrt, Symbol, integrate, sci_integrate
+    return (
+        COLORS,
+        animate_area_accumulation,
+        base_layout,
+        go,
+        mo,
+        np,
+        pl,
+        sp,
+        cos,
+        exp,
+        sin,
+        sqrt,
+        Symbol,
+        integrate,
+        sci_integrate,
+    )
 
 
 @app.cell
@@ -252,143 +268,10 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
-    # Animate the Riemann sum converging for x^2
-    def _animate_riemann_convergence():
-        """Animate Riemann sums converging to the integral."""
-        a, b = 0, 2
-        x_curve = np.linspace(a, b, 200)
-        y_curve = x_curve**2
-        true_area = b**3 / 3
-
-        n_values = [2, 4, 8, 16, 32, 64]
-
-        fig = go.Figure()
-
-        # Function curve
-        fig.add_trace(
-            go.Scatter(
-                x=x_curve,
-                y=y_curve,
-                mode="lines",
-                line={"color": COLORS["primary"], "width": 3},
-                name="f(x) = x²",
-            )
-        )
-
-        # Initial rectangles
-        n = n_values[0]
-        dx = (b - a) / n
-        x_left = np.array([a + i * dx for i in range(n)])
-        heights = (x_left + dx) ** 2  # Right endpoint
-        area = np.sum(heights * dx)
-
-        # Add rectangles as individual shapes for better visualization
-        for i in range(n):
-            fig.add_shape(
-                type="rect",
-                x0=x_left[i],
-                x1=x_left[i] + dx,
-                y0=0,
-                y1=heights[i],
-                fillcolor="rgba(78, 205, 196, 0.5)",
-                line=dict(color=COLORS["tertiary"], width=1),
-            )
-
-        # Create frames
-        frames = []
-        for n in n_values:
-            dx = (b - a) / n
-            x_left = np.array([a + i * dx for i in range(n)])
-            heights = (x_left + dx) ** 2
-            area = np.sum(heights * dx)
-            error = abs(true_area - area) / true_area * 100
-
-            # Create shapes for this frame
-            shapes = []
-            for i in range(n):
-                shapes.append(
-                    dict(
-                        type="rect",
-                        x0=x_left[i],
-                        x1=x_left[i] + dx,
-                        y0=0,
-                        y1=heights[i],
-                        fillcolor="rgba(78, 205, 196, 0.5)",
-                        line=dict(color=COLORS["tertiary"], width=1),
-                    )
-                )
-
-            frame = go.Frame(
-                data=[go.Scatter(x=x_curve, y=y_curve)],
-                layout={
-                    "shapes": shapes,
-                    "title": f"n = {n} rectangles | Sum = {area:.4f} | True = {true_area:.4f} | Error: {error:.1f}%",
-                },
-                name=str(n),
-            )
-            frames.append(frame)
-
-        fig.frames = frames
-
-        fig.update_layout(
-            **base_layout(
-                title=f"n = {n_values[0]} rectangles | Sum = {np.sum((np.array([a + i * (b - a) / n_values[0] for i in range(n_values[0])]) + (b - a) / n_values[0]) ** 2 * (b - a) / n_values[0]):.4f}",
-                xaxis={
-                    "gridcolor": COLORS["grid"],
-                    "zerolinecolor": COLORS["text_secondary"],
-                    "title": "x",
-                    "range": [-0.2, 2.5],
-                },
-                yaxis={
-                    "gridcolor": COLORS["grid"],
-                    "zerolinecolor": COLORS["text_secondary"],
-                    "title": "y",
-                    "range": [-0.2, 5],
-                },
-                showlegend=True,
-                updatemenus=[
-                    {
-                        "type": "buttons",
-                        "showactive": False,
-                        "y": 1.15,
-                        "x": 0.5,
-                        "xanchor": "center",
-                        "buttons": [
-                            {
-                                "label": "▶ Animate",
-                                "method": "animate",
-                                "args": [None, {"frame": {"duration": 800}, "transition": {"duration": 300}}],
-                            },
-                        ],
-                        "font": {"color": COLORS["text"]},
-                        "bgcolor": COLORS["paper"],
-                    }
-                ],
-                sliders=[
-                    {
-                        "active": 0,
-                        "steps": [
-                            {
-                                "args": [[str(n)], {"frame": {"duration": 0}, "mode": "immediate"}],
-                                "label": str(n),
-                                "method": "animate",
-                            }
-                            for n in n_values
-                        ],
-                        "x": 0.05,
-                        "len": 0.9,
-                        "currentvalue": {"prefix": "Rectangles: ", "visible": True},
-                        "bgcolor": COLORS["paper"],
-                        "font": {"color": COLORS["text"]},
-                    }
-                ],
-            )
-        )
-
-        return fig
-
-    _animate_riemann_convergence()
+def _(animate_area_accumulation):
+    # Animate the Riemann sum converging to the integral of f(x) = x² on [0, 2]
+    _fig = animate_area_accumulation(lambda x: x**2, x_range=(0, 2))
+    _fig
     return
 
 
@@ -1063,13 +946,18 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, go, np, sp):
+    # Solve for the intersection points symbolically instead of hardcoding them
+    _sx = sp.Symbol("x")
+    _roots = sorted(float(r) for r in sp.solve(sp.Eq(_sx, _sx**2), _sx))
+    _lo, _hi = _roots[0], _roots[-1]
+
     # Visualize area between curves
-    _x = np.linspace(-0.2, 1.3, 200)
+    _x = np.linspace(_lo - 0.2, _hi + 0.3, 200)
     _y1 = _x  # y = x
     _y2 = _x**2  # y = x²
 
-    _x_fill = np.linspace(0, 1, 100)
+    _x_fill = np.linspace(_lo, _hi, 100)
     _y1_fill = _x_fill
     _y2_fill = _x_fill**2
 
@@ -1094,8 +982,8 @@ def _(COLORS, base_layout, go, np):
     # Intersection points
     _fig.add_trace(
         go.Scatter(
-            x=[0, 1],
-            y=[0, 1],
+            x=[_lo, _hi],
+            y=[_lo, _hi],
             mode="markers",
             marker={"color": COLORS["quaternary"], "size": 12},
             name="Intersections",
