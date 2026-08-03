@@ -208,8 +208,14 @@ def _(mo):
     **every** direction, then set it down. What is the *smallest area* the needle can sweep
     while doing so?
 
-    That's it. It sounds like it should have a boring answer. The puzzle ran for over a century,
-    and cracking its three-dimensional case earned a Fields Medal in 2026.
+    The puzzle is really about waste. Moving the needle across the table increases the ground
+    it covers (which we want to consume as little as possible). So it is a contest: face every
+    direction, yet paint over as little table as you can.
+
+    You might expect a tidy smallest shape with a clean number attached. There isn't one. The
+    answer quietly overturns what "smallest" should even mean here, and settling it carried
+    mathematicians from a 1917 tabletop puzzle to the plane, and then, a century later, to three
+    dimensions, where the last piece earned a Fields Medal in 2026.
     """)
     return
 
@@ -217,14 +223,26 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Just spin it
+    ## Initial spin
 
-    The obvious move: pin the needle at its middle and spin it like a clock hand. It points
-    every way, but it sweeps a whole **disk** (area $\pi/4 \approx 0.785$), and most of that
-    disk feels wasted. Surely we can be cleverer. Two shortcuts come to mind first; both are
-    instructive, and both are wrong.
+    This is the start of the problem. Pin the needle through its middle and spin it around like the
+    hand of a clock. Round it goes, pointing every which way, and by the time it comes back it has
+    swept out a full **disk**.
 
-    $$A = \pi \left(\tfrac{1}{2}\right)^2 = \frac{\pi}{4}$$
+    Perfectly good, and perfectly wasteful: at any instant the needle is only a thin sliver, yet
+    turning it paints the whole disk.
+
+    Pinned at its middle, the needle's tips reach only half an inch out, so the swept disk has radius $r = \tfrac{1}{2}$.
+    Start from the area of a circle and put that radius in:
+
+    $$
+    \begin{aligned}
+    A &= \pi r^2 && \text{area of a circle of radius } r \\
+      &= \pi \left(\tfrac{1}{2}\right)^2 && \text{the tips reach only } r = \tfrac{1}{2} \\
+      &= \frac{\pi}{4} \\
+      &\approx 0.785
+    \end{aligned}
+    $$
     """)
     return
 
@@ -312,9 +330,10 @@ def _(COLORS, base_layout, go, np, play_pause):
 def _(mo):
     mo.md(r"""
     A needle pivots about its centre and fills a disk. Every position it passes through is drawn,
-    so you see the whole family of directions at once, not just one needle. It faces every
-    direction, but the whole disk gets painted, area π/4. This is the baseline everything below
-    has to beat.
+    so you see the whole family of directions at once, not just one needle.
+
+    It faces every direction, but the whole disk gets painted, area π/4.
+    This is the baseline everything below has to beat.
     """)
     return
 
@@ -322,10 +341,11 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Cheat #1: tip it off the table
+    ## What if we tipped it off the table?
 
-    A tempting shortcut: pin one end and **tilt the needle up into the air**. Its shadow on the
-    table shrinks to almost nothing, so you swing it over the top and set it down facing a new
+    A tempting shortcut: pin one end and tilt the needle up into the air.
+
+    Its shadow on the table shrinks to almost nothing, so you swing it over the top and set it down facing a new
     way for next to no footprint.
     """)
     return
@@ -439,6 +459,10 @@ def _(mo):
     mo.md(r"""
     The needle pivots up out of the plane and its floor shadow collapses toward a point.
     Direction changes for almost no footprint, but only by leaving the table.
+
+    And that's the catch, the needle **left the table** ❌
+
+    The whole problem lives in the plane, we need to keep the needle on the table at all time.
     """)
     return
 
@@ -446,32 +470,22 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    That's the catch: the needle **left the table**, and the whole problem lives in the plane.
-    So what if we keep the needle flat and spin the *table* under it instead?
-    """)
-    return
+    ## What if we spin the table instead?
 
+    Since moving the needle cost us area, what if we use the table to move instead.
+    We could have either the needle stay still while the table move,
+    or have the table and the needle move at the same time.
 
-@app.cell
-def _(mo):
-    mo.md(r"""
-    ## Cheat #2: spin the table instead
-
-    Leave the needle still and **rotate the table** under it. The needle never moves, so surely
-    no area is swept? Here's the catch: only the needle's turn *relative to the table* counts, and
-    spinning the table is that same turn in disguise. Area is measured **on the table**, so in the
-    table's own frame the needle still faces every way and still sweeps the **whole disk**, π/4 all
-    over again.
+    So that the needle either point in all direction of the table without moving in the plan,
+    or it points in all direction of the plan without moving from the table.
     """)
     return
 
 
 @app.cell
 def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
-    # Rotating the table is NOT a shortcut: area is measured on the table, so in the table's
-    # own frame the fixed needle still sweeps the full disk (pi/4) -- same as plain spinning.
-    _n = 36
-    _ang = np.linspace(0, np.pi, _n)
+    _R = 0.5
+    _phis = np.concatenate([np.zeros(3), np.linspace(0.0, np.pi, 40), np.full(4, np.pi)])
 
     _vals = [-0.6, -0.3, 0.0, 0.3, 0.6]
     _segs = []
@@ -479,7 +493,7 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         _segs.append(((_c, -0.6), (_c, 0.6)))
         _segs.append(((-0.6, _c), (0.6, _c)))
 
-    def _grid_trace(th, ax):
+    def _grid_trace(th, xa, ya):
         _co, _si = np.cos(th), np.sin(th)
         _xs, _ys = [], []
         for _p0, _p1 in _segs:
@@ -490,104 +504,108 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
             y=_ys,
             mode="lines",
             line={"color": "#7d8ba3", "width": 1.2},
-            xaxis=ax[0],
-            yaxis=ax[1],
+            xaxis=xa,
+            yaxis=ya,
             showlegend=False,
             name="table",
         )
 
-    def _diam(k):  # the fixed lab needle, expressed in the table's (rotating) frame
-        _th = -_ang[k]
-        return [-0.5 * np.cos(_th), 0.5 * np.cos(_th)], [-0.5 * np.sin(_th), 0.5 * np.sin(_th)]
-
-    def _accum_disk(k, ax):
-        _xs, _ys = [], []
-        for _j in range(k + 1):
-            _x, _y = _diam(_j)
-            _xs += [_x[0], _x[1], None]
-            _ys += [_y[0], _y[1], None]
+    def _needle_trace(th, xa, ya):
+        # a diameter through the pivot, pointing at lab-angle th
+        _co, _si = np.cos(th), np.sin(th)
         return go.Scatter(
-            x=_xs,
-            y=_ys,
+            x=[-_R * _co, _R * _co],
+            y=[-_R * _si, _R * _si],
             mode="lines",
-            line={"color": COLORS["primary"], "width": 1},
-            opacity=0.35,
-            xaxis=ax[0],
-            yaxis=ax[1],
+            line={"color": COLORS["secondary"], "width": 6},
+            xaxis=xa,
+            yaxis=ya,
             showlegend=False,
-            name="swept",
+            name="needle",
         )
 
-    def _cur_disk(k, ax):
-        _x, _y = _diam(k)
+    def _wedge(a0, a1):
+        # filled sector of the radius-_R disk between lab-angles a0 and a1, apex at the pivot
+        _a = np.linspace(a0, a1, 40)
+        return [0.0, *(_R * np.cos(_a)), 0.0], [0.0, *(_R * np.sin(_a)), 0.0]
+
+    def _painted(phi, xa, ya):
+        # table-material touched so far: two opposite wedges of angular width phi, since both ends
+        # of the diameter paint at once. Full disk at phi = pi.
+        _x, _y = [], []
+        for _base in (0.0, np.pi):
+            _wx, _wy = _wedge(_base, _base + phi)
+            _x += [*_wx, None]
+            _y += [*_wy, None]
         return go.Scatter(
             x=_x,
             y=_y,
             mode="lines",
-            line={"color": COLORS["secondary"], "width": 5},
-            xaxis=ax[0],
-            yaxis=ax[1],
+            fill="toself",
+            fillcolor="rgba(0, 212, 255, 0.16)",
+            line={"color": COLORS["primary"], "width": 1},
+            xaxis=xa,
+            yaxis=ya,
             showlegend=False,
-            name="needle",
+            name="painted so far",
         )
 
-    _LA, _TB = ("x", "y"), ("x2", "y2")
+    def _readout(area, xa, ya):
+        return go.Scatter(
+            x=[0.0],
+            y=[0.82],
+            mode="text",
+            text=[f"painted area ≈ {area:.3f}"],
+            textfont={"color": COLORS["highlight"], "size": 14},
+            xaxis=xa,
+            yaxis=ya,
+            showlegend=False,
+        )
+
     _fig = make_subplots(
         rows=1,
         cols=2,
-        subplot_titles=("Lab frame: spin the table, hold the needle", "On the table: still the whole disk (π/4)"),
+        subplot_titles=("Needle glued to the table", "Needle held in the position"),
     )
-
-    _fig.add_trace(_grid_trace(0.0, _LA), row=1, col=1)  # 0: rotating table (anim)
-    _fig.add_trace(  # 1: fixed lab needle (static)
-        go.Scatter(
-            x=[-0.5, 0.5],
-            y=[0, 0],
-            mode="lines",
-            line={"color": COLORS["secondary"], "width": 6},
-            xaxis="x",
-            yaxis="y",
-            showlegend=False,
-            name="needle",
-        ),
-        row=1,
-        col=1,
-    )
-
-    _dt = np.linspace(0, 2 * np.pi, 200)
-    _fig.add_trace(  # 2: disk outline (static)
-        go.Scatter(
-            x=0.5 * np.cos(_dt),
-            y=0.5 * np.sin(_dt),
-            mode="lines",
-            fill="toself",
-            fillcolor="rgba(0, 212, 255, 0.10)",
-            line={"color": COLORS["grid"], "width": 1.5},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-            name="disk",
-        ),
-        row=1,
-        col=2,
-    )
-    _fig.add_trace(_accum_disk(0, _TB), row=1, col=2)  # 3
-    _fig.add_trace(_cur_disk(0, _TB), row=1, col=2)  # 4
+    # left panel (glued): grid and needle rotate together, nothing gets painted
+    _fig.add_trace(_grid_trace(_phis[0], "x", "y"), row=1, col=1)  # 0 anim
+    _fig.add_trace(_needle_trace(_phis[0], "x", "y"), row=1, col=1)  # 1 anim (turns with table)
+    _fig.add_trace(_readout(0.0, "x", "y"), row=1, col=1)  # 2 anim (stays 0)
+    # right panel (held): grid turns, needle fixed, table-material paints the disk
+    _fig.add_trace(_grid_trace(_phis[0], "x2", "y2"), row=1, col=2)  # 3 anim
+    _fig.add_trace(_painted(_phis[0], "x2", "y2"), row=1, col=2)  # 4 anim
+    _fig.add_trace(_needle_trace(0.0, "x2", "y2"), row=1, col=2)  # 5 static (fixed diameter)
+    _fig.add_trace(_readout(0.0, "x2", "y2"), row=1, col=2)  # 6 anim
 
     _fig.frames = [
         go.Frame(
-            data=[_grid_trace(_ang[_k], _LA), _accum_disk(_k, _TB), _cur_disk(_k, _TB)], traces=[0, 3, 4], name=str(_k)
+            data=[
+                _grid_trace(_p, "x", "y"),
+                _needle_trace(_p, "x", "y"),
+                _readout(0.0, "x", "y"),
+                _grid_trace(_p, "x2", "y2"),
+                _painted(_p, "x2", "y2"),
+                _readout(0.25 * _p, "x2", "y2"),  # fraction phi/pi of the disk area pi * _R**2
+            ],
+            traces=[0, 1, 2, 3, 4, 6],
+            name=str(_k),
         )
-        for _k in range(1, _n)
+        for _k, _p in enumerate(_phis)
     ]
 
-    _fig.update_layout(**base_layout(title="Spin the table", height=440))
-    _fig.update_xaxes(range=[-0.9, 0.9], row=1, col=1, scaleanchor="y", constrain="domain")
-    _fig.update_yaxes(range=[-0.9, 0.9], row=1, col=1)
-    _fig.update_xaxes(range=[-0.8, 0.8], row=1, col=2, scaleanchor="y2", constrain="domain")
-    _fig.update_yaxes(range=[-0.8, 0.8], row=1, col=2)
+    _fig.update_layout(**base_layout(title="Spin the table", height=470))
+    for _c in (1, 2):
+        _fig.update_xaxes(
+            range=[-0.9, 0.9],
+            scaleanchor="y" if _c == 1 else "y2",
+            constrain="domain",
+            showticklabels=False,
+            row=1,
+            col=_c,
+        )
+        _fig.update_yaxes(range=[-0.9, 0.95], showticklabels=False, row=1, col=_c)
     style_subplot_axes(_fig)
-    _fig.update_layout(updatemenus=play_pause("▶ Spin table"))
+    _fig.update_layout(updatemenus=play_pause("▶ Spin the table"))
     _fig
     return
 
@@ -595,20 +613,15 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
 @app.cell
 def _(mo):
     mo.md(r"""
-    Left: the table turns while the needle stays put. Right: the same motion drawn in the
-    table's own frame, still the full disk. Turning the world underneath changes nothing.
-    """)
-    return
+    Two ways to spin the table, both watched from the room.
+    - On the **left** the needle is _glued_ to the table and rides along with it: it always lies on the same sliver of table, area stays zero.
+      - The needle never turns *relative to the table*.
+      - While the area is zero, it only ever point in one direction and thus fails to solve the problem.
+    - On the **right** the needle is held still in the room while the table turns beneath it: watch the table-points it passes over fill in.
+      - Relative to the table, it's the needle that's spinning. So no area gained here.
 
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    Both cheats are the same move in disguise: **one needle dragged continuously across the
-    table**, whether we push the needle or spin the table under it. Moving one needle is all we
-    have tried, and it has not helped. But a moving needle can do two genuinely useful things we
-    have not used yet, **first a slide, then a slice**, and together they change the game. Only
-    then will we ask whether we need to move at all.
+    We considered different moving options to reduce the area, but none worked so far.
+    Let's dive deeper and explore what move are remaining for us to try.
     """)
     return
 
@@ -618,14 +631,20 @@ def _(mo):
     mo.md(r"""
     ## Sliding is free
 
-    **The first move.** Here is something legal that costs nothing: **slide the needle along its
+    Here is something legal that costs nothing: **slide the needle along its
     own length.** It just retraces the line it already sits on, so it paints no new area, a free
     repositioning.
 
     So don't only pivot, *slide as you turn*. Ride the needle around the inside of a curved shape
     (a **deltoid**) and it faces every direction using only $\pi/8 \approx 0.393$, half the disk.
 
-    $$A = \frac{\pi}{8}$$
+    $$
+    \begin{aligned}
+    A &= \frac{\pi}{8} L^2 && \text{deltoid area for a needle of length } L \\
+      &= \frac{\pi}{8} && \text{a unit needle, } L = 1 \\
+      &\approx 0.393
+    \end{aligned}
+    $$
     """)
     return
 
@@ -1215,7 +1234,7 @@ def _(mo):
     As small as you like: a millionth of the disk, a billionth, smaller. And yet **never exactly
     zero**, because a sliver of area always stays behind, no matter how fine the slices.
 
-    Here is the reason, and it is the crux of the whole problem. To *turn*, a needle moves
+    Here is why. To *turn*, a needle moves
     continuously: its 31° pose has to sit right next to its 30° pose, so it must sweep every
     position in between, and that swept-through ground is exactly the sliver that never vanishes.
 
@@ -1305,7 +1324,7 @@ def _(mo):
     mo.md(r"""
     ## Stop moving the needle at all
 
-    Here's the move that changes everything: **stop turning one needle.** Instead, put down a
+    Here is the move: **stop turning one needle.** Instead, put down a
     *separate* needle for each direction, all at once, and look at the whole collection together.
     A needle at 0°, another at 1°, another at 89°, and so on, like a boxful of matchsticks tossed
     on the table so that between them they point every possible way. (A true such set needs one for
@@ -1507,7 +1526,13 @@ def _(mo):
     up (the readout tracks it), reaching exactly zero in the continuum limit of one needle for
     every direction:
 
-    $$K \subset \mathbb{R}^2, \quad \text{a unit segment in every direction}, \quad |K| = 0$$
+    $$
+    \begin{aligned}
+    &K \subset \mathbb{R}^2 && \text{a set in the plane} \\
+    &K \text{ contains a unit segment in every direction} && \text{a Besicovitch set} \\
+    &|K| = 0 && \text{yet zero area}
+    \end{aligned}
+    $$
 
     This object has a name. A set that contains a unit segment in every direction is a
     **Besicovitch set** (also called a **Kakeya set**), and we have just built one with zero area.
@@ -1539,8 +1564,12 @@ def _(mo):
     Davies settled the plane, $n = 2$. That was the easy case; three dimensions held out for
     fifty years.
 
-    $$\dim_{\mathrm B}(E) = \lim_{\varepsilon \to 0} \frac{\log N(\varepsilon)}{\log(1/\varepsilon)},
-    \qquad \dim_{\mathrm H}(E) = \inf\{\, s \ge 0 : \mathcal H^{s}(E) = 0 \,\}.$$
+    $$
+    \begin{aligned}
+    \dim_{\mathrm B}(E) &= \lim_{\varepsilon \to 0} \frac{\log N(\varepsilon)}{\log(1/\varepsilon)} && \text{box-counting dimension} \\
+    \dim_{\mathrm H}(E) &= \inf\{\, s \ge 0 : \mathcal H^{s}(E) = 0 \,\} && \text{Hausdorff dimension}
+    \end{aligned}
+    $$
     """)
     return
 
@@ -1603,7 +1632,7 @@ def _(COLORS, base_layout, go, np):
             mode="lines+markers",
             line={"color": COLORS["primary"], "width": 3},
             marker={"size": 9},
-            name=f"segment — slope ≈ {_seg_slope:.2f} (dim 1)",
+            name=f"segment, slope ≈ {_seg_slope:.2f} (dim 1)",
         )
     )
     _fig.add_trace(
@@ -1613,7 +1642,7 @@ def _(COLORS, base_layout, go, np):
             mode="lines+markers",
             line={"color": COLORS["secondary"], "width": 3},
             marker={"size": 9},
-            name=f"filled triangle — slope ≈ {_tri_slope:.2f} (dim 2)",
+            name=f"filled triangle, slope ≈ {_tri_slope:.2f} (dim 2)",
         )
     )
     _fig.add_trace(
@@ -1623,7 +1652,7 @@ def _(COLORS, base_layout, go, np):
             mode="lines+markers",
             line={"color": COLORS["quaternary"], "width": 3, "dash": "dot"},
             marker={"size": 9},
-            name=f"Besicovitch pile — slope ≈ {_pile_slope:.2f}",
+            name=f"Besicovitch pile, slope ≈ {_pile_slope:.2f}",
         )
     )
     _fig.update_layout(
@@ -1644,7 +1673,7 @@ def _(mo):
     Cover each shape with boxes of side ε and watch the tally grow as the boxes shrink. On a
     log–log plot the slope is the dimension: the single segment climbs at about 1, the filled
     patch roughly twice as steeply, and the zero-area pile rides up with the filled patch, not the
-    segment. That is the whole surprise, drawn: no area, yet the detail of a solid region.
+    segment. No area, yet the detail of a solid region.
     (Finite sampling reads both 2D slopes a little below 2, but the pile clearly tracks the patch.)
     """)
     return
@@ -1852,7 +1881,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    Same surprise as before, now in space: a pile that fills no volume yet points every way.
+    The same picture as before, now in space: a pile that fills no volume yet points every way.
     """)
     return
 
@@ -1930,7 +1959,7 @@ def _(COLORS, base_layout, fibonacci_sphere, go, np):
             mode="lines+markers",
             line={"color": COLORS["primary"], "width": 3},
             marker={"size": 9},
-            name=f"line — slope ≈ {_line_s:.2f}",
+            name=f"line, slope ≈ {_line_s:.2f}",
         )
     )
     _fig.add_trace(
@@ -1940,7 +1969,7 @@ def _(COLORS, base_layout, fibonacci_sphere, go, np):
             mode="lines+markers",
             line={"color": COLORS["secondary"], "width": 3},
             marker={"size": 9},
-            name=f"flat sheet — slope ≈ {_sheet_s:.2f}",
+            name=f"flat sheet, slope ≈ {_sheet_s:.2f}",
         )
     )
     _fig.add_trace(
@@ -1950,7 +1979,7 @@ def _(COLORS, base_layout, fibonacci_sphere, go, np):
             mode="lines+markers",
             line={"color": COLORS["accent3"], "width": 3},
             marker={"size": 9},
-            name=f"solid block — slope ≈ {_block_s:.2f}",
+            name=f"solid block, slope ≈ {_block_s:.2f}",
         )
     )
     _fig.add_trace(
@@ -1960,7 +1989,7 @@ def _(COLORS, base_layout, fibonacci_sphere, go, np):
             mode="lines+markers",
             line={"color": COLORS["quaternary"], "width": 3, "dash": "dot"},
             marker={"size": 9},
-            name=f"Besicovitch pile — slope ≈ {_kak_s:.2f}",
+            name=f"Besicovitch pile, slope ≈ {_kak_s:.2f}",
         )
     )
     _fig.update_layout(
@@ -1980,8 +2009,8 @@ def _(mo):
     mo.md(r"""
     Box-count the pile in space as the boxes shrink. On a log–log plot the line, flat sheet and
     solid block climb at rates near 1, 2 and 3, and the Besicovitch pile rides up with the solid
-    block, well clear of the flat sheet. The same surprise as the plane, one dimension up: no
-    volume, yet the detail of a solid region. (Finite sampling reads every slope a little low, but
+    block, well clear of the flat sheet. As in the plane, one dimension up: no volume, yet the
+    detail of a solid region. (Finite sampling reads every slope a little low, but
     the pile clearly tracks the block.)
     """)
     return
@@ -2212,11 +2241,12 @@ def _(mo):
     Let the pinned end slide along a line as it turns and the bushes stack into a **hairbrush**,
     pushing the bound to $5/2$ (Wolff, 1995).
 
-    The move that finally reached the full **3** is one you already know. Combing the pile
-    **sticky** (sliding the needles so that ones pointing almost the same way sit almost together)
-    is slice-and-slide one dimension up: a rearrangement that never changes a single direction, but
-    lines the tubes up so the overlap fact bites as hard as it can. In that tidy shape, and only
-    there, it forces dimension 3.
+    The step that finally reached the full **3** rhymes with a move you already know. The hardest
+    piles to rule out are the **sticky** ones: needles pointing almost the same way already sit
+    almost together, so the tubes line up and the overlap fact bites as hard as it can. That
+    lined-up shape is slice-and-slide one dimension up. The proof does not rearrange anything,
+    though: Wang and Zahl showed the sticky pile is the worst case, and that in it the tubes are
+    forced to fill dimension 3.
     """)
     return
 
@@ -2305,8 +2335,8 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
         rows=1,
         cols=2,
         subplot_titles=(
-            "Bush — pivot in place, face every direction  (dim ≥ 2)",
-            "Hairbrush — pivot while sliding along a handle  (dim ≥ 5/2)",
+            "Bush: pivot in place, face every direction  (dim ≥ 2)",
+            "Hairbrush: pivot while sliding along a handle  (dim ≥ 5/2)",
         ),
     )
     _init = _frame(0)
@@ -2501,7 +2531,7 @@ def _(mo):
     ## Fifty years of bounds, then the 2025 proof
 
     For decades the proven bound only crept: trivial 1, bush 2, Wolff's hairbrush $5/2$, then
-    Katz–Łaba–Tao just past $5/2$ (2000) — and there it stalled for a quarter-century, the summit
+    Katz–Łaba–Tao just past $5/2$ (2000), and there it stalled for a quarter-century, the summit
     at 3 out of reach. In 2025 **Hong Wang and Joshua Zahl** closed the gap with the sticky comb
     above, proving every zero-volume pile in space has dimension exactly **3**. Wang was awarded a
     Fields Medal in 2026.
@@ -2687,10 +2717,10 @@ def _(mo):
     **Background & history**
 
     - R. O. Davies, *Some remarks on the Kakeya problem*, Proc. Camb. Phil. Soc. **69**
-      (1971), 417–421 — the 2D dimension result.
+      (1971), 417–421: the 2D dimension result.
     - Terence Tao, *From rotating needles to stability of waves* (survey), Notices of
       the AMS: [terrytao.wordpress.com/kakeya.pdf](https://terrytao.wordpress.com/wp-content/uploads/2009/08/kakeya.pdf)
-    - Zeev Dvir, *On the size of Kakeya sets in finite fields* (2008) — the polynomial
+    - Zeev Dvir, *On the size of Kakeya sets in finite fields* (2008), the polynomial
       method: [arxiv.org/abs/0803.2336](https://arxiv.org/abs/0803.2336)
     - Wikipedia, *Kakeya set*:
       [en.wikipedia.org/wiki/Kakeya_set](https://en.wikipedia.org/wiki/Kakeya_set)
