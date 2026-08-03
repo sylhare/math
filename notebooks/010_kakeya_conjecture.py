@@ -217,7 +217,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## First instinct: just spin it
+    ## Just spin it
 
     The obvious move: pin the needle at its middle and spin it like a clock hand. It points
     every way, but it sweeps a whole **disk** (area $\pi/4 \approx 0.785$), and most of that
@@ -240,10 +240,27 @@ def _(COLORS, base_layout, go, np, play_pause):
     def _needle(theta):
         return [-0.5 * np.cos(theta), 0.5 * np.cos(theta)], [-0.5 * np.sin(theta), 0.5 * np.sin(theta)]
 
+    def _accum(k):
+        # Draw EVERY needle line so far, not just the current one -- the whole family of directions.
+        _xs, _ys = [], []
+        for _j in range(k + 1):
+            _x, _y = _needle(_angles[_j])
+            _xs += [_x[0], _x[1], None]
+            _ys += [_y[0], _y[1], None]
+        return go.Scatter(
+            x=_xs,
+            y=_ys,
+            mode="lines",
+            line={"color": COLORS["accent1"], "width": 1},
+            opacity=0.5,
+            showlegend=False,
+            name="every direction so far",
+        )
+
     _nx0, _ny0 = _needle(_angles[0])
 
     _fig = go.Figure()
-    _fig.add_trace(
+    _fig.add_trace(  # 0: swept disk (static)
         go.Scatter(
             x=_disk_x,
             y=_disk_y,
@@ -254,7 +271,8 @@ def _(COLORS, base_layout, go, np, play_pause):
             name="swept disk (area π/4)",
         )
     )
-    _fig.add_trace(
+    _fig.add_trace(_accum(0))  # 1: every needle line drawn so far
+    _fig.add_trace(  # 2: the current needle
         go.Scatter(
             x=_nx0,
             y=_ny0,
@@ -266,15 +284,13 @@ def _(COLORS, base_layout, go, np, play_pause):
     )
 
     _frames = []
-    for _th in _angles:
-        _nx, _ny = _needle(_th)
+    for _k in range(len(_angles)):
+        _nx, _ny = _needle(_angles[_k])
         _frames.append(
             go.Frame(
-                data=[
-                    go.Scatter(x=_disk_x, y=_disk_y),
-                    go.Scatter(x=_nx, y=_ny),
-                ],
-                name=f"{np.degrees(_th):.0f}",
+                data=[_accum(_k), go.Scatter(x=_nx, y=_ny)],
+                traces=[1, 2],
+                name=f"{np.degrees(_angles[_k]):.0f}",
             )
         )
     _fig.frames = _frames
@@ -295,8 +311,10 @@ def _(COLORS, base_layout, go, np, play_pause):
 @app.cell
 def _(mo):
     mo.md(r"""
-    A needle pivots about its centre and fills a disk. It faces every direction, but the whole
-    disk gets painted, area π/4. This is the baseline everything below has to beat.
+    A needle pivots about its centre and fills a disk. Every position it passes through is drawn,
+    so you see the whole family of directions at once, not just one needle. It faces every
+    direction, but the whole disk gets painted, area π/4. This is the baseline everything below
+    has to beat.
     """)
     return
 
@@ -586,9 +604,11 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    Both cheats are the same move in disguise: **one single needle dragged continuously across the
-    table**, whether we push the needle or spin the table under it. So let's ask what a single
-    needle can legally do well, and then whether we should keep insisting on a single needle at all.
+    Both cheats are the same move in disguise: **one needle dragged continuously across the
+    table**, whether we push the needle or spin the table under it. Moving one needle is all we
+    have tried, and it has not helped. But a moving needle can do two genuinely useful things we
+    have not used yet, **first a slide, then a slice**, and together they change the game. Only
+    then will we ask whether we need to move at all.
     """)
     return
 
@@ -596,10 +616,11 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## The first real trick: sliding is free
+    ## Sliding is free
 
-    Here is a move that's legal and costs nothing: **slide the needle along its own length.** It
-    just retraces the line it already sits on, so it paints no new area. Free repositioning.
+    **The first move.** Here is something legal that costs nothing: **slide the needle along its
+    own length.** It just retraces the line it already sits on, so it paints no new area, a free
+    repositioning.
 
     So don't only pivot, *slide as you turn*. Ride the needle around the inside of a curved shape
     (a **deltoid**) and it faces every direction using only $\pi/8 \approx 0.393$, half the disk.
@@ -629,10 +650,28 @@ def _(COLORS, base_layout, go, np, play_pause):
     _bx, _by = _deltoid_pt(_bt)
 
     _angles = np.linspace(0, 2 * np.pi, 37)
+
+    def _accum(k):
+        # Draw EVERY tangent-chord needle so far -- the whole family of directions filling the deltoid.
+        _xs, _ys = [], []
+        for _j in range(k + 1):
+            _x, _y = _tangent_chord(_angles[_j])
+            _xs += [_x[0], _x[1], None]
+            _ys += [_y[0], _y[1], None]
+        return go.Scatter(
+            x=_xs,
+            y=_ys,
+            mode="lines",
+            line={"color": COLORS["accent1"], "width": 1},
+            opacity=0.5,
+            showlegend=False,
+            name="every direction so far",
+        )
+
     _nx0, _ny0 = _tangent_chord(_angles[0])
 
     _fig = go.Figure()
-    _fig.add_trace(
+    _fig.add_trace(  # 0: deltoid outline (static)
         go.Scatter(
             x=_bx,
             y=_by,
@@ -643,7 +682,8 @@ def _(COLORS, base_layout, go, np, play_pause):
             name="deltoid (area π/8)",
         )
     )
-    _fig.add_trace(
+    _fig.add_trace(_accum(0))  # 1: every tangent-chord needle so far
+    _fig.add_trace(  # 2: the current needle
         go.Scatter(
             x=_nx0,
             y=_ny0,
@@ -655,10 +695,14 @@ def _(COLORS, base_layout, go, np, play_pause):
     )
 
     _frames = []
-    for _th in _angles:
-        _nx, _ny = _tangent_chord(_th)
+    for _k in range(len(_angles)):
+        _nx, _ny = _tangent_chord(_angles[_k])
         _frames.append(
-            go.Frame(data=[go.Scatter(x=_bx, y=_by), go.Scatter(x=_nx, y=_ny)], name=f"{np.degrees(_th):.0f}")
+            go.Frame(
+                data=[_accum(_k), go.Scatter(x=_nx, y=_ny)],
+                traces=[1, 2],
+                name=f"{np.degrees(_angles[_k]):.0f}",
+            )
         )
     _fig.frames = _frames
 
@@ -679,9 +723,10 @@ def _(COLORS, base_layout, go, np, play_pause):
 def _(mo):
     mo.md(r"""
     The needle stays a tangent chord of the deltoid, turning through every direction while
-    sliding along its own length. Each slide reuses table it has already covered instead of
-    painting fresh, and that reuse is the whole saving: the same directions as the disk, in half
-    the area.
+    sliding along its own length. Every position is drawn, so you see the whole family of
+    directions filling the deltoid, not just one needle. Each slide reuses table it has already
+    covered instead of painting fresh, and that reuse is the saving: the same directions as the
+    disk, in half the area.
     """)
     return
 
@@ -689,17 +734,17 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Share the reuse between directions: slice and slide
+    ## Slice and slide
 
-    So far only a single needle reuses its own track, and that alone halved the disk. The real
-    prize is letting *different* directions share ground too.
+    **The second move, and it is the first one scaled up.** Sliding let a single needle reuse its
+    *own* track, and that alone halved the disk. Now let *different* directions share a track too.
 
-    Think of a **triangle** as a bundle of directions: a needle swung inside it points across
-    every angle between its two sides, so one triangle already holds a whole fan of needles. Cut
-    that **triangular patch of table** down the middle (the patch, not the needle) into two
-    thinner triangles, and **slide them until they overlap.** Each half carries its needles along
-    unchanged, so together they still cover the whole fan, but the overlap is table counted once
-    instead of twice, so the footprint shrinks.
+    Think of a **triangle** as one needle pivoting about its top tip: swung between the two sides
+    it points across a whole fan of directions, and at every angle it is the **same length**. So
+    one triangle already holds that fan of needles. Cut that **triangular patch of table** down
+    the middle (the patch, not the needle) into two thinner triangles, and **slide them until they
+    overlap.** Each half carries its fan along unchanged, so together they still cover the whole
+    fan, but the overlap is table counted once instead of twice, so the footprint shrinks.
     """)
     return
 
@@ -744,15 +789,21 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         _ins = _in_triangle(_GX, _GY, _shift(_left, s)) | _in_triangle(_GX, _GY, _shift(_right, -s))
         return float(_ins.sum() * _cell)
 
-    # A few BOLD needles inside each half -- a small fan of directions. Each rides rigidly
-    # with its half: it starts on one side and lands on the other, angle unchanged.
-    _tips = np.array([0.35, 0.7, 0.95])
+    # A triangle stands for ONE needle pivoting about its top tip (the apex): swung through the
+    # fan between the two sides, it points across a range of directions, EVERY position the same
+    # length. So the bold needles below all share one length _L and only differ in angle; each
+    # rides rigidly with its half as it slides, so its length and direction never change.
+    _apex_y = 1.0
+    _L = 0.95  # every drawn needle has this same length
+    # The directions each half covers: from the apex to its two base corners.
+    _left_angs = np.linspace(np.arctan2(-1.0, -0.5), np.arctan2(-1.0, 0.0), 3)
+    _right_angs = np.linspace(np.arctan2(-1.0, 0.0), np.arctan2(-1.0, 0.5), 3)
 
-    def _needles(base_x, edge_x, s):
+    def _needles(apex_x, angs):
         _xs, _ys_out = [], []
-        for _y in _tips:
-            _xs += [base_x + s, edge_x + s, None]
-            _ys_out += [0.0, _y, None]
+        for _a in angs:
+            _xs += [apex_x, apex_x + _L * np.cos(_a), None]
+            _ys_out += [_apex_y, _apex_y + _L * np.sin(_a), None]
         return _xs, _ys_out
 
     def _outline(tri):
@@ -784,6 +835,23 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
             name="needles",
         )
 
+    def _arrows(apex_x, angs, col):
+        # Arrowheads at each needle tip, angled along the needle so its DIRECTION is visible and
+        # stays fixed as the half slides. Marker angle is clockwise from "up", so 90 - heading.
+        _tx = [apex_x + _L * np.cos(_a) for _a in angs]
+        _ty = [_apex_y + _L * np.sin(_a) for _a in angs]
+        _headings = np.degrees(angs)
+        return go.Scatter(
+            x=_tx,
+            y=_ty,
+            mode="markers",
+            marker={"symbol": "arrow", "size": 13, "angle": list(90.0 - _headings), "angleref": "up", "color": col},
+            xaxis="x",
+            yaxis="y",
+            showlegend=False,
+            name="direction",
+        )
+
     def _label_trace(text):
         return go.Scatter(
             x=[0.5],
@@ -797,14 +865,16 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         )
 
     def _frame_traces(s, label):
-        _lx, _lyy = _needles(0.0, 0.5, s)
-        _rx, _ryy = _needles(1.0, 0.5, -s)
+        _lx, _lyy = _needles(0.5 + s, _left_angs)
+        _rx, _ryy = _needles(0.5 - s, _right_angs)
         _area = _union_area(s)
         return [
             _tri_trace(_shift(_left, s), COLORS["primary"], "rgba(0, 212, 255, 0.28)"),
             _tri_trace(_shift(_right, -s), COLORS["secondary"], "rgba(255, 107, 107, 0.28)"),
             _needle_trace(_lx, _lyy, COLORS["accent1"]),
             _needle_trace(_rx, _ryy, COLORS["quaternary"]),
+            _arrows(0.5 + s, _left_angs, COLORS["accent1"]),
+            _arrows(0.5 - s, _right_angs, COLORS["quaternary"]),
             _label_trace(label),
             go.Scatter(
                 x=[s],
@@ -829,8 +899,8 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
 
     # Frame schedule: first a "slice" phase (halves sit slightly apart so you see the cut),
     # then a "slide" phase (halves close in and overlap). s < 0 = apart, s > 0 = overlapping.
-    _slice_label = "1. Slice the triangle down the middle → two halves"
-    _slide_label = "2. Slide the halves together → they overlap, area shrinks"
+    _slice_label = "1. Slice"
+    _slide_label = "2. Slide & overlap"
     _steps = [(_sv, _slice_label) for _sv in np.linspace(-0.09, 0.0, 6)]
     _steps += [(_sv, _slide_label) for _sv in np.linspace(0.0, 0.25, 22)[1:]]
 
@@ -866,8 +936,10 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
     _fig.add_trace(_init[1], row=1, col=1)  # 2: right half
     _fig.add_trace(_init[2], row=1, col=1)  # 3: left needles
     _fig.add_trace(_init[3], row=1, col=1)  # 4: right needles
-    _fig.add_trace(_init[4], row=1, col=1)  # 5: phase label
-    _fig.add_trace(  # 6: static area curve
+    _fig.add_trace(_init[4], row=1, col=1)  # 5: left direction arrows
+    _fig.add_trace(_init[5], row=1, col=1)  # 6: right direction arrows
+    _fig.add_trace(_init[6], row=1, col=1)  # 7: phase label
+    _fig.add_trace(  # 8: static area curve
         go.Scatter(
             x=_curve_s,
             y=_curve_a,
@@ -878,11 +950,11 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         row=1,
         col=2,
     )
-    _fig.add_trace(_init[5], row=1, col=2)  # 7: moving star
-    _fig.add_trace(_init[6], row=1, col=2)  # 8: area readout
+    _fig.add_trace(_init[7], row=1, col=2)  # 9: moving star
+    _fig.add_trace(_init[8], row=1, col=2)  # 10: area readout
 
     _fig.frames = [
-        go.Frame(data=_frame_traces(_sv, _lbl), traces=[1, 2, 3, 4, 5, 7, 8], name=str(_i))
+        go.Frame(data=_frame_traces(_sv, _lbl), traces=[1, 2, 3, 4, 5, 6, 7, 9, 10], name=str(_i))
         for _i, (_sv, _lbl) in enumerate(_steps)
     ]
 
@@ -905,8 +977,12 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
 @app.cell
 def _(mo):
     mo.md(r"""
-    Cut the triangle in half and slide the halves over each other. Each needle keeps its angle
-    the whole way, yet the shared footprint shrinks because the overlap is counted once.
+    The animation cuts the triangle in half and slides the halves over each other. Watch the
+    **arrows**: they mark each needle's direction, and they never budge as the halves move. So
+    every direction is still there at the end, yet the area readout on the right keeps dropping.
+    The reason is the overlap: where the two halves cover the same patch of table, that patch is
+    counted once but reused by needles pointing several different ways at once. Shared table is
+    saved table.
     """)
     return
 
@@ -914,11 +990,16 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    **Why this is real progress.** The two overlapped halves still point across *every* direction
-    the original triangle held, yet they cover *less table*. That is a legal cut in area, not a
-    trick of leaving the plane (cheat 1) or spinning the world (cheat 2): area down, every
-    direction kept. And it compounds. Slice each piece again and slide again (the **Perron tree**)
-    and the area keeps falling. So how small can it get?
+    **The two moves are one idea.** Sliding lets a needle reuse its own track; slicing lets
+    different directions share a track. Both work for the same reason: **moving a piece never
+    changes the directions inside it**, so the footprint can shrink while every direction stays put
+    (no leaving the plane, no spinning the world). And it compounds: slice each piece again and
+    slide again (the **Perron tree**), and the area keeps falling.
+
+    We have shrunk the *table* the needle would need. But we did it by sliding patches around, not
+    by turning a needle. The original 1917 question was about an actual needle sweeping through
+    every direction. Does a real needle fit inside this shrunken region, and can it turn all the
+    way around in there?
     """)
     return
 
@@ -926,410 +1007,12 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## …but it never quite hits zero
-
-    As small as you like: a millionth of the disk, a billionth, smaller. And yet **never exactly
-    zero**, because a sliver of area always stays behind, no matter how fine the slices.
-
-    Here is the reason, and it is the crux of the whole problem. To *turn*, a needle moves
-    continuously: its 31° pose has to sit right next to its 30° pose, so it must sweep every
-    position in between, and that swept-through ground is exactly the sliver that never vanishes.
-
-    > **Turning forces the needle through every position in between, and sweeping them costs area.
-    > Motion itself is what pins the area above zero.**
-
-    Which points straight at the only way out: stop moving.
-    """)
-    return
-
-
-@app.cell
-def _(COLORS, base_layout, go, np, perron_stages, play_pause, union_area):
-    # Area, never zero: build a Perron tree and, across frames of increasing subdivision, plot
-    # the tree of triangles with a running (rasterised) area readout. Slicing shrinks the area
-    # toward -- but never onto -- zero, because moving a real needle always leaves a sliver.
-    _pbase = [np.array([[-0.55, -0.5], [0.55, -0.5], [0.0, 0.5]])]
-    _stages = perron_stages(_pbase, levels=5)
-
-    _gx = np.linspace(-0.9, 0.9, 220)
-    _gy = np.linspace(-0.7, 0.7, 200)
-    _GX, _GY = np.meshgrid(_gx, _gy)
-
-    def _tree_trace(tris):
-        _x, _y = [], []
-        for _t in tris:
-            _x += [_t[0, 0], _t[1, 0], _t[2, 0], _t[0, 0], None]
-            _y += [_t[0, 1], _t[1, 1], _t[2, 1], _t[0, 1], None]
-        return go.Scatter(
-            x=_x,
-            y=_y,
-            mode="lines",
-            fill="toself",
-            fillcolor="rgba(149, 225, 211, 0.22)",
-            line={"color": COLORS["accent1"], "width": 1},
-            showlegend=False,
-            name="Perron tree",
-        )
-
-    def _readout(tris, level):
-        _a = union_area(tris, _GX, _GY)
-        return go.Scatter(
-            x=[0.0],
-            y=[0.62],
-            mode="text",
-            text=[f"<b>level {level} · {len(tris)} pieces · area ≈ {_a:.3f}</b>"],
-            textfont={"color": COLORS["highlight"], "size": 15},
-            showlegend=False,
-        )
-
-    _tris0, _lvl0 = _stages[0]
-    _fig = go.Figure()
-    _fig.add_trace(_tree_trace(_tris0))  # 0
-    _fig.add_trace(_readout(_tris0, _lvl0))  # 1
-
-    _fig.frames = [
-        go.Frame(data=[_tree_trace(_tris), _readout(_tris, _lvl)], traces=[0, 1], name=str(_i))
-        for _i, (_tris, _lvl) in enumerate(_stages)
-    ]
-
-    _fig.update_layout(**base_layout(title="Area, never zero", height=470))
-    _fig.update_xaxes(
-        range=[-0.9, 0.9],
-        scaleanchor="y",
-        constrain="domain",
-        gridcolor=COLORS["grid"],
-        zerolinecolor=COLORS["grid"],
-        showticklabels=False,
-    )
-    _fig.update_yaxes(range=[-0.7, 0.75], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
-    _fig.update_layout(updatemenus=play_pause("▶ Slice finer"))
-    _fig
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    As the slice count climbs, the running area readout falls and falls but never reaches 0.
-    The last sliver is exactly what the next idea removes.
-    """)
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    ## The leap: stop moving the needle at all
-
-    Here's the move that changes everything: **stop turning one needle.** Instead, put down a
-    *separate* needle for each direction, all at once, and look at the whole collection together.
-    A needle at 0°, another at 1°, another at 89°, and so on, like a boxful of matchsticks tossed
-    on the table so that between them they point every possible way. (A true such set needs one for
-    *every* direction, a whole continuum, but the boxful is the picture to hold.)
-    """)
-    return
-
-
-@app.cell
-def _(COLORS, base_layout, go, np):
-    # A STILL schema (no animation): a handful of needles, one per direction, laid out separately.
-    # This is "the form" -- a collection of needles, one per angle -- that the next animation then
-    # slides together. Just the picture; nothing moves here.
-    _angs = [0, 30, 60, 90, 120, 150]
-    _cols = [
-        COLORS["primary"], COLORS["secondary"], COLORS["accent1"],
-        COLORS["accent3"], COLORS["quaternary"], COLORS["tertiary"],
-    ]
-    _centres = [(-1.4, 0.55), (0.0, 0.55), (1.4, 0.55), (-1.4, -0.75), (0.0, -0.75), (1.4, -0.75)]
-    _fig = go.Figure()
-    for _adeg, _ctr, _col in zip(_angs, _centres, _cols):
-        _t = np.radians(_adeg)
-        _cx, _cy = _ctr
-        _fig.add_trace(
-            go.Scatter(
-                x=[_cx - 0.45 * np.cos(_t), _cx + 0.45 * np.cos(_t)],
-                y=[_cy - 0.45 * np.sin(_t), _cy + 0.45 * np.sin(_t)],
-                mode="lines", line={"color": _col, "width": 6}, showlegend=False,
-            )
-        )
-        _fig.add_trace(
-            go.Scatter(
-                x=[_cx], y=[_cy - 0.62], mode="text", text=[f"{_adeg}°"],
-                textfont={"color": COLORS["text_secondary"], "size": 15}, showlegend=False,
-            )
-        )
-    _fig.update_layout(**base_layout(title="One needle per direction", height=360))
-    _fig.update_xaxes(
-        range=[-2.2, 2.2], scaleanchor="y", constrain="domain",
-        showgrid=False, zeroline=False, showticklabels=False,
-    )
-    _fig.update_yaxes(range=[-1.6, 1.15], showgrid=False, zeroline=False, showticklabels=False)
-    _fig
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    Six needles, six directions, just lying there. Nothing is turning, and nothing is even a
-    single object anymore. So the old knot, *how can it change direction without moving?*, has
-    nothing to grab: there is no "it" to change. There is simply a needle at 30° and, separately,
-    a needle at 31°.
-
-    Now bring back the free slide, with no motion to pay for. Each needle is one-dimensional, a
-    full inch long but with no width at all, and sliding it never changes the way it points. Slide
-    them all to overlap as much as possible: each stays a full inch long, so the collection still
-    spans about a needle's length, but the shared ground is counted once, so the footprint shrinks.
-    With no continuous path to keep, nothing stops it going all the way to zero, while a needle
-    still points in every direction. Reaching *exactly* zero, not merely as-small-as-you-like, is
-    what turns this from a measuring contest into a much stranger question.
-    """)
-    return
-
-
-@app.cell
-def _(COLORS, base_layout, go, np):
-    # "Overlap every direction": one needle per direction, laid down at once. Each needle keeps its
-    # ANGLE throughout; only its CENTRE moves. Centres start spread on a ring of radius R and slide
-    # to R ~ 0, so the needles pile onto each other. A running area readout (rasterised
-    # point-in-rectangle mask) shows the union footprint collapsing as the overlaps -- counted once
-    # -- take over. Many frames + slow playback + a phase label so the collapse is easy to follow.
-    _N = 48
-    _dirs = np.linspace(0.0, np.pi, _N, endpoint=False)
-    _ux, _uy = np.cos(_dirs), np.sin(_dirs)  # needle axis (direction), fixed per needle
-    _w = 0.05  # needle thickness
-    _half = 0.5  # half length -> unit needle
-
-    # Spread the centres around a full ring so they start well separated.
-    _cang = 2.0 * _dirs
-    _cdx, _cdy = np.cos(_cang), np.sin(_cang)
-
-    _gx = np.linspace(-1.8, 1.8, 240)
-    _gy = np.linspace(-1.8, 1.8, 240)
-    _GX, _GY = np.meshgrid(_gx, _gy)
-    _cellA = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
-
-    def _union_area(R):
-        _mask = np.zeros(_GX.shape, dtype=bool)
-        for _i in range(_N):
-            _cx, _cy = R * _cdx[_i], R * _cdy[_i]
-            _dx, _dy = _GX - _cx, _GY - _cy
-            _along = _dx * _ux[_i] + _dy * _uy[_i]
-            _perp = -_dx * _uy[_i] + _dy * _ux[_i]
-            _mask |= (np.abs(_along) <= _half) & (np.abs(_perp) <= _w / 2)
-        return float(_mask.sum() * _cellA)
-
-    def _needle_trace(R):
-        _xs, _ys = [], []
-        for _i in range(_N):
-            _cx, _cy = R * _cdx[_i], R * _cdy[_i]
-            _xs += [_cx - _half * _ux[_i], _cx + _half * _ux[_i], None]
-            _ys += [_cy - _half * _uy[_i], _cy + _half * _uy[_i], None]
-        return go.Scatter(
-            x=_xs, y=_ys, mode="lines", line={"color": COLORS["primary"], "width": 2},
-            opacity=0.75, showlegend=False, name="needles",
-        )
-
-    def _readout(R):
-        return go.Scatter(
-            x=[0.0], y=[1.62], mode="text",
-            text=[f"footprint area ≈ {_union_area(R):.2f}"],
-            textfont={"color": COLORS["highlight"], "size": 16}, showlegend=False,
-        )
-
-    # Hold at the start and end, and step R slowly in between, so the collapse is legible.
-    _Rs = np.concatenate([np.full(3, 1.15), np.linspace(1.15, 0.05, 34), np.full(4, 0.05)])
-
-    _fig = go.Figure()
-    _fig.add_trace(_needle_trace(_Rs[0]))  # 0
-    _fig.add_trace(_readout(_Rs[0]))  # 1
-
-    _fig.frames = [
-        go.Frame(data=[_needle_trace(_R), _readout(_R)], traces=[0, 1], name=str(_i)) for _i, _R in enumerate(_Rs)
-    ]
-
-    _fig.update_layout(**base_layout(title="Overlap every direction", height=560))
-    _fig.update_xaxes(
-        range=[-1.8, 1.8], scaleanchor="y", constrain="domain",
-        gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False,
-    )
-    _fig.update_yaxes(range=[-1.8, 1.85], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
-    _fig.update_layout(updatemenus=[{
-        "type": "buttons", "showactive": False, "y": 1.1, "x": 0.5, "xanchor": "center",
-        "buttons": [
-            {"label": "▶ Slide them together", "method": "animate",
-             "args": [None, {"frame": {"duration": 200, "redraw": True}, "fromcurrent": True,
-                             "transition": {"duration": 150}}]},
-            {"label": "❚❚ Pause", "method": "animate",
-             "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}]},
-        ],
-    }])
-    _fig
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    One needle per direction, laid down at once, then slid to overlap as much as possible. Every
-    needle keeps its direction, so all directions remain. The set still reaches about as far as a
-    single needle, but its overlaps are counted once, so the footprint keeps dropping as they pile
-    up (the readout tracks it), reaching exactly zero in the continuum limit of one needle for
-    every direction:
-
-    $$K \subset \mathbb{R}^2, \quad \text{a unit segment in every direction}, \quad |K| = 0$$
-    """)
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    ## Move it, or drop it
-
-    Set the two extremes side by side. Turn one needle through every direction and it scorches a
-    whole disk. Drop a separate needle for every direction and the pile scorches almost nothing.
-    Same directions covered either way; the only difference is whether motion was ever required,
-    and that difference is the whole story.
-    """)
-    return
-
-
-@app.cell
-def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
-    # Move vs. drop. LEFT: one needle turns through every direction and ACCUMULATES a solid
-    # scorch trail -> it paints the whole disk (positive area, pi/4). RIGHT: the same set of
-    # directions dropped all at once as a static overlapped pile through one point -> a bush
-    # whose footprint is essentially zero. Same directions covered; only motion is different.
-    _n = 48
-    _ang = np.linspace(0, np.pi, _n)
-
-    def _diam(k):
-        _c, _s = np.cos(_ang[k]), np.sin(_ang[k])
-        return [-0.5 * _c, 0.5 * _c], [-0.5 * _s, 0.5 * _s]
-
-    def _accum(k):
-        _xs, _ys = [], []
-        for _j in range(k + 1):
-            _x, _y = _diam(_j)
-            _xs += [_x[0], _x[1], None]
-            _ys += [_y[0], _y[1], None]
-        return go.Scatter(
-            x=_xs,
-            y=_ys,
-            mode="lines",
-            line={"color": COLORS["primary"], "width": 1},
-            opacity=0.4,
-            xaxis="x",
-            yaxis="y",
-            showlegend=False,
-            name="scorch",
-        )
-
-    def _cur(k):
-        _x, _y = _diam(k)
-        return go.Scatter(
-            x=_x,
-            y=_y,
-            mode="lines",
-            line={"color": COLORS["secondary"], "width": 5},
-            xaxis="x",
-            yaxis="y",
-            showlegend=False,
-            name="needle",
-        )
-
-    # Right panel: the static pile -- one thin needle per direction, all through the origin.
-    _pile_x, _pile_y = [], []
-    for _a in _ang:
-        _pile_x += [-0.5 * np.cos(_a), 0.5 * np.cos(_a), None]
-        _pile_y += [-0.5 * np.sin(_a), 0.5 * np.sin(_a), None]
-
-    _fig = make_subplots(
-        rows=1,
-        cols=2,
-        subplot_titles=("Move: one needle, solid scorch trail (area π/4)", "Drop: static pile, footprint ≈ 0"),
-    )
-
-    _dt = np.linspace(0, 2 * np.pi, 200)
-    _fig.add_trace(  # 0: disk outline (static)
-        go.Scatter(
-            x=0.5 * np.cos(_dt),
-            y=0.5 * np.sin(_dt),
-            mode="lines",
-            fill="toself",
-            fillcolor="rgba(0, 212, 255, 0.10)",
-            line={"color": COLORS["grid"], "width": 1.5},
-            xaxis="x",
-            yaxis="y",
-            showlegend=False,
-            name="disk",
-        ),
-        row=1,
-        col=1,
-    )
-    _fig.add_trace(_accum(0), row=1, col=1)  # 1
-    _fig.add_trace(_cur(0), row=1, col=1)  # 2
-    _fig.add_trace(  # 3: static pile
-        go.Scatter(
-            x=_pile_x,
-            y=_pile_y,
-            mode="lines",
-            line={"color": COLORS["accent1"], "width": 1},
-            opacity=0.75,
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-            name="pile",
-        ),
-        row=1,
-        col=2,
-    )
-    _fig.add_trace(  # 4: common point
-        go.Scatter(
-            x=[0],
-            y=[0],
-            mode="markers",
-            marker={"color": COLORS["quaternary"], "size": 8},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        ),
-        row=1,
-        col=2,
-    )
-
-    _fig.frames = [go.Frame(data=[_accum(_k), _cur(_k)], traces=[1, 2], name=str(_k)) for _k in range(1, _n)]
-
-    _fig.update_layout(**base_layout(title="Move vs. drop", height=440))
-    _fig.update_xaxes(range=[-0.7, 0.7], row=1, col=1, scaleanchor="y", constrain="domain")
-    _fig.update_yaxes(range=[-0.7, 0.7], row=1, col=1)
-    _fig.update_xaxes(range=[-0.7, 0.7], row=1, col=2, scaleanchor="y2", constrain="domain")
-    _fig.update_yaxes(range=[-0.7, 0.7], row=1, col=2)
-    style_subplot_axes(_fig)
-    _fig.update_layout(updatemenus=play_pause("▶ Turn the needle"))
-    _fig
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    Left: one needle turns and leaves a solid scorch trail, positive area. Right: the same
-    directions dropped all at once as a static pile, zero footprint. Same directions covered;
-    the only difference is whether motion was required.
-    """)
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    You can still move one real needle, if you insist, and come within a whisker of zero. Thread
-    thin lanes, the **corridors** (Pál's *joins*), between the overlapping triangles of the tree:
-    the needle makes its small turn inside one triangle, then slides down a corridor to the next.
-    The lanes are so thin they add almost no area, so a real needle turns through every direction
-    inside a region as small as you like, though, being a moving needle again, never exactly zero.
+    It does. Here is a real needle actually **turning** through every direction inside that
+    shrinking region. Iterate slice-and-slide into a full **Perron tree**, and thread thin
+    **corridors** (Pál's *joins*) between the pieces so the needle can cross from one to the next:
+    it makes each small turn inside a piece, slides down a corridor, and turns again. It covers
+    every direction while sweeping only a tiny area, smaller with every extra slice. This is the
+    original 1917 question answered, a real needle turning in almost no area.
     """)
     return
 
@@ -1386,8 +1069,6 @@ def _(COLORS, base_layout, go, np):
             )
         return float(_mask.sum() * _cellA)
 
-    _naive = _swept_area(_build(0))
-
     def _u(t):
         return np.array([np.cos(t), np.sin(t)])
 
@@ -1423,7 +1104,7 @@ def _(COLORS, base_layout, go, np):
             x=[0.0],
             y=[1.3],
             mode="text",
-            text=[f"<b>{2**level} slices · swept area ≈ {area:.2f}  (one plain fan ≈ {_naive:.2f})</b>"],
+            text=[f"<b>{2**level} slices · area ≈ {area:.2f}</b>"],
             textfont={"color": COLORS["text"], "size": 13},
             showlegend=False,
         )
@@ -1488,7 +1169,7 @@ def _(COLORS, base_layout, go, np):
         }
     ]
 
-    _fig.update_layout(**base_layout(title="Turning for real", height=470))
+    _fig.update_layout(**base_layout(title="A real needle, turning", height=470))
     _fig.update_xaxes(
         range=[-1.15, 1.15],
         scaleanchor="y",
@@ -1518,8 +1199,10 @@ def _(COLORS, base_layout, go, np):
 @app.cell
 def _(mo):
     mo.md(r"""
-    A real needle turns inside a Perron tree, making each small turn in a thin triangle and
-    sliding along a corridor to the next, so it covers every direction inside a tiny area.
+    The needle makes each small turn inside one thin fan, then slides along its own length to the
+    next. The fans overlap, so the region it needs is far smaller than a plain spin, and the area
+    readout drops with every extra slice. Each added slice buys a smaller region, and nothing in
+    the construction says where to stop. So how small can it get?
     """)
     return
 
@@ -1527,7 +1210,315 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Pushed further: area is the wrong ruler
+    ## …but it never quite hits zero
+
+    As small as you like: a millionth of the disk, a billionth, smaller. And yet **never exactly
+    zero**, because a sliver of area always stays behind, no matter how fine the slices.
+
+    Here is the reason, and it is the crux of the whole problem. To *turn*, a needle moves
+    continuously: its 31° pose has to sit right next to its 30° pose, so it must sweep every
+    position in between, and that swept-through ground is exactly the sliver that never vanishes.
+
+    > **Turning forces the needle through every position in between, and sweeping them costs area.
+    > Motion itself is what pins the area above zero.**
+
+    Which points straight at the only way out: stop moving.
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, np, perron_stages, play_pause, union_area):
+    # Area, never zero: build a Perron tree and, across frames of increasing subdivision, plot
+    # the tree of triangles with a running (rasterised) area readout. Slicing shrinks the area
+    # toward -- but never onto -- zero, because moving a real needle always leaves a sliver.
+    _pbase = [np.array([[-0.55, -0.5], [0.55, -0.5], [0.0, 0.5]])]
+    _stages = perron_stages(_pbase, levels=5)
+
+    _gx = np.linspace(-0.9, 0.9, 220)
+    _gy = np.linspace(-0.7, 0.7, 200)
+    _GX, _GY = np.meshgrid(_gx, _gy)
+
+    def _tree_trace(tris):
+        _x, _y = [], []
+        for _t in tris:
+            _x += [_t[0, 0], _t[1, 0], _t[2, 0], _t[0, 0], None]
+            _y += [_t[0, 1], _t[1, 1], _t[2, 1], _t[0, 1], None]
+        return go.Scatter(
+            x=_x,
+            y=_y,
+            mode="lines",
+            fill="toself",
+            fillcolor="rgba(149, 225, 211, 0.22)",
+            line={"color": COLORS["accent1"], "width": 1},
+            showlegend=False,
+            name="Perron tree",
+        )
+
+    def _readout(tris, level):
+        _a = union_area(tris, _GX, _GY)
+        return go.Scatter(
+            x=[0.0],
+            y=[0.62],
+            mode="text",
+            text=[f"<b>level {level} · area ≈ {_a:.3f}</b>"],
+            textfont={"color": COLORS["highlight"], "size": 15},
+            showlegend=False,
+        )
+
+    _tris0, _lvl0 = _stages[0]
+    _fig = go.Figure()
+    _fig.add_trace(_tree_trace(_tris0))  # 0
+    _fig.add_trace(_readout(_tris0, _lvl0))  # 1
+
+    _fig.frames = [
+        go.Frame(data=[_tree_trace(_tris), _readout(_tris, _lvl)], traces=[0, 1], name=str(_i))
+        for _i, (_tris, _lvl) in enumerate(_stages)
+    ]
+
+    _fig.update_layout(**base_layout(title="Area, never zero", height=470))
+    _fig.update_xaxes(
+        range=[-0.9, 0.9],
+        scaleanchor="y",
+        constrain="domain",
+        gridcolor=COLORS["grid"],
+        zerolinecolor=COLORS["grid"],
+        showticklabels=False,
+    )
+    _fig.update_yaxes(range=[-0.7, 0.75], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
+    _fig.update_layout(updatemenus=play_pause("▶ Slice finer"))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    As the slice count climbs, the running area readout falls and falls but never reaches 0.
+    The last sliver is exactly what the next idea removes.
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ## Stop moving the needle at all
+
+    Here's the move that changes everything: **stop turning one needle.** Instead, put down a
+    *separate* needle for each direction, all at once, and look at the whole collection together.
+    A needle at 0°, another at 1°, another at 89°, and so on, like a boxful of matchsticks tossed
+    on the table so that between them they point every possible way. (A true such set needs one for
+    *every* direction, a whole continuum, but the boxful is the picture to hold.)
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, np):
+    # A STILL schema (no animation): a handful of needles, one per direction, laid out separately.
+    # This is "the form" -- a collection of needles, one per angle -- that the next animation then
+    # slides together. Just the picture; nothing moves here.
+    _angs = [0, 30, 60, 90, 120, 150]
+    _cols = [
+        COLORS["primary"],
+        COLORS["secondary"],
+        COLORS["accent1"],
+        COLORS["accent3"],
+        COLORS["quaternary"],
+        COLORS["tertiary"],
+    ]
+    _centres = [(-1.4, 0.55), (0.0, 0.55), (1.4, 0.55), (-1.4, -0.75), (0.0, -0.75), (1.4, -0.75)]
+    _fig = go.Figure()
+    for _adeg, _ctr, _col in zip(_angs, _centres, _cols):
+        _t = np.radians(_adeg)
+        _cx, _cy = _ctr
+        _fig.add_trace(
+            go.Scatter(
+                x=[_cx - 0.45 * np.cos(_t), _cx + 0.45 * np.cos(_t)],
+                y=[_cy - 0.45 * np.sin(_t), _cy + 0.45 * np.sin(_t)],
+                mode="lines",
+                line={"color": _col, "width": 6},
+                showlegend=False,
+            )
+        )
+        _fig.add_trace(
+            go.Scatter(
+                x=[_cx],
+                y=[_cy - 0.62],
+                mode="text",
+                text=[f"{_adeg}°"],
+                textfont={"color": COLORS["text_secondary"], "size": 15},
+                showlegend=False,
+            )
+        )
+    _fig.update_layout(**base_layout(title="One needle per direction", height=360))
+    _fig.update_xaxes(
+        range=[-2.2, 2.2],
+        scaleanchor="y",
+        constrain="domain",
+        showgrid=False,
+        zeroline=False,
+        showticklabels=False,
+    )
+    _fig.update_yaxes(range=[-1.6, 1.15], showgrid=False, zeroline=False, showticklabels=False)
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    Six needles, six directions, just lying there. Nothing is turning, and nothing is even a
+    single object anymore. So the old knot, *how can it change direction without moving?*, has
+    nothing to grab: there is no "it" to change. There is simply a needle at 30° and, separately,
+    a needle at 31°.
+
+    Now bring back the free slide, with no motion to pay for. Each needle is one-dimensional, a
+    full inch long but with no width at all, and sliding it never changes the way it points. Slide
+    them all to overlap as much as possible: each stays a full inch long, so the collection still
+    spans about a needle's length, but the shared ground is counted once, so the footprint shrinks.
+    With no continuous path to keep, nothing stops it going all the way to zero, while a needle
+    still points in every direction. Reaching *exactly* zero, not merely as-small-as-you-like, is
+    what turns this from a measuring contest into a much stranger question.
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, np):
+    # "Overlap every direction": one needle per direction, laid down at once. Each needle keeps its
+    # ANGLE throughout; only its CENTRE moves. Centres start spread on a ring of radius R and slide
+    # to R ~ 0, so the needles pile onto each other. A running area readout (rasterised
+    # point-in-rectangle mask) shows the union footprint collapsing as the overlaps -- counted once
+    # -- take over. Many frames + slow playback + a phase label so the collapse is easy to follow.
+    _N = 48
+    _dirs = np.linspace(0.0, np.pi, _N, endpoint=False)
+    _ux, _uy = np.cos(_dirs), np.sin(_dirs)  # needle axis (direction), fixed per needle
+    _w = 0.05  # needle thickness
+    _half = 0.5  # half length -> unit needle
+
+    # Spread the centres around a full ring so they start well separated.
+    _cang = 2.0 * _dirs
+    _cdx, _cdy = np.cos(_cang), np.sin(_cang)
+
+    _gx = np.linspace(-1.8, 1.8, 240)
+    _gy = np.linspace(-1.8, 1.8, 240)
+    _GX, _GY = np.meshgrid(_gx, _gy)
+    _cellA = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
+
+    def _union_area(R):
+        _mask = np.zeros(_GX.shape, dtype=bool)
+        for _i in range(_N):
+            _cx, _cy = R * _cdx[_i], R * _cdy[_i]
+            _dx, _dy = _GX - _cx, _GY - _cy
+            _along = _dx * _ux[_i] + _dy * _uy[_i]
+            _perp = -_dx * _uy[_i] + _dy * _ux[_i]
+            _mask |= (np.abs(_along) <= _half) & (np.abs(_perp) <= _w / 2)
+        return float(_mask.sum() * _cellA)
+
+    def _needle_trace(R):
+        _xs, _ys = [], []
+        for _i in range(_N):
+            _cx, _cy = R * _cdx[_i], R * _cdy[_i]
+            _xs += [_cx - _half * _ux[_i], _cx + _half * _ux[_i], None]
+            _ys += [_cy - _half * _uy[_i], _cy + _half * _uy[_i], None]
+        return go.Scatter(
+            x=_xs,
+            y=_ys,
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 2},
+            opacity=0.75,
+            showlegend=False,
+            name="needles",
+        )
+
+    def _readout(R):
+        return go.Scatter(
+            x=[0.0],
+            y=[1.62],
+            mode="text",
+            text=[f"footprint area ≈ {_union_area(R):.2f}"],
+            textfont={"color": COLORS["highlight"], "size": 16},
+            showlegend=False,
+        )
+
+    # Hold at the start and end, and step R slowly in between, so the collapse is legible.
+    _Rs = np.concatenate([np.full(3, 1.15), np.linspace(1.15, 0.05, 34), np.full(4, 0.05)])
+
+    _fig = go.Figure()
+    _fig.add_trace(_needle_trace(_Rs[0]))  # 0
+    _fig.add_trace(_readout(_Rs[0]))  # 1
+
+    _fig.frames = [
+        go.Frame(data=[_needle_trace(_R), _readout(_R)], traces=[0, 1], name=str(_i)) for _i, _R in enumerate(_Rs)
+    ]
+
+    _fig.update_layout(**base_layout(title="Overlap every direction", height=560))
+    _fig.update_xaxes(
+        range=[-1.8, 1.8],
+        scaleanchor="y",
+        constrain="domain",
+        gridcolor=COLORS["grid"],
+        zerolinecolor=COLORS["grid"],
+        showticklabels=False,
+    )
+    _fig.update_yaxes(range=[-1.8, 1.85], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
+    _fig.update_layout(
+        updatemenus=[
+            {
+                "type": "buttons",
+                "showactive": False,
+                "y": 1.1,
+                "x": 0.5,
+                "xanchor": "center",
+                "buttons": [
+                    {
+                        "label": "▶ Slide them together",
+                        "method": "animate",
+                        "args": [
+                            None,
+                            {
+                                "frame": {"duration": 200, "redraw": True},
+                                "fromcurrent": True,
+                                "transition": {"duration": 150},
+                            },
+                        ],
+                    },
+                    {
+                        "label": "❚❚ Pause",
+                        "method": "animate",
+                        "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}],
+                    },
+                ],
+            }
+        ]
+    )
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    One needle per direction, laid down at once, then slid to overlap as much as possible. Every
+    needle keeps its direction, so all directions remain. The set still reaches about as far as a
+    single needle, but its overlaps are counted once, so the footprint keeps dropping as they pile
+    up (the readout tracks it), reaching exactly zero in the continuum limit of one needle for
+    every direction:
+
+    $$K \subset \mathbb{R}^2, \quad \text{a unit segment in every direction}, \quad |K| = 0$$
+
+    This object has a name. A set that contains a unit segment in every direction is a
+    **Besicovitch set** (also called a **Kakeya set**), and we have just built one with zero area.
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ## From area to dimension
 
     If the smallest sets have zero area, then "minimise the area" has a trivial answer, zero,
     and area can no longer tell these sets apart or say how substantial they still are. We need
@@ -1538,9 +1529,15 @@ def _(mo):
     far you zoom. The right ruler measures that: **dimension**, how fast detail multiplies as
     you shrink your measuring box, not how much area is covered.
 
-    And the result that names the subject: the planar pile has **zero area but dimension
-    exactly 2** (Davies, 1971). No area, yet as two-dimensional as the table itself. That is
-    the contradiction the conjecture is about, and area was the wrong tool to see it.
+    And the result that names the subject: the planar Besicovitch set has **zero area but
+    dimension exactly 2** (Davies, 1971). No area, yet as two-dimensional as the table itself.
+    That clash is what the conjecture is about:
+
+    > **The Kakeya conjecture.** Every Besicovitch set in $\mathbb{R}^n$ has full dimension $n$:
+    > however thin it looks, it is as high-dimensional as the whole space around it.
+
+    Davies settled the plane, $n = 2$. That was the easy case; three dimensions held out for
+    fifty years.
 
     $$\dim_{\mathrm B}(E) = \lim_{\varepsilon \to 0} \frac{\log N(\varepsilon)}{\log(1/\varepsilon)},
     \qquad \dim_{\mathrm H}(E) = \inf\{\, s \ge 0 : \mathcal H^{s}(E) = 0 \,\}.$$
@@ -1656,7 +1653,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Into space: the same construction, one dimension up
+    ## The same construction, one dimension up
 
     Everything you just built transfers. In space the needle must aim at every direction on a
     whole **sphere**. Drop one needle per direction and slide them to overlap as much as they can,
@@ -1863,12 +1860,12 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## The surprise, one dimension up: still fully 3D?
+    ## Zero volume, dimension three
 
     Zoom into the zero-volume pile and, just like the flat scorch, it keeps throwing up new detail
     as fast as a solid block would, however far you go. By the box-counting ruler its slope heads
     toward **3**: no volume, yet as three-dimensional as the space around it. In the plane this was
-    true *and* provable — Davies settled it. Everyone believed the same held in space; **proving
+    both true and provable: Davies settled it. Everyone believed the same held in space; **proving
     it was the problem that stood for over fifty years.**
     """)
     return
@@ -2002,7 +1999,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## The tool: two tubes barely overlap
+    ## Two tubes barely overlap
 
     Thicken a needle and it becomes a thin **tube**. Here is the single fact every 3D argument is
     built from: two tubes pointing in different directions cross only in a tiny patch, and that
@@ -2125,7 +2122,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
             x=[0.0],
             y=[1.72],
             mode="text",
-            text=[f"<b>the two needles differ by {np.degrees(theta):.0f}°</b>"],
+            text=[f"<b>{np.degrees(theta):.0f}° apart</b>"],
             textfont={"color": COLORS["text"], "size": 14},
             xaxis="x",
             yaxis="y",
@@ -2208,7 +2205,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Spending the tool: bush, hairbrush, and the sticky comb
+    ## Bush, hairbrush, and the sticky comb
 
     Spend the fact the simplest way and you get a **bush**: pin a needle, turn it through every
     direction, and since the tubes can't pile up the bush must spread, forcing dimension $\ge 2$.
@@ -2216,10 +2213,10 @@ def _(mo):
     pushing the bound to $5/2$ (Wolff, 1995).
 
     The move that finally reached the full **3** is one you already know. Combing the pile
-    **sticky** — sliding the needles so that ones pointing almost the same way sit almost together
-    — is slice-and-slide one dimension up: a rearrangement that never changes a single direction,
-    but lines the tubes up so the overlap fact bites as hard as it can. In that tidy shape, and
-    only there, it forces dimension 3.
+    **sticky** (sliding the needles so that ones pointing almost the same way sit almost together)
+    is slice-and-slide one dimension up: a rearrangement that never changes a single direction, but
+    lines the tubes up so the overlap fact bites as hard as it can. In that tidy shape, and only
+    there, it forces dimension 3.
     """)
     return
 
@@ -2450,11 +2447,11 @@ def _(COLORS, base_layout, go, np):
 
     def _label(p):
         if p < 0.02:
-            _t = "scattered — nearby directions land anywhere"
+            _t = "scattered"
         elif p > 0.98:
-            _t = "combed neat — nearby directions sit together (sticky)"
+            _t = "combed neat (sticky)"
         else:
-            _t = "sliding into place — every needle keeps its direction"
+            _t = "sliding into place"
         return go.Scatter(
             x=[0.0],
             y=[1.5],
@@ -2491,8 +2488,9 @@ def _(COLORS, base_layout, go, np):
 @app.cell
 def _(mo):
     mo.md(r"""
-    The needles slide into groups where nearby directions sit close together — slice-and-slide in
-    space. Nothing rotates, so every direction stays; this is the shape the volume estimate needs.
+    The needles slide into groups where nearby directions sit close together, which is
+    slice-and-slide in space. Nothing rotates, so every direction stays; this is the shape the
+    volume estimate needs.
     """)
     return
 
@@ -2500,7 +2498,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## The fifty-year climb, and the 2025 finish
+    ## Fifty years of bounds, then the 2025 proof
 
     For decades the proven bound only crept: trivial 1, bush 2, Wolff's hairbrush $5/2$, then
     Katz–Łaba–Tao just past $5/2$ (2000) — and there it stalled for a quarter-century, the summit
@@ -2576,20 +2574,6 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Coda: why a needle matters
-
-    The geometry of lines pointing every way sits under a surprising amount of mathematics:
-    harmonic analysis (restriction, Bochner–Riesz, the Fourier transform), sharp estimates for
-    the wave and Schrödinger equations, and, over finite fields, extractors and coding theory in
-    computer science. A one-inch needle reaches from a 1917 tabletop puzzle to the frontier of
-    analysis and number theory.
-    """)
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
     ---
 
     ## A century of the needle: who proved what, and when
@@ -2653,7 +2637,7 @@ def _(mo):
     ## Why Anyone Cares
 
     > That little needle turns out to be a hidden gear driving
-    > machinery all over mathematics — from how waves ripple to how secret codes hold up.
+    > machinery all over mathematics, from how waves ripple to how secret codes hold up.
 
     A puzzle about turning a needle would be a curiosity if it stayed alone. It doesn't.
     The geometry of *lines pointing in many directions* is a hidden skeleton beneath a
@@ -2662,7 +2646,7 @@ def _(mo):
     - **Harmonic analysis.** Kakeya sits directly below the **restriction** and
       **Bochner–Riesz** conjectures and the behaviour of the Fourier transform.
       [**Charles Fefferman**](https://en.wikipedia.org/wiki/Charles_Fefferman) used a
-      Besicovitch set to *disprove* the ball multiplier conjecture (1971) — the discovery
+      Besicovitch set to *disprove* the ball multiplier conjecture (1971), the discovery
       that turned a geometry curiosity into a central object of analysis.
     - **PDE.** Sharp estimates for the **wave** and **Schrödinger** equations rely on
       Kakeya-type bounds on how wave packets can concentrate.
