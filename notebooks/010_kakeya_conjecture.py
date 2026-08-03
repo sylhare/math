@@ -759,17 +759,23 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Slice and slide
+    ## 4. Slice and slide
 
-    **The second move, and it is the first one scaled up.** Sliding let a single needle reuse its
-    *own* track, and that alone halved the disk. Now let *different* directions share a track too.
+    Sliding reused a single needle's *own* track, and that alone halved the disk.
+    Beating it means letting *different* directions share a track, and that takes a second move: **slicing**.
 
-    Think of a **triangle** as one needle pivoting about its top tip: swung between the two sides
-    it points across a whole fan of directions, and at every angle it is the **same length**. So
-    one triangle already holds that fan of needles. Cut that **triangular patch of table** down
-    the middle (the patch, not the needle) into two thinner triangles, and **slide them until they
-    overlap.** Each half carries its fan along unchanged, so together they still cover the whole
-    fan, but the overlap is table counted once instead of twice, so the footprint shrinks.
+    Here we _cut the table itself_, the patch that already carries a whole bundle of needles, into pieces.
+    Each piece can then be slid on its own, and because a slide only translates it, every needle
+    inside keeps pointing the way it did. So we cut a shape apart and slide the pieces back together
+    overlapping, and not one direction is lost.
+
+    Start from the square table we spun and **cut a triangle out of it.** Read that triangle as one
+    needle pivoting about its top tip: swung between the two sides it points across a whole fan of
+    directions, every position the **same length**, so the triangular patch already holds that fan
+    of needles. Now cut the triangle down the middle (the patch, not the needle) into two thinner
+    triangles and **slide them until they overlap.** Each half carries its fan along unchanged, so
+    together they still cover the whole fan, but the overlap is table counted once instead of twice,
+    so the footprint shrinks.
     """)
     return
 
@@ -889,7 +895,28 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
             showlegend=False,
         )
 
-    def _frame_traces(s, label):
+    # The square tabletop we spun, with a triangle inscribed in it: apex at the top-edge midpoint,
+    # base along the bottom edge. Cutting the two shaded corners off the square leaves the triangle.
+    _off_left = np.array([[0.0, 0.0], [0.0, 1.0], [0.5, 1.0]])  # left corner trimmed off the square
+    _off_right = np.array([[1.0, 0.0], [1.0, 1.0], [0.5, 1.0]])  # right corner trimmed off
+
+    def _offcut_trace(tri, op):
+        # a discarded square corner; op fades it out as the triangle is cut from the table
+        _ox, _oy = _outline(tri)
+        return go.Scatter(
+            x=_ox,
+            y=_oy,
+            mode="lines",
+            fill="toself",
+            fillcolor=f"rgba(125, 139, 163, {0.32 * op:.3f})",
+            line={"color": f"rgba(125, 139, 163, {0.55 * op:.3f})", "width": 1},
+            xaxis="x",
+            yaxis="y",
+            showlegend=False,
+            name="offcut",
+        )
+
+    def _frame_traces(s, label, op):
         _lx, _lyy = _needles(0.5 + s, _left_angs)
         _rx, _ryy = _needles(0.5 - s, _right_angs)
         _area = _union_area(s)
@@ -900,6 +927,8 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
             _needle_trace(_rx, _ryy, COLORS["quaternary"]),
             _arrows(0.5 + s, _left_angs, COLORS["accent1"]),
             _arrows(0.5 - s, _right_angs, COLORS["quaternary"]),
+            _offcut_trace(_off_left, op),
+            _offcut_trace(_off_right, op),
             _label_trace(label),
             go.Scatter(
                 x=[s],
@@ -922,24 +951,54 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
             ),
         ]
 
-    # Frame schedule: first a "slice" phase (halves sit slightly apart so you see the cut),
-    # then a "slide" phase (halves close in and overlap). s < 0 = apart, s > 0 = overlapping.
-    _slice_label = "1. Slice"
-    _slide_label = "2. Slide & overlap"
-    _steps = [(_sv, _slice_label) for _sv in np.linspace(-0.09, 0.0, 6)]
-    _steps += [(_sv, _slide_label) for _sv in np.linspace(0.0, 0.25, 22)[1:]]
+    # Frame schedule (monotonic, never backtracks): first "cut" the triangle out of the square
+    # table (fade the two corners away), then hold while the two colored halves show the cut, then
+    # "slide" the halves one direction until they overlap. s = 0 tiled, s > 0 overlapping; op fades.
+    _cut_label = "1. Cut a triangle from the table"
+    _slice_label = "2. Slice down the middle"
+    _slide_label = "3. Slide to overlap"
+    _cut_ops = np.concatenate([np.ones(3), np.linspace(1.0, 0.0, 7)])
+    _steps = [(0.0, _cut_label, _op) for _op in _cut_ops]
+    _steps += [(0.0, _slice_label, 0.0)] * 4  # hold with the cut showing (two colored halves)
+    _steps += [(_sv, _slide_label, 0.0) for _sv in np.linspace(0.0, 0.25, 22)[1:]]
+    _steps += [(0.25, _slide_label, 0.0)] * 3  # hold on the overlapped result
 
-    _curve_s = np.linspace(-0.09, 0.25, 70)
+    _curve_s = np.linspace(0.0, 0.25, 70)
     _curve_a = [_union_area(_sv) for _sv in _curve_s]
 
     _fig = make_subplots(
         rows=1,
         cols=2,
         column_widths=[0.58, 0.42],
-        subplot_titles=("Cut one triangle, slide the halves to overlap", "Total area covered as they overlap"),
+        subplot_titles=(
+            "Cut a triangle from the table, slide the halves to overlap",
+            "Total area covered as they overlap",
+        ),
     )
 
-    # index 0: static dotted outline of the ORIGINAL triangle, so the shrinkage is visible.
+    # index 0: the square tabletop grid (static), so the triangle reads as a patch cut from it.
+    _tgx, _tgy = [], []
+    for _c in np.linspace(0.0, 1.0, 5):
+        _tgx += [_c, _c, None]
+        _tgy += [0.0, 1.0, None]
+        _tgx += [0.0, 1.0, None]
+        _tgy += [_c, _c, None]
+    _fig.add_trace(
+        go.Scatter(
+            x=_tgx,
+            y=_tgy,
+            mode="lines",
+            line={"color": "rgba(125, 139, 163, 0.5)", "width": 1},
+            xaxis="x",
+            yaxis="y",
+            showlegend=False,
+            name="table",
+        ),
+        row=1,
+        col=1,
+    )
+
+    # index 1: static dotted outline of the ORIGINAL triangle, so the shrinkage is visible.
     _wx, _wy = _outline(_whole)
     _fig.add_trace(
         go.Scatter(
@@ -956,15 +1015,17 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         col=1,
     )
 
-    _init = _frame_traces(_steps[0][0], _steps[0][1])
-    _fig.add_trace(_init[0], row=1, col=1)  # 1: left half
-    _fig.add_trace(_init[1], row=1, col=1)  # 2: right half
-    _fig.add_trace(_init[2], row=1, col=1)  # 3: left needles
-    _fig.add_trace(_init[3], row=1, col=1)  # 4: right needles
-    _fig.add_trace(_init[4], row=1, col=1)  # 5: left direction arrows
-    _fig.add_trace(_init[5], row=1, col=1)  # 6: right direction arrows
-    _fig.add_trace(_init[6], row=1, col=1)  # 7: phase label
-    _fig.add_trace(  # 8: static area curve
+    _init = _frame_traces(*_steps[0])
+    _fig.add_trace(_init[0], row=1, col=1)  # 2: left half
+    _fig.add_trace(_init[1], row=1, col=1)  # 3: right half
+    _fig.add_trace(_init[2], row=1, col=1)  # 4: left needles
+    _fig.add_trace(_init[3], row=1, col=1)  # 5: right needles
+    _fig.add_trace(_init[4], row=1, col=1)  # 6: left direction arrows
+    _fig.add_trace(_init[5], row=1, col=1)  # 7: right direction arrows
+    _fig.add_trace(_init[6], row=1, col=1)  # 8: left offcut corner
+    _fig.add_trace(_init[7], row=1, col=1)  # 9: right offcut corner
+    _fig.add_trace(_init[8], row=1, col=1)  # 10: phase label
+    _fig.add_trace(  # 11: static area curve
         go.Scatter(
             x=_curve_s,
             y=_curve_a,
@@ -975,12 +1036,16 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         row=1,
         col=2,
     )
-    _fig.add_trace(_init[7], row=1, col=2)  # 9: moving star
-    _fig.add_trace(_init[8], row=1, col=2)  # 10: area readout
+    _fig.add_trace(_init[9], row=1, col=2)  # 12: moving star
+    _fig.add_trace(_init[10], row=1, col=2)  # 13: area readout
 
     _fig.frames = [
-        go.Frame(data=_frame_traces(_sv, _lbl), traces=[1, 2, 3, 4, 5, 6, 7, 9, 10], name=str(_i))
-        for _i, (_sv, _lbl) in enumerate(_steps)
+        go.Frame(
+            data=_frame_traces(_sv, _lbl, _op),
+            traces=[2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13],
+            name=str(_i),
+        )
+        for _i, (_sv, _lbl, _op) in enumerate(_steps)
     ]
 
     _fig.update_layout(
@@ -991,7 +1056,7 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
     )
     _fig.update_xaxes(range=[-0.4, 1.4], row=1, col=1, scaleanchor="y", constrain="domain")
     _fig.update_yaxes(range=[-0.08, 1.32], row=1, col=1)
-    _fig.update_xaxes(title_text="slide s  (apart ← 0 → overlapping)", range=[-0.11, 0.27], row=1, col=2)
+    _fig.update_xaxes(title_text="slide s  (0 → overlapping)", range=[-0.02, 0.27], row=1, col=2)
     _fig.update_yaxes(title_text="area", range=[min(_curve_a) - 0.03, max(_curve_a) + 0.03], row=1, col=2)
     style_subplot_axes(_fig, show_ticklabels=True)
     _fig.update_layout(updatemenus=play_pause("▶ Slice & Slide"))
@@ -1002,9 +1067,10 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
 @app.cell
 def _(mo):
     mo.md(r"""
-    The animation cuts the triangle in half and slides the halves over each other. Watch the
-    **arrows**: they mark each needle's direction, and they never budge as the halves move. So
-    every direction is still there at the end, yet the area readout on the right keeps dropping.
+    The animation first carves the triangle out of the square table, then cuts it in half and slides
+    the halves over each other. Watch the **arrows**: they mark each needle's direction, and they
+    never budge as the halves move. So every direction is still there at the end, yet the area
+    readout on the right keeps dropping.
     The reason is the overlap: where the two halves cover the same patch of table, that patch is
     counted once but reused by needles pointing several different ways at once. Shared table is
     saved table.
@@ -1035,20 +1101,22 @@ def _(mo):
     It does. Here is a real needle actually **turning** through every direction inside that
     shrinking region. Iterate slice-and-slide into a full **Perron tree**, and thread thin
     **corridors** (Pál's *joins*) between the pieces so the needle can cross from one to the next:
-    it makes each small turn inside a piece, slides down a corridor, and turns again. It covers
-    every direction while sweeping only a tiny area, smaller with every extra slice. This is the
-    original 1917 question answered, a real needle turning in almost no area.
+    it makes each small turn inside a piece, slides down a corridor, and turns again. It turns
+    through a whole fan of directions while sweeping only a tiny area, smaller with every extra
+    slice. Repeat the build across the remaining directions and this is the original 1917 question
+    answered: a real needle turning through every direction in almost no area.
     """)
     return
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     # The needle turns inside a Perron tree: it swings through a small range of directions in each
     # thin, overlapping piece, sliding along its own length (free) to the next. The faint fans are
     # the pieces (radius = needle length) -- exactly what the needle sweeps; they overlap, so their
     # union is smaller than one plain fan, and smaller still with more slices. Fit and shrink were
-    # checked numerically. One fan spans < 180 deg; a full half-turn stitches several together.
+    # checked numerically. A dial on the right fills as each direction is covered. One tree spans a
+    # wide fan (not the full 180 deg); the near-horizontal directions come from repeating the build.
     _H, _B, _alpha, _L0 = 1.0, 1.7, 0.34, 0.9
     _apex0 = np.array([0.0, _H])
 
@@ -1150,11 +1218,78 @@ def _(COLORS, base_layout, go, np):
     _data = {_L: _poses_for(_L) for _L in _levels}
     _areas = {_L: _swept_area(_data[_L][0]) for _L in _levels}
 
-    _fig = go.Figure()
+    # Right-panel dial: a protractor of needle directions (0 deg flat, 90 deg upright, 180 deg flat).
+    # Its rim fills blue over the directions the needle has swept, so coverage is visible as it turns.
+    _rd = 1.0
+    _t_start = _ang(_apex0, np.array([-_B, 0.0]))  # leftmost needle direction (same for every level)
+
+    def _phi(t):
+        # the needle's line-direction as a protractor angle in [0, pi): 0 flat, pi/2 upright
+        return np.radians(np.degrees(t) % 180.0)
+
+    def _dial_outline():
+        _p = np.linspace(0.0, np.pi, 120)
+        return go.Scatter(
+            x=[*(_rd * np.cos(_p)), -_rd, _rd],
+            y=[*(_rd * np.sin(_p)), 0.0, 0.0],
+            mode="lines",
+            line={"color": COLORS["grid"], "width": 1.5},
+            xaxis="x2",
+            yaxis="y2",
+            showlegend=False,
+        )
+
+    def _dial_ticks():
+        return go.Scatter(
+            x=[1.17, 0.0, -1.17],
+            y=[0.0, 1.15, 0.0],
+            mode="text",
+            text=["0°", "90°", "180°"],
+            textfont={"color": COLORS["muted"], "size": 12},
+            xaxis="x2",
+            yaxis="y2",
+            showlegend=False,
+        )
+
+    def _covered_arc(t_cur):
+        _a = np.linspace(_phi(_t_start), _phi(t_cur), 80)
+        return go.Scatter(
+            x=_rd * np.cos(_a),
+            y=_rd * np.sin(_a),
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 6},
+            xaxis="x2",
+            yaxis="y2",
+            showlegend=False,
+            name="directions covered",
+        )
+
+    def _dial_needle(t_cur):
+        _p = _phi(t_cur)
+        return go.Scatter(
+            x=[0.0, _rd * np.cos(_p)],
+            y=[0.0, _rd * np.sin(_p)],
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 4},
+            xaxis="x2",
+            yaxis="y2",
+            showlegend=False,
+        )
+
+    _fig = make_subplots(
+        rows=1,
+        cols=2,
+        column_widths=[0.63, 0.37],
+        subplot_titles=("The needle turning in the Perron tree", "Directions covered"),
+    )
     _lv1, _seq1 = _data[1]
-    _fig.add_trace(_sectors(_lv1))  # 0 the overlapping pieces (what the needle sweeps)
-    _fig.add_trace(_needle(*_seq1[0]))  # 1 current needle
-    _fig.add_trace(_label(1, _areas[1]))  # 2 label
+    _fig.add_trace(_sectors(_lv1), row=1, col=1)  # 0 the overlapping pieces (what the needle sweeps)
+    _fig.add_trace(_needle(*_seq1[0]), row=1, col=1)  # 1 current needle
+    _fig.add_trace(_label(1, _areas[1]), row=1, col=1)  # 2 label
+    _fig.add_trace(_dial_outline(), row=1, col=2)  # 3 dial outline (static)
+    _fig.add_trace(_covered_arc(_seq1[0][1]), row=1, col=2)  # 4 covered arc (anim)
+    _fig.add_trace(_dial_needle(_seq1[0][1]), row=1, col=2)  # 5 dial needle (anim)
+    _fig.add_trace(_dial_ticks(), row=1, col=2)  # 6 tick labels (static)
 
     _frames, _names = [], {}
     for _L in _levels:
@@ -1165,7 +1300,15 @@ def _(COLORS, base_layout, go, np):
             _keys.append(_nm)
             _frames.append(
                 go.Frame(
-                    data=[_sectors(_leaves), _needle(*_seq[_k]), _label(_L, _areas[_L])], traces=[0, 1, 2], name=_nm
+                    data=[
+                        _sectors(_leaves),
+                        _needle(*_seq[_k]),
+                        _label(_L, _areas[_L]),
+                        _covered_arc(_seq[_k][1]),
+                        _dial_needle(_seq[_k][1]),
+                    ],
+                    traces=[0, 1, 2, 4, 5],
+                    name=_nm,
                 )
             )
         _names[_L] = _keys
@@ -1195,15 +1338,11 @@ def _(COLORS, base_layout, go, np):
     ]
 
     _fig.update_layout(**base_layout(title="A real needle, turning", height=470))
-    _fig.update_xaxes(
-        range=[-1.15, 1.15],
-        scaleanchor="y",
-        constrain="domain",
-        gridcolor=COLORS["grid"],
-        zerolinecolor=COLORS["grid"],
-        showticklabels=False,
-    )
-    _fig.update_yaxes(range=[-0.1, 1.42], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
+    _fig.update_xaxes(range=[-1.15, 1.15], scaleanchor="y", constrain="domain", showticklabels=False, row=1, col=1)
+    _fig.update_yaxes(range=[-0.1, 1.42], showticklabels=False, row=1, col=1)
+    _fig.update_xaxes(range=[-1.4, 1.4], scaleanchor="y2", constrain="domain", showticklabels=False, row=1, col=2)
+    _fig.update_yaxes(range=[-0.2, 1.38], showticklabels=False, row=1, col=2)
+    style_subplot_axes(_fig)
     _fig.update_layout(
         updatemenus=[
             {
@@ -1225,9 +1364,11 @@ def _(COLORS, base_layout, go, np):
 def _(mo):
     mo.md(r"""
     The needle makes each small turn inside one thin fan, then slides along its own length to the
-    next. The fans overlap, so the region it needs is far smaller than a plain spin, and the area
-    readout drops with every extra slice. Each added slice buys a smaller region, and nothing in
-    the construction says where to stop. So how small can it get?
+    next. The **dial** on the right fills blue as it goes, tracking every direction covered so far:
+    by the end the needle has turned through the whole fan the tree spans. The fans overlap, so the
+    region it needs is far smaller than a plain spin, and the area readout drops with every extra
+    slice. Each added slice buys a smaller region, and nothing in the construction says where to
+    stop. So how small can it get?
     """)
     return
 
@@ -1442,7 +1583,7 @@ def _(COLORS, base_layout, go, np):
             _mask |= (np.abs(_along) <= _half) & (np.abs(_perp) <= _w / 2)
         return float(_mask.sum() * _cellA)
 
-    def _needle_trace(R):
+    def _needle_trace(R, color=COLORS["primary"], opacity=0.75, width=2, name="needles"):
         _xs, _ys = [], []
         for _i in range(_N):
             _cx, _cy = R * _cdx[_i], R * _cdy[_i]
@@ -1452,10 +1593,27 @@ def _(COLORS, base_layout, go, np):
             x=_xs,
             y=_ys,
             mode="lines",
-            line={"color": COLORS["primary"], "width": 2},
-            opacity=0.75,
+            line={"color": color, "width": width},
+            opacity=opacity,
             showlegend=False,
-            name="needles",
+            name=name,
+        )
+
+    def _rail_trace(_Rmax):
+        # The straight line each needle's centre follows: from its spread-out start on the
+        # ring straight in to the common centre. This is the "line they follow".
+        _xs, _ys = [], []
+        for _i in range(_N):
+            _xs += [_Rmax * _cdx[_i], 0.0, None]
+            _ys += [_Rmax * _cdy[_i], 0.0, None]
+        return go.Scatter(
+            x=_xs,
+            y=_ys,
+            mode="lines",
+            line={"color": COLORS["muted"], "width": 1, "dash": "dot"},
+            opacity=0.5,
+            showlegend=False,
+            name="rails",
         )
 
     def _readout(R):
@@ -1472,11 +1630,14 @@ def _(COLORS, base_layout, go, np):
     _Rs = np.concatenate([np.full(3, 1.15), np.linspace(1.15, 0.05, 34), np.full(4, 0.05)])
 
     _fig = go.Figure()
-    _fig.add_trace(_needle_trace(_Rs[0]))  # 0
-    _fig.add_trace(_readout(_Rs[0]))  # 1
+    _fig.add_trace(_rail_trace(_Rs[0]))  # 0: static rails (the path each centre follows)
+    # 1: faint ghost of the spread-out start, so the slide reads as start -> common centre.
+    _fig.add_trace(_needle_trace(_Rs[0], color=COLORS["muted"], opacity=0.3, width=1.5, name="start"))
+    _fig.add_trace(_needle_trace(_Rs[0]))  # 2: the sliding needles
+    _fig.add_trace(_readout(_Rs[0]))  # 3: footprint readout
 
     _fig.frames = [
-        go.Frame(data=[_needle_trace(_R), _readout(_R)], traces=[0, 1], name=str(_i)) for _i, _R in enumerate(_Rs)
+        go.Frame(data=[_needle_trace(_R), _readout(_R)], traces=[2, 3], name=str(_i)) for _i, _R in enumerate(_Rs)
     ]
 
     _fig.update_layout(**base_layout(title="Overlap every direction", height=560))
@@ -1526,11 +1687,12 @@ def _(COLORS, base_layout, go, np):
 @app.cell
 def _(mo):
     mo.md(r"""
-    One needle per direction, laid down at once, then slid to overlap as much as possible. Every
-    needle keeps its direction, so all directions remain. The set still reaches about as far as a
-    single needle, but its overlaps are counted once, so the footprint keeps dropping as they pile
-    up (the readout tracks it), reaching exactly zero in the continuum limit of one needle for
-    every direction:
+    One needle per direction, laid down at once, then slid to overlap as much as possible. Each
+    needle's centre travels straight in along its faint **rail** to a common centre (the pale
+    needles mark where they started). Every needle keeps its direction the whole way, so all
+    directions remain. The set still reaches about as far as a single needle, but its overlaps are
+    counted once, so the footprint keeps dropping as they pile up (the readout tracks it), reaching
+    exactly zero in the continuum limit of one needle for every direction:
 
     $$
     \begin{aligned}
