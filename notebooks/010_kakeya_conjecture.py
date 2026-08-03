@@ -202,7 +202,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## The puzzle
+    ## 1. The puzzle
 
     Lay an infinitely thin, one-inch needle flat on a table. Turn it until it has pointed in
     **every** direction, then set it down. What is the *smallest area* the needle can sweep
@@ -223,7 +223,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Initial spin
+    ## 2. Initial spin
 
     This is the start of the problem. Pin the needle through its middle and spin it around like the
     hand of a clock. Round it goes, pointing every which way, and by the time it comes back it has
@@ -341,7 +341,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## What if we tipped it off the table?
+    ## 2.1 What if we tipped it off the table?
 
     A tempting shortcut: pin one end and tilt the needle up into the air.
 
@@ -470,7 +470,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## What if we spin the table instead?
+    ## 2.2 What if we spin the table instead?
 
     Since moving the needle cost us area, what if we use the table to move instead.
     We could have either the needle stay still while the table move,
@@ -629,14 +629,20 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## Sliding is free
+    ## 3. Sliding
 
-    Here is something legal that costs nothing: **slide the needle along its
-    own length.** It just retraces the line it already sits on, so it paints no new area, a free
-    repositioning.
+    A needle can do two things: **turn**, changing the direction it points, and **slide**,
+    moving without turning. Every attempt so far has been pure turning.
+    Sliding is the move we have not spent yet.
 
-    So don't only pivot, *slide as you turn*. Ride the needle around the inside of a curved shape
-    (a **deltoid**) and it faces every direction using only $\pi/8 \approx 0.393$, half the disk.
+    Most slides cost area: push the needle sideways and it sweeps a fresh strip of table.
+    Slide the needle _along its own length_, forward or backward in the
+    direction it already points, and it just runs along the very line it already lies on.
+    That repositioning is free because we consider the needle infinitely thin, so sliding doesn't add to the area.
+
+    If we let the needle turn while its body glides along itself, so the pivot point drifts instead of staying fixed.
+    It now sweeps an area of a curved shape (a **deltoid**) and it faces every direction using only $\pi/8 \approx 0.393$,
+    half the disk.
 
     $$
     \begin{aligned}
@@ -743,9 +749,9 @@ def _(mo):
     mo.md(r"""
     The needle stays a tangent chord of the deltoid, turning through every direction while
     sliding along its own length. Every position is drawn, so you see the whole family of
-    directions filling the deltoid, not just one needle. Each slide reuses table it has already
-    covered instead of painting fresh, and that reuse is the saving: the same directions as the
-    disk, in half the area.
+    directions filling the deltoid, not just one needle.
+
+    Each slide and turn reuses area it already covered, adding up the savings.
     """)
     return
 
