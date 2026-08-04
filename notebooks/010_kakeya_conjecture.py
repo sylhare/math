@@ -1364,11 +1364,189 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
 def _(mo):
     mo.md(r"""
     The needle makes each small turn inside one thin fan, then slides along its own length to the
-    next. The **dial** on the right fills blue as it goes, tracking every direction covered so far:
-    by the end the needle has turned through the whole fan the tree spans. The fans overlap, so the
-    region it needs is far smaller than a plain spin, and the area readout drops with every extra
-    slice. Each added slice buys a smaller region, and nothing in the construction says where to
-    stop. So how small can it get?
+    next. The **dial** on the right fills blue as it goes, tracking every direction covered so far.
+    The fans overlap, so the region it needs is far smaller than a plain spin. But the dial stops
+    short of a full turn: one tree only reaches the directions its base subtends.
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    To reach the rest, repeat the tree. Rotate copies of it so their fans point every way, and one
+    needle turning through all of them closes the circle.
+    """)
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
+    # Every direction: rotated copies of the Perron tree, their fans pointing every way. One needle
+    # turns through all of them, and the full-circle dial fills completely. The copies overlap near
+    # the centre, so the whole set stays in a bounded area rather than spreading over the plane.
+    _H, _B, _alpha, _L0 = 1.0, 1.7, 0.34, 0.9
+    _apex0 = np.array([0.0, _H])
+
+    def _ang(a, p):
+        return np.arctan2(p[1] - a[1], p[0] - a[0])
+
+    def _build(level):
+        _leaves = [
+            dict(
+                apex=_apex0.copy(),
+                bL=np.array([-_B, 0.0]),
+                bR=np.array([_B, 0.0]),
+                aL=_ang(_apex0, np.array([-_B, 0.0])),
+                aR=_ang(_apex0, np.array([_B, 0.0])),
+            )
+        ]
+        for _ in range(level):
+            _nxt = []
+            for _lf in _leaves:
+                _a, _bL, _bR = _lf["apex"], _lf["bL"], _lf["bR"]
+                _m = (_bL + _bR) / 2.0
+                _s = np.array([_alpha * (_bR[0] - _m[0]), 0.0])
+                _nxt.append(dict(apex=_a + _s, bL=_bL + _s, bR=_m + _s, aL=_ang(_a, _bL), aR=_ang(_a, _m)))
+                _nxt.append(dict(apex=_a - _s, bL=_m - _s, bR=_bR - _s, aL=_ang(_a, _m), aR=_ang(_a, _bR)))
+            _leaves = _nxt
+        return _leaves
+
+    def _rot(pt, d):
+        _c, _s = np.cos(d), np.sin(d)
+        return np.array([_c * pt[0] - _s * pt[1], _s * pt[0] + _c * pt[1]])
+
+    # four rotated copies so the fans point every way (each tree spans a wide fan; 90 deg steps overlap)
+    _base = _build(1)
+    _leaves = []
+    for _d in np.radians([0.0, 90.0, 180.0, 270.0]):
+        for _lf in _base:
+            _leaves.append(dict(apex=_rot(_lf["apex"], _d), aL=_lf["aL"] + _d, aR=_lf["aR"] + _d))
+
+    def _u(t):
+        return np.array([np.cos(t), np.sin(t)])
+
+    def _sectors():
+        _xs, _ys = [], []
+        for _lf in _leaves:
+            _arc = np.linspace(_lf["aL"], _lf["aR"], 16)
+            _xs += [_lf["apex"][0], *(_lf["apex"][0] + _L0 * np.cos(_arc)), _lf["apex"][0], None]
+            _ys += [_lf["apex"][1], *(_lf["apex"][1] + _L0 * np.sin(_arc)), _lf["apex"][1], None]
+        return go.Scatter(
+            x=_xs,
+            y=_ys,
+            mode="lines",
+            fill="toself",
+            fillcolor="rgba(149,225,211,0.10)",
+            line={"color": COLORS["accent1"], "width": 0.8},
+            opacity=0.85,
+            showlegend=False,
+        )
+
+    def _needle(apex, t):
+        _e = apex + _L0 * _u(t)
+        return go.Scatter(
+            x=[apex[0], _e[0]],
+            y=[apex[1], _e[1]],
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 6},
+            showlegend=False,
+        )
+
+    # sweep every leaf in turn, sliding between; record the directions covered so far for the dial
+    _seq = []
+    _covered = []
+    for _li, _lf in enumerate(_leaves):
+        for _t in np.linspace(_lf["aL"], _lf["aR"], 7):
+            _seq.append((_lf["apex"], _t, [*_covered, (_lf["aL"], _t)]))
+        _covered.append((_lf["aL"], _lf["aR"]))
+        if _li < len(_leaves) - 1:
+            _nx = _leaves[_li + 1]
+            for _f in np.linspace(0.0, 1.0, 5)[1:]:
+                _seq.append((_lf["apex"] + _f * (_nx["apex"] - _lf["apex"]), _lf["aR"], list(_covered)))
+
+    _rd = 1.0
+
+    def _dial_outline():
+        _p = np.linspace(0.0, 2 * np.pi, 200)
+        return go.Scatter(
+            x=_rd * np.cos(_p),
+            y=_rd * np.sin(_p),
+            mode="lines",
+            line={"color": COLORS["grid"], "width": 1.5},
+            xaxis="x2",
+            yaxis="y2",
+            showlegend=False,
+        )
+
+    def _covered_arc(ranges):
+        _x, _y = [], []
+        for _s, _e in ranges:
+            _a = np.linspace(_s, _e, max(2, int(abs(_e - _s) / 0.02) + 2))
+            _x += [*(_rd * np.cos(_a)), None]
+            _y += [*(_rd * np.sin(_a)), None]
+        return go.Scatter(
+            x=_x,
+            y=_y,
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 6},
+            xaxis="x2",
+            yaxis="y2",
+            showlegend=False,
+        )
+
+    def _dial_needle(t):
+        return go.Scatter(
+            x=[0.0, _rd * np.cos(t)],
+            y=[0.0, _rd * np.sin(t)],
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 3},
+            xaxis="x2",
+            yaxis="y2",
+            showlegend=False,
+        )
+
+    _fig = make_subplots(
+        rows=1,
+        cols=2,
+        column_widths=[0.63, 0.37],
+        subplot_titles=("One needle, every direction", "Directions covered"),
+    )
+    _fig.add_trace(_sectors(), row=1, col=1)  # 0 static rosette of fans
+    _fig.add_trace(_needle(_seq[0][0], _seq[0][1]), row=1, col=1)  # 1 needle (anim)
+    _fig.add_trace(_dial_outline(), row=1, col=2)  # 2 dial outline (static)
+    _fig.add_trace(_covered_arc(_seq[0][2]), row=1, col=2)  # 3 covered arc (anim)
+    _fig.add_trace(_dial_needle(_seq[0][1]), row=1, col=2)  # 4 dial needle (anim)
+
+    _order = [*range(len(_seq)), *([len(_seq) - 1] * 5)]  # sweep, then hold on the full circle
+    _fig.frames = [
+        go.Frame(
+            data=[_needle(_seq[_k][0], _seq[_k][1]), _covered_arc(_seq[_k][2]), _dial_needle(_seq[_k][1])],
+            traces=[1, 3, 4],
+            name=str(_i),
+        )
+        for _i, _k in enumerate(_order)
+    ]
+
+    _fig.update_layout(**base_layout(title="Every direction", height=470))
+    _ext = 2.1
+    _fig.update_xaxes(range=[-_ext, _ext], scaleanchor="y", constrain="domain", showticklabels=False, row=1, col=1)
+    _fig.update_yaxes(range=[-_ext, _ext], showticklabels=False, row=1, col=1)
+    _fig.update_xaxes(range=[-1.3, 1.3], scaleanchor="y2", constrain="domain", showticklabels=False, row=1, col=2)
+    _fig.update_yaxes(range=[-1.3, 1.3], showticklabels=False, row=1, col=2)
+    style_subplot_axes(_fig)
+    _fig.update_layout(updatemenus=play_pause("▶ Turn all the way"))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    Four rotated copies of the tree, their fans pointing every way. The needle turns through each in
+    turn and the dial closes into a full circle: every direction, covered. The copies overlap near
+    the centre, so this stays in a bounded area, not the whole plane. Each extra slice inside every
+    tree shrinks that area further, and nothing says where to stop. So how small can it get?
     """)
     return
 
@@ -1476,6 +1654,11 @@ def _(mo):
     A needle at 0°, another at 1°, another at 89°, and so on, like a boxful of matchsticks tossed
     on the table so that between them they point every possible way. (A true such set needs one for
     *every* direction, a whole continuum, but the boxful is the picture to hold.)
+
+    A set that holds a unit segment in every direction has a name: a **Besicovitch set** (also
+    called a **Kakeya set**). Nothing about it turns; it only has to *contain* those segments. So
+    the question changes. It is no longer "how small an area can a needle turn in?" but "how small
+    can a Besicovitch set be?"
     """)
     return
 
@@ -1541,49 +1724,42 @@ def _(mo):
     a needle at 31°.
 
     Now bring back the free slide, with no motion to pay for. Each needle is one-dimensional, a
-    full inch long but with no width at all, and sliding it never changes the way it points. Slide
-    them all to overlap as much as possible: each stays a full inch long, so the collection still
-    spans about a needle's length, but the shared ground is counted once, so the footprint shrinks.
-    With no continuous path to keep, nothing stops it going all the way to zero, while a needle
-    still points in every direction. Reaching *exactly* zero, not merely as-small-as-you-like, is
-    what turns this from a measuring contest into a much stranger question.
+    full inch long but with no width at all, and sliding it never changes the way it points. Only
+    the final union has any area, so where two needles cover the same ground it is counted once,
+    and the footprint shrinks. The simplest thing to try is to slide them all onto a single point.
     """)
     return
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
-    # "Overlap every direction": one needle per direction, laid down at once. Each needle keeps its
-    # ANGLE throughout; only its CENTRE moves. Centres start spread on a ring of radius R and slide
-    # to R ~ 0, so the needles pile onto each other. A running area readout (rasterised
-    # point-in-rectangle mask) shows the union footprint collapsing as the overlaps -- counted once
-    # -- take over. Many frames + slow playback + a phase label so the collapse is easy to follow.
+def _(COLORS, base_layout, go, np, play_pause):
+    # The naive overlap: one needle per direction, centres spread on a ring, sliding onto ONE point.
+    # Shared ground is counted once, so the footprint shrinks -- but it bottoms out at the disk a
+    # plain spin already paints, area pi/4 ~ 0.785 (the dotted circle). Overlap helps; WHERE the
+    # needles sit is what a Besicovitch set still has to get right.
     _N = 48
     _dirs = np.linspace(0.0, np.pi, _N, endpoint=False)
     _ux, _uy = np.cos(_dirs), np.sin(_dirs)  # needle axis (direction), fixed per needle
-    _w = 0.05  # needle thickness
-    _half = 0.5  # half length -> unit needle
-
-    # Spread the centres around a full ring so they start well separated.
-    _cang = 2.0 * _dirs
+    _cang = 2.0 * _dirs  # spread the starting centres around a full ring
     _cdx, _cdy = np.cos(_cang), np.sin(_cang)
+    _half, _w = 0.5, 0.05  # unit needle, thin
 
-    _gx = np.linspace(-1.8, 1.8, 240)
-    _gy = np.linspace(-1.8, 1.8, 240)
+    _gx = np.linspace(-1.8, 1.8, 220)
+    _gy = np.linspace(-1.8, 1.8, 220)
     _GX, _GY = np.meshgrid(_gx, _gy)
-    _cellA = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
+    _cell = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
 
-    def _union_area(R):
+    def _area(R):
         _mask = np.zeros(_GX.shape, dtype=bool)
         for _i in range(_N):
             _cx, _cy = R * _cdx[_i], R * _cdy[_i]
             _dx, _dy = _GX - _cx, _GY - _cy
-            _along = _dx * _ux[_i] + _dy * _uy[_i]
-            _perp = -_dx * _uy[_i] + _dy * _ux[_i]
-            _mask |= (np.abs(_along) <= _half) & (np.abs(_perp) <= _w / 2)
-        return float(_mask.sum() * _cellA)
+            _al = _dx * _ux[_i] + _dy * _uy[_i]
+            _pe = -_dx * _uy[_i] + _dy * _ux[_i]
+            _mask |= (np.abs(_al) <= _half) & (np.abs(_pe) <= _w / 2)
+        return float(_mask.sum() * _cell)
 
-    def _needle_trace(R, color=COLORS["primary"], opacity=0.75, width=2, name="needles"):
+    def _needles(R):
         _xs, _ys = [], []
         for _i in range(_N):
             _cx, _cy = R * _cdx[_i], R * _cdy[_i]
@@ -1593,27 +1769,10 @@ def _(COLORS, base_layout, go, np):
             x=_xs,
             y=_ys,
             mode="lines",
-            line={"color": color, "width": width},
-            opacity=opacity,
+            line={"color": COLORS["primary"], "width": 2},
+            opacity=0.75,
             showlegend=False,
-            name=name,
-        )
-
-    def _rail_trace(_Rmax):
-        # The straight line each needle's centre follows: from its spread-out start on the
-        # ring straight in to the common centre. This is the "line they follow".
-        _xs, _ys = [], []
-        for _i in range(_N):
-            _xs += [_Rmax * _cdx[_i], 0.0, None]
-            _ys += [_Rmax * _cdy[_i], 0.0, None]
-        return go.Scatter(
-            x=_xs,
-            y=_ys,
-            mode="lines",
-            line={"color": COLORS["muted"], "width": 1, "dash": "dot"},
-            opacity=0.5,
-            showlegend=False,
-            name="rails",
+            name="needles",
         )
 
     def _readout(R):
@@ -1621,26 +1780,33 @@ def _(COLORS, base_layout, go, np):
             x=[0.0],
             y=[1.62],
             mode="text",
-            text=[f"footprint area ≈ {_union_area(R):.2f}"],
+            text=[f"area ≈ {_area(R):.2f}"],
             textfont={"color": COLORS["highlight"], "size": 16},
             showlegend=False,
         )
 
+    _th = np.linspace(0.0, 2.0 * np.pi, 120)
+    _disk = go.Scatter(  # the plain-spin disk, radius 1/2, that stacking reproduces
+        x=0.5 * np.cos(_th),
+        y=0.5 * np.sin(_th),
+        mode="lines",
+        line={"color": COLORS["muted"], "width": 1.2, "dash": "dot"},
+        showlegend=False,
+        name="disk π/4",
+    )
+
     # Hold at the start and end, and step R slowly in between, so the collapse is legible.
-    _Rs = np.concatenate([np.full(3, 1.15), np.linspace(1.15, 0.05, 34), np.full(4, 0.05)])
+    _Rs = np.concatenate([np.full(3, 1.15), np.linspace(1.15, 0.0, 34), np.full(4, 0.0)])
 
     _fig = go.Figure()
-    _fig.add_trace(_rail_trace(_Rs[0]))  # 0: static rails (the path each centre follows)
-    # 1: faint ghost of the spread-out start, so the slide reads as start -> common centre.
-    _fig.add_trace(_needle_trace(_Rs[0], color=COLORS["muted"], opacity=0.3, width=1.5, name="start"))
-    _fig.add_trace(_needle_trace(_Rs[0]))  # 2: the sliding needles
-    _fig.add_trace(_readout(_Rs[0]))  # 3: footprint readout
-
+    _fig.add_trace(_disk)  # 0: static plain-spin disk that stacking lands on
+    _fig.add_trace(_needles(_Rs[0]))  # 1: the sliding needles
+    _fig.add_trace(_readout(_Rs[0]))  # 2: footprint readout
     _fig.frames = [
-        go.Frame(data=[_needle_trace(_R), _readout(_R)], traces=[2, 3], name=str(_i)) for _i, _R in enumerate(_Rs)
+        go.Frame(data=[_needles(_R), _readout(_R)], traces=[1, 2], name=str(_i)) for _i, _R in enumerate(_Rs)
     ]
 
-    _fig.update_layout(**base_layout(title="Overlap every direction", height=560))
+    _fig.update_layout(**base_layout(title="Stack them on a point", height=520))
     _fig.update_xaxes(
         range=[-1.8, 1.8],
         scaleanchor="y",
@@ -1650,36 +1816,7 @@ def _(COLORS, base_layout, go, np):
         showticklabels=False,
     )
     _fig.update_yaxes(range=[-1.8, 1.85], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
-    _fig.update_layout(
-        updatemenus=[
-            {
-                "type": "buttons",
-                "showactive": False,
-                "y": 1.1,
-                "x": 0.5,
-                "xanchor": "center",
-                "buttons": [
-                    {
-                        "label": "▶ Slide them together",
-                        "method": "animate",
-                        "args": [
-                            None,
-                            {
-                                "frame": {"duration": 200, "redraw": True},
-                                "fromcurrent": True,
-                                "transition": {"duration": 150},
-                            },
-                        ],
-                    },
-                    {
-                        "label": "❚❚ Pause",
-                        "method": "animate",
-                        "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}],
-                    },
-                ],
-            }
-        ]
-    )
+    _fig.update_layout(updatemenus=play_pause("▶ Slide them together"))
     _fig
     return
 
@@ -1687,23 +1824,27 @@ def _(COLORS, base_layout, go, np):
 @app.cell
 def _(mo):
     mo.md(r"""
-    One needle per direction, laid down at once, then slid to overlap as much as possible. Each
-    needle's centre travels straight in along its faint **rail** to a common centre (the pale
-    needles mark where they started). Every needle keeps its direction the whole way, so all
-    directions remain. The set still reaches about as far as a single needle, but its overlaps are
-    counted once, so the footprint keeps dropping as they pile up (the readout tracks it), reaching
-    exactly zero in the continuum limit of one needle for every direction:
+    Stacking saves something, but not enough. The footprint settles at the disk a plain spin
+    already paints, area $\pi/4 \approx 0.785$ (the dotted circle). Overlap by itself is not the
+    trick; *where* the needles sit is. Piling them on one spot just rebuilds the circle.
+
+    The placement that works is the one we already have: the slice-and-slide, the **Perron tree**.
+    It translates the copies so they *share* ground without landing on top of each other, and its
+    area keeps falling with every extra slice. The turning needle could never ride it down to zero,
+    a moving needle always left a connecting sliver, but a Besicovitch set never moves. With no path
+    to keep, no sliver survives, and pushed to one needle for every direction the area drops all the
+    way to exactly zero:
 
     $$
     \begin{aligned}
     &K \subset \mathbb{R}^2 && \text{a set in the plane} \\
-    &K \text{ contains a unit segment in every direction} && \text{a Besicovitch set} \\
+    &K \text{ contains a unit segment in every direction} && \text{= a Besicovitch set} \\
     &|K| = 0 && \text{yet zero area}
     \end{aligned}
     $$
 
-    This object has a name. A set that contains a unit segment in every direction is a
-    **Besicovitch set** (also called a **Kakeya set**), and we have just built one with zero area.
+    So the answer to "how small can a Besicovitch set be?" is zero. Built as the Perron tree with no
+    motion to pay for, it holds a unit segment in every direction and covers no area at all.
     """)
     return
 
@@ -1955,7 +2096,7 @@ def _(COLORS, SCENE_THEME, base_layout, fibonacci_sphere, go, np, play_pause):
     # "Overlap to zero volume": one unit segment per sphere-direction, each keeping its DIRECTION
     # while its CENTRE slides from a spread-out sphere of radius R to a common point (a bush). A
     # running volume readout (voxel-count of the thickened segments on a coarse 3D grid) shows the
-    # union volume collapsing as the tubes overlap -- the 3D twin of "Overlap every direction".
+    # union volume collapsing as the tubes overlap -- the 3D twin of stacking the needles on a point.
     _N = 55
     _dx, _dy, _dz = fibonacci_sphere(_N)
     _dirs = np.column_stack([_dx, _dy, _dz])  # direction (fixed) of each needle
