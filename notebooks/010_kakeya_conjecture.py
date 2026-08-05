@@ -895,14 +895,6 @@ def _(mo):
     Each piece can then be slid on its own, and because a slide only translates it, every needle
     inside keeps pointing the way it did. So we cut a shape apart and slide the pieces back together
     overlapping, and not one direction is lost.
-
-    Start from the square table we spun and **cut a triangle out of it.** Read that triangle as one
-    needle pivoting about its top tip: swung between the two sides it points across a whole fan of
-    directions, every position the **same length**, so the triangular patch already holds that fan
-    of needles. Now cut the triangle down the middle (the patch, not the needle) into two thinner
-    triangles and **slide them until they overlap.** Each half carries its fan along unchanged, so
-    together they still cover the whole fan, but the overlap is table counted once instead of twice,
-    so the footprint shrinks.
     """)
     return
 
@@ -1194,13 +1186,15 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
 @app.cell
 def _(mo):
     mo.md(r"""
-    The animation first carves the triangle out of the square table, then cuts it in half and slides
-    the halves over each other. Watch the **arrows**: they mark each needle's direction, and they
-    never budge as the halves move. So every direction is still there at the end, yet the area
-    readout on the right keeps dropping.
-    The reason is the overlap: where the two halves cover the same patch of table, that patch is
-    counted once but reused by needles pointing several different ways at once. Shared table is
-    saved table.
+    If we cut a triangle out of the table, and read it as one needle pivoting.
+    swung between the two sides it points across a whole fan of directions, every position the same length,
+    so the patch already holds that fan of needles.
+    Now cut the triangle down the middle (the patch, not the needle) into two thinner triangles and slide them until they overlap,
+    as the animation does.
+
+    The arrows mark each needle's direction and never budge, so each half brings its fan along unchanged and together they still cover every direction.
+    But where the halves overlap,
+    the table is counted once instead of twice: shared table is saved table, and the area readout on the right tracks the footprint shrinking.
     """)
     return
 
@@ -1492,8 +1486,9 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
 def _(mo):
     mo.md(r"""
     Each small turn happens inside one thin piece; a free slide carries the needle to the next, no
-    pivot anywhere. The pieces overlap, so the swept area falls with every slice. But the **dial**
-    fills only a 60° wedge: one tree reaches its own fan and no further. For the rest, a second move.
+    pivot anywhere. The pieces overlap, so the swept area falls with every slice.
+
+    But we have two problems remaining, we cover only a 60° fan and the area doesn't seem to beat the deltoid so far.
     """)
     return
 
@@ -1785,12 +1780,19 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
 @app.cell
 def _(mo):
     mo.md(r"""
-    Three Perron trees joined at the apex, tiling the half-turn. The needle slice-slides through
-    each band and the joins carry it across, so it points in every direction and the dial closes,
-    exactly like the disk and the deltoid did. But the overlapping pieces hold the swept area well
-    under a full spin (the disk, 0.79), and every extra slice lowers it further, closing on the
-    deltoid (0.39, the best a simple rotation can do). And, as the next section shows, slicing has
-    no floor above zero. So how small can it get?
+    Three Perron trees joined at the apex, tiling the half-turn.
+    The needle slice-slides through each band and the joins carry it across,
+    so it points in every direction and the dial closes, exactly like the disk and the deltoid did.
+
+    But the overlapping pieces hold the swept area well under a full spin (the disk, 0.79),
+    and every extra slice lowers it further. Carried finer than this animation can draw,
+    it drops past the deltoid (0.39, the small region we turned the needle in earlier)
+    toward almost nothing.
+
+    It never quite reaches zero, though: to change direction the needle must pivot slightly
+    into each new position, and sweeping those positions always leaves a sliver.
+    Motion itself is what pins the area above zero, which points the next way out,
+    can it be done without moving?
     """)
     return
 
@@ -1798,100 +1800,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## …but it never quite hits zero
-
-    As small as you like: a millionth of the disk, a billionth, smaller. And yet **never exactly
-    zero**, because a sliver of area always stays behind, no matter how fine the slices.
-
-    Here is why. To *turn*, a needle moves
-    continuously: its 31° pose has to sit right next to its 30° pose, so it must sweep every
-    position in between, and that swept-through ground is exactly the sliver that never vanishes.
-
-    > **Turning forces the needle through every position in between, and sweeping them costs area.
-    > Motion itself is what pins the area above zero.**
-
-    Which points straight at the only way out: stop moving.
-    """)
-    return
-
-
-@app.cell
-def _(COLORS, base_layout, go, np, perron_stages, play_pause, union_area):
-    # Area, never zero: build a Perron tree and, across frames of increasing subdivision, plot
-    # the tree of triangles with a running (rasterised) area readout. Slicing shrinks the area
-    # toward -- but never onto -- zero, because moving a real needle always leaves a sliver.
-    _pbase = [np.array([[-0.55, -0.5], [0.55, -0.5], [0.0, 0.5]])]
-    _stages = perron_stages(_pbase, levels=5)
-
-    _gx = np.linspace(-0.9, 0.9, 220)
-    _gy = np.linspace(-0.7, 0.7, 200)
-    _GX, _GY = np.meshgrid(_gx, _gy)
-
-    def _tree_trace(tris):
-        _x, _y = [], []
-        for _t in tris:
-            _x += [_t[0, 0], _t[1, 0], _t[2, 0], _t[0, 0], None]
-            _y += [_t[0, 1], _t[1, 1], _t[2, 1], _t[0, 1], None]
-        return go.Scatter(
-            x=_x,
-            y=_y,
-            mode="lines",
-            fill="toself",
-            fillcolor="rgba(149, 225, 211, 0.22)",
-            line={"color": COLORS["accent1"], "width": 1},
-            showlegend=False,
-            name="Perron tree",
-        )
-
-    def _readout(tris, level):
-        _a = union_area(tris, _GX, _GY)
-        return go.Scatter(
-            x=[0.0],
-            y=[0.62],
-            mode="text",
-            text=[f"<b>level {level} · area ≈ {_a:.3f}</b>"],
-            textfont={"color": COLORS["highlight"], "size": 15},
-            showlegend=False,
-        )
-
-    _tris0, _lvl0 = _stages[0]
-    _fig = go.Figure()
-    _fig.add_trace(_tree_trace(_tris0))  # 0
-    _fig.add_trace(_readout(_tris0, _lvl0))  # 1
-
-    _fig.frames = [
-        go.Frame(data=[_tree_trace(_tris), _readout(_tris, _lvl)], traces=[0, 1], name=str(_i))
-        for _i, (_tris, _lvl) in enumerate(_stages)
-    ]
-
-    _fig.update_layout(**base_layout(title="Area, never zero", height=470))
-    _fig.update_xaxes(
-        range=[-0.9, 0.9],
-        scaleanchor="y",
-        constrain="domain",
-        gridcolor=COLORS["grid"],
-        zerolinecolor=COLORS["grid"],
-        showticklabels=False,
-    )
-    _fig.update_yaxes(range=[-0.7, 0.75], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
-    _fig.update_layout(updatemenus=play_pause("▶ Slice finer"))
-    _fig
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    As the slice count climbs, the running area readout falls and falls but never reaches 0.
-    The last sliver is exactly what the next idea removes.
-    """)
-    return
-
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    ## Stop moving the needle at all
+    ## 5. Stop moving
 
     Here is the move: **stop turning one needle.** Instead, put down a
     *separate* needle for each direction, all at once, and look at the whole collection together.
