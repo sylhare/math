@@ -891,10 +891,7 @@ def _(mo):
     Sliding reused a single needle's *own* track, and that alone halved the disk.
     Beating it means letting *different* directions share a track, and that takes a second move: **slicing**.
 
-    Here we _cut the table itself_, the patch that already carries a whole bundle of needles, into pieces.
-    Each piece can then be slid on its own, and because a slide only translates it, every needle
-    inside keeps pointing the way it did. So we cut a shape apart and slide the pieces back together
-    overlapping, and not one direction is lost.
+    Here we _cut the table itself_, and slide the pieces to overlap, then do it again from more pieces.
     """)
     return
 
@@ -1186,15 +1183,23 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
 @app.cell
 def _(mo):
     mo.md(r"""
-    If we cut a triangle out of the table, and read it as one needle pivoting.
-    swung between the two sides it points across a whole fan of directions, every position the same length,
-    so the patch already holds that fan of needles.
-    Now cut the triangle down the middle (the patch, not the needle) into two thinner triangles and slide them until they overlap,
-    as the animation does.
+    The animation show the slice and slide move as well as the overall area it takes for it throughout.
 
-    The arrows mark each needle's direction and never budge, so each half brings its fan along unchanged and together they still cover every direction.
-    But where the halves overlap,
-    the table is counted once instead of twice: shared table is saved table, and the area readout on the right tracks the footprint shrinking.
+    Pin the needle at the top and swing it left to right, the needle passes through a range of directions,
+    this creates a circular sector.
+
+    That triangle is really two halves sitting side by side, and as one solid piece it cannot be shrunk:
+    sliding just move the same area around.
+
+    But if you cut the table in the middle where the needle was anchored, now the two halves can slide over each other.
+    Basically move the needle from the middle to one side,
+    then slide the table without moving the table (we've seen before it doesn't count).
+    Once moved you can re-use part of the same area to turn the needle further.
+    Thanks to this overlap, you need overall less area to point in different direction.
+
+    There's no catch here because the needle is still on the table, and still turning relatively to it.
+
+    The cut allow to slide the needle in the other direction without paying with it's height in area.
     """)
     return
 
@@ -1202,28 +1207,14 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    **The two moves are one idea.** Sliding lets a needle reuse its own track; slicing lets
-    different directions share a track. Both work for the same reason: **moving a piece never
-    changes the directions inside it**, so the footprint can shrink while every direction stays put
-    (no leaving the plane, no spinning the world). And it compounds: slice each piece again and
-    slide again (the **Perron tree**), and the area keeps falling.
+    - Sliding lets a needle reuse its own track
+    - slicing lets different directions share a track.
 
-    We have shrunk the *table* the needle would need. But we did it by sliding patches around, not
-    by turning a needle. The original 1917 question was about an actual needle sweeping through
-    every direction. Does a real needle fit inside this shrunken region, and can it turn all the
-    way around in there?
-    """)
-    return
+    Both work for the same reason: **moving a piece never changes the directions inside it**,
+    so the footprint can shrink while every direction stays put (no leaving the plane, no spinning the world).
 
-
-@app.cell
-def _(mo):
-    mo.md(r"""
-    It does, and it takes two moves. Start with one move. Iterate slice-and-slide into a full
-    **Perron tree** and a real needle **turns** through a single 60° fan: it makes each small turn
-    inside a thin piece, slides (free) to the next, and never pivots about a point. Watch the swept
-    area fall with every extra slice, and the dial on the right fill in the wedge of directions it
-    covers.
+    And it compounds: slice each piece again and slide again (the **Perron tree**), and the area keeps falling.
+    Iterate slice-and-slide into a full **Perron tree** and a real needle turns through a single 60° fan.
     """)
     return
 
@@ -1485,10 +1476,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
 @app.cell
 def _(mo):
     mo.md(r"""
-    Each small turn happens inside one thin piece; a free slide carries the needle to the next, no
-    pivot anywhere. The pieces overlap, so the swept area falls with every slice.
-
-    But we have two problems remaining, we cover only a 60° fan and the area doesn't seem to beat the deltoid so far.
+    So how can we leverage that trick to cover more directions?
     """)
     return
 
