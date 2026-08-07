@@ -75,14 +75,6 @@ def _(np):
         theta = 2 * np.pi * turns * t
         return ring * np.cos(theta), ring * np.sin(theta), dz
 
-    def needle_segments(dirs):
-        """None-separated coordinate lists of unit segments through the origin."""
-        coords = [[] for _ in dirs]
-        for k in range(len(dirs[0])):
-            for axis, comp in zip(coords, dirs):
-                axis += [-0.5 * comp[k], 0.5 * comp[k], None]
-        return coords
-
     def sphere_surface(go, radius=0.5, color="#00d4ff", opacity=0.12):
         """A faint translucent sphere — the set of all directions the tips trace out."""
         u = np.linspace(0, 2 * np.pi, 48)
@@ -102,66 +94,27 @@ def _(np):
             name="sphere of directions",
         )
 
-    def in_triangle(px, py, tri):
-        """Boolean mask: which (px, py) grid points lie inside triangle ``tri``."""
-        (ax, ay), (bx, by), (cx, cy) = tri
-        v0x, v0y = cx - ax, cy - ay
-        v1x, v1y = bx - ax, by - ay
-        v2x, v2y = px - ax, py - ay
-        d00 = v0x * v0x + v0y * v0y
-        d01 = v0x * v1x + v0y * v1y
-        d11 = v1x * v1x + v1y * v1y
-        d20 = v2x * v0x + v2y * v0y
-        d21 = v2x * v1x + v2y * v1y
-        denom = d00 * d11 - d01 * d01
-        if abs(denom) < 1e-15:
-            return np.zeros(px.shape, dtype=bool)
-        u = (d11 * d20 - d01 * d21) / denom
-        v = (d00 * d21 - d01 * d20) / denom
-        return (u >= 0) & (v >= 0) & (u + v <= 1)
-
-    def union_area(tris, gx, gy):
-        """Rasterised area of the union of ``tris`` over the meshgrids ``gx``, ``gy``."""
-        mask = np.zeros(gx.shape, dtype=bool)
-        for t in tris:
-            mask |= in_triangle(gx, gy, t)
-        return float(mask.sum() * (gx[0, 1] - gx[0, 0]) * (gy[1, 0] - gy[0, 0]))
-
-    def perron_stages(base, levels, alpha=0.16, steps=8):
-        """Perron tree: repeatedly slice every triangle in half and slide the halves to overlap."""
-
-        def _slide(tris, sigma):
-            out = []
-            for b0, b1, apex in tris:
-                m = (b0 + b1) / 2.0
-                d = np.array([sigma * alpha * (b1[0] - b0[0]), 0.0])
-                out.append(np.array([b0, m, apex]) + d)
-                out.append(np.array([m, b1, apex]) - d)
-            return out
-
-        fracs = np.linspace(0.0, 1.0, steps)
-        stages = [(base, 0)]
-        current = base
-        for lvl in range(1, levels + 1):
-            for sig in fracs:
-                stages.append((_slide(current, sig), lvl))
-            current = _slide(current, 1.0)
-        return stages
-
-    def play_pause(play_label):
+    def play_pause(play_label, duration=60, transition=0.0, y=1.1):
         """Return a Plotly play/pause button pair for a frame animation."""
         return [
             {
                 "type": "buttons",
                 "showactive": False,
-                "y": 1.1,
+                "y": y,
                 "x": 0.5,
                 "xanchor": "center",
                 "buttons": [
                     {
                         "label": play_label,
                         "method": "animate",
-                        "args": [None, {"frame": {"duration": 60, "redraw": True}, "fromcurrent": True}],
+                        "args": [
+                            None,
+                            {
+                                "frame": {"duration": duration, "redraw": True},
+                                "fromcurrent": True,
+                                "transition": {"duration": int(duration * transition)},
+                            },
+                        ],
                     },
                     {
                         "label": "❚❚ Pause",
@@ -172,14 +125,175 @@ def _(np):
             }
         ]
 
+    def dial_outline(go, COLORS):
+        """Semicircular gauge outline for the "directions covered" dial (axes x2/y2)."""
+        p = np.linspace(0.0, np.pi, 120)
+        return go.Scatter(
+            x=[1.0, *np.cos(p), -1.0],
+            y=[0.0, *np.sin(p), 0.0],
+            mode="lines",
+            line={"color": COLORS["grid"], "width": 1.5},
+            xaxis="x2",
+            yaxis="y2",
+            showlegend=False,
+        )
+
+    def dial_ticks(go, COLORS):
+        """0°/90°/180° labels around the dial (axes x2/y2)."""
+        return go.Scatter(
+            x=[1.16, 0.0, -1.16],
+            y=[-0.04, 1.14, -0.04],
+            mode="text",
+            text=["0°", "90°", "180°"],
+            textfont={"color": COLORS["muted"], "size": 11},
+            xaxis="x2",
+            yaxis="y2",
+            showlegend=False,
+        )
+
+    def dial_needle(go, COLORS, phi):
+        """The moving pointer of the dial at angle ``phi`` (axes x2/y2)."""
+        return go.Scatter(
+            x=[0.0, np.cos(phi)],
+            y=[0.0, np.sin(phi)],
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 4},
+            xaxis="x2",
+            yaxis="y2",
+            showlegend=False,
+        )
+
+    def dial_wedge(go, COLORS, a0, a1, n=120):
+        """Filled wedge of directions covered so far, from ``a0`` to ``a1`` (axes x2/y2)."""
+        p = np.linspace(a0, a1, n)
+        return go.Scatter(
+            x=[0.0, *np.cos(p), 0.0],
+            y=[0.0, *np.sin(p), 0.0],
+            mode="lines",
+            fill="toself",
+            fillcolor="rgba(0,212,255,0.22)",
+            line={"color": COLORS["primary"], "width": 3},
+            xaxis="x2",
+            yaxis="y2",
+            showlegend=False,
+        )
+
+    def tree_angle(a, p):
+        """Direction angle from apex ``a`` to point ``p``."""
+        return np.arctan2(p[1] - a[1], p[0] - a[0])
+
+    def tree_unit(t):
+        """Unit vector pointing at angle ``t``."""
+        return np.array([np.cos(t), np.sin(t)])
+
+    def tree_build(apex0, base, alpha, level):
+        """Perron-tree leaves after ``level`` rounds of slice-and-slide (unsorted)."""
+        leaves = [
+            dict(
+                apex=apex0.copy(),
+                bL=np.array([-base, 0.0]),
+                bR=np.array([base, 0.0]),
+                aL=tree_angle(apex0, np.array([-base, 0.0])),
+                aR=tree_angle(apex0, np.array([base, 0.0])),
+            )
+        ]
+        for _ in range(level):
+            nxt = []
+            for lf in leaves:
+                a, bL, bR = lf["apex"], lf["bL"], lf["bR"]
+                m = (bL + bR) / 2.0
+                s = np.array([alpha * (bR[0] - m[0]), 0.0])
+                nxt.append(dict(apex=a + s, bL=bL + s, bR=m + s, aL=tree_angle(a, bL), aR=tree_angle(a, m)))
+                nxt.append(dict(apex=a - s, bL=m - s, bR=bR - s, aL=tree_angle(a, m), aR=tree_angle(a, bR)))
+            leaves = nxt
+        return leaves
+
+    def tree_swept_area(leaves, GX, GY, cellA, L0):
+        """Rasterised area swept by the fans of ``leaves`` over the meshgrids ``GX``, ``GY``."""
+        mask = np.zeros(GX.shape, bool)
+        for lf in leaves:
+            dx, dy = GX - lf["apex"][0], GY - lf["apex"][1]
+            lo, hi = min(lf["aL"], lf["aR"]), max(lf["aL"], lf["aR"])
+            mask |= (np.hypot(dx, dy) <= L0) & (np.arctan2(dy, dx) >= lo - 1e-9) & (np.arctan2(dy, dx) <= hi + 1e-9)
+        return float(mask.sum() * cellA)
+
+    def tree_needle(go, COLORS, apex, t, L0):
+        """A single unit needle from ``apex`` pointing at angle ``t``."""
+        e = apex + L0 * tree_unit(t)
+        return go.Scatter(
+            x=[apex[0], e[0]],
+            y=[apex[1], e[1]],
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 6},
+            showlegend=False,
+        )
+
+    def slice_button(names, level, duration):
+        """A "▶ 2^level slices" button that plays that level's frame sequence."""
+        return {
+            "label": f"▶ {2**level} slices",
+            "method": "animate",
+            "args": [
+                names[level],
+                {
+                    "frame": {"duration": duration, "redraw": True},
+                    "transition": {"duration": 0},
+                    "mode": "immediate",
+                    "fromcurrent": False,
+                },
+            ],
+        }
+
+    def tree_sectors(go, COLORS, leaves, L0, arc_n=16, fill="rgba(149,225,211,0.13)", width=0.8):
+        """Faint filled fans (one per leaf) showing every direction a Perron tree holds."""
+        xs, ys = [], []
+        for lf in leaves:
+            arc = np.linspace(lf["aL"], lf["aR"], arc_n)
+            xs += [lf["apex"][0], *(lf["apex"][0] + L0 * np.cos(arc)), lf["apex"][0], None]
+            ys += [lf["apex"][1], *(lf["apex"][1] + L0 * np.sin(arc)), lf["apex"][1], None]
+        return go.Scatter(
+            x=xs,
+            y=ys,
+            mode="lines",
+            fill="toself",
+            fillcolor=fill,
+            line={"color": COLORS["accent1"], "width": width},
+            opacity=0.85,
+            showlegend=False,
+        )
+
+    def fan_trail(go, COLORS, segments):
+        """Faint accumulated trace of swept needles; ``segments`` are ((x0, x1), (y0, y1)) pairs."""
+        xs, ys = [], []
+        for (x0, x1), (y0, y1) in segments:
+            xs += [x0, x1, None]
+            ys += [y0, y1, None]
+        return go.Scatter(
+            x=xs,
+            y=ys,
+            mode="lines",
+            line={"color": COLORS["accent1"], "width": 1},
+            opacity=0.5,
+            showlegend=False,
+        )
+
     return (
+        dial_needle,
+        dial_outline,
+        dial_ticks,
+        dial_wedge,
+        fan_trail,
         fibonacci_sphere,
-        needle_segments,
-        perron_stages,
         play_pause,
+        slice_button,
         spherical_spiral,
         sphere_surface,
-        union_area,
+        tree_angle,
+        tree_build,
+        tree_needle,
+        tree_sectors,
+        tree_swept_area,
+        tree_unit,
     )
 
 
@@ -240,7 +354,20 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
+def _(
+    COLORS,
+    base_layout,
+    dial_needle,
+    dial_outline,
+    dial_ticks,
+    dial_wedge,
+    fan_trail,
+    go,
+    make_subplots,
+    np,
+    play_pause,
+    style_subplot_axes,
+):
     """
     Visualizes the naive solution: rotating a unit needle about its center, sweeping a disk.
     """
@@ -253,70 +380,7 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         return [-0.5 * np.cos(theta), 0.5 * np.cos(theta)], [-0.5 * np.sin(theta), 0.5 * np.sin(theta)]
 
     def _accum(k):
-        _xs, _ys = [], []
-        for _j in range(k + 1):
-            _x, _y = _needle(_angles[_j])
-            _xs += [_x[0], _x[1], None]
-            _ys += [_y[0], _y[1], None]
-        return go.Scatter(
-            x=_xs,
-            y=_ys,
-            mode="lines",
-            line={"color": COLORS["accent1"], "width": 1},
-            opacity=0.5,
-            showlegend=False,
-        )
-
-    _rd = 1.0
-
-    def _dial_outline():
-        _p = np.linspace(0.0, np.pi, 120)
-        return go.Scatter(
-            x=[_rd, *(_rd * np.cos(_p)), -_rd],
-            y=[0.0, *(_rd * np.sin(_p)), 0.0],
-            mode="lines",
-            line={"color": COLORS["grid"], "width": 1.5},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
-
-    def _dial_ticks():
-        return go.Scatter(
-            x=[1.16, 0.0, -1.16],
-            y=[-0.04, 1.14, -0.04],
-            mode="text",
-            text=["0°", "90°", "180°"],
-            textfont={"color": COLORS["muted"], "size": 11},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
-
-    def _covered(phi):
-        _p = np.linspace(0.0, phi, 120)
-        return go.Scatter(
-            x=[0.0, *(_rd * np.cos(_p)), 0.0],
-            y=[0.0, *(_rd * np.sin(_p)), 0.0],
-            mode="lines",
-            fill="toself",
-            fillcolor="rgba(0,212,255,0.22)",
-            line={"color": COLORS["primary"], "width": 3},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
-
-    def _dial_needle(phi):
-        return go.Scatter(
-            x=[0.0, _rd * np.cos(phi)],
-            y=[0.0, _rd * np.sin(phi)],
-            mode="lines",
-            line={"color": COLORS["secondary"], "width": 4},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
+        return fan_trail(go, COLORS, [_needle(_angles[_j]) for _j in range(k + 1)])
 
     _fig = make_subplots(
         rows=1,
@@ -351,17 +415,22 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         row=1,
         col=1,
     )
-    _fig.add_trace(_dial_outline(), row=1, col=2)
-    _fig.add_trace(_covered(_angles[0]), row=1, col=2)
-    _fig.add_trace(_dial_needle(_angles[0]), row=1, col=2)
-    _fig.add_trace(_dial_ticks(), row=1, col=2)
+    _fig.add_trace(dial_outline(go, COLORS), row=1, col=2)
+    _fig.add_trace(dial_wedge(go, COLORS, 0.0, _angles[0]), row=1, col=2)
+    _fig.add_trace(dial_needle(go, COLORS, _angles[0]), row=1, col=2)
+    _fig.add_trace(dial_ticks(go, COLORS), row=1, col=2)
 
     _frames = []
     for _k in range(len(_angles)):
         _nx, _ny = _needle(_angles[_k])
         _frames.append(
             go.Frame(
-                data=[_accum(_k), go.Scatter(x=_nx, y=_ny), _covered(_angles[_k]), _dial_needle(_angles[_k])],
+                data=[
+                    _accum(_k),
+                    go.Scatter(x=_nx, y=_ny),
+                    dial_wedge(go, COLORS, 0.0, _angles[_k]),
+                    dial_needle(go, COLORS, _angles[_k]),
+                ],
                 traces=[1, 2, 4, 5],
                 name=f"{np.degrees(_angles[_k]):.0f}",
             )
@@ -706,7 +775,20 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
+def _(
+    COLORS,
+    base_layout,
+    dial_needle,
+    dial_outline,
+    dial_ticks,
+    dial_wedge,
+    fan_trail,
+    go,
+    make_subplots,
+    np,
+    play_pause,
+    style_subplot_axes,
+):
     """
     Visualizes the deltoid shape created by turning and sliding the needle.
     """
@@ -726,73 +808,10 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
     _angles = np.linspace(0, 2 * np.pi, 37)
 
     def _accum(k):
-        _xs, _ys = [], []
-        for _j in range(k + 1):
-            _x, _y = _tangent_chord(_angles[_j])
-            _xs += [_x[0], _x[1], None]
-            _ys += [_y[0], _y[1], None]
-        return go.Scatter(
-            x=_xs,
-            y=_ys,
-            mode="lines",
-            line={"color": COLORS["accent1"], "width": 1},
-            opacity=0.5,
-            showlegend=False,
-        )
-
-    _rd = 1.0
+        return fan_trail(go, COLORS, [_tangent_chord(_angles[_j]) for _j in range(k + 1)])
 
     def _phi(k):
         return np.pi * (1.0 - k / (len(_angles) - 1))
-
-    def _dial_outline():
-        _p = np.linspace(0.0, np.pi, 120)
-        return go.Scatter(
-            x=[_rd, *(_rd * np.cos(_p)), -_rd],
-            y=[0.0, *(_rd * np.sin(_p)), 0.0],
-            mode="lines",
-            line={"color": COLORS["grid"], "width": 1.5},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
-
-    def _dial_ticks():
-        return go.Scatter(
-            x=[1.16, 0.0, -1.16],
-            y=[-0.04, 1.14, -0.04],
-            mode="text",
-            text=["0°", "90°", "180°"],
-            textfont={"color": COLORS["muted"], "size": 11},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
-
-    def _covered(phi):
-        _p = np.linspace(phi, np.pi, 120)
-        return go.Scatter(
-            x=[0.0, *(_rd * np.cos(_p)), 0.0],
-            y=[0.0, *(_rd * np.sin(_p)), 0.0],
-            mode="lines",
-            fill="toself",
-            fillcolor="rgba(0,212,255,0.22)",
-            line={"color": COLORS["primary"], "width": 3},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
-
-    def _dial_needle(phi):
-        return go.Scatter(
-            x=[0.0, _rd * np.cos(phi)],
-            y=[0.0, _rd * np.sin(phi)],
-            mode="lines",
-            line={"color": COLORS["secondary"], "width": 4},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
 
     _fig = make_subplots(
         rows=1,
@@ -827,17 +846,22 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         row=1,
         col=1,
     )
-    _fig.add_trace(_dial_outline(), row=1, col=2)
-    _fig.add_trace(_covered(_phi(0)), row=1, col=2)
-    _fig.add_trace(_dial_needle(_phi(0)), row=1, col=2)
-    _fig.add_trace(_dial_ticks(), row=1, col=2)
+    _fig.add_trace(dial_outline(go, COLORS), row=1, col=2)
+    _fig.add_trace(dial_wedge(go, COLORS, _phi(0), np.pi), row=1, col=2)
+    _fig.add_trace(dial_needle(go, COLORS, _phi(0)), row=1, col=2)
+    _fig.add_trace(dial_ticks(go, COLORS), row=1, col=2)
 
     _frames = []
     for _k in range(len(_angles)):
         _nx, _ny = _tangent_chord(_angles[_k])
         _frames.append(
             go.Frame(
-                data=[_accum(_k), go.Scatter(x=_nx, y=_ny), _covered(_phi(_k)), _dial_needle(_phi(_k))],
+                data=[
+                    _accum(_k),
+                    go.Scatter(x=_nx, y=_ny),
+                    dial_wedge(go, COLORS, _phi(_k), np.pi),
+                    dial_needle(go, COLORS, _phi(_k)),
+                ],
                 traces=[1, 2, 4, 5],
                 name=f"{np.degrees(_angles[_k]):.0f}",
             )
@@ -1255,7 +1279,24 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
+def _(
+    COLORS,
+    base_layout,
+    dial_needle,
+    dial_outline,
+    dial_ticks,
+    dial_wedge,
+    go,
+    make_subplots,
+    np,
+    slice_button,
+    style_subplot_axes,
+    tree_angle,
+    tree_build,
+    tree_needle,
+    tree_sectors,
+    tree_swept_area,
+):
     """
     Visualizes the construction of a Perron tree.
     """
@@ -1263,28 +1304,8 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _B = _H * np.tan(np.radians(30.0))
     _apex0 = np.array([0.0, _H])
 
-    def _ang(a, p):
-        return np.arctan2(p[1] - a[1], p[0] - a[0])
-
-    def _build(level):
-        _leaves = [
-            dict(
-                apex=_apex0.copy(),
-                bL=np.array([-_B, 0.0]),
-                bR=np.array([_B, 0.0]),
-                aL=_ang(_apex0, np.array([-_B, 0.0])),
-                aR=_ang(_apex0, np.array([_B, 0.0])),
-            )
-        ]
-        for _ in range(level):
-            _nxt = []
-            for _lf in _leaves:
-                _a, _bL, _bR = _lf["apex"], _lf["bL"], _lf["bR"]
-                _m = (_bL + _bR) / 2.0
-                _s = np.array([_alpha * (_bR[0] - _m[0]), 0.0])
-                _nxt.append(dict(apex=_a + _s, bL=_bL + _s, bR=_m + _s, aL=_ang(_a, _bL), aR=_ang(_a, _m)))
-                _nxt.append(dict(apex=_a - _s, bL=_m - _s, bR=_bR - _s, aL=_ang(_a, _m), aR=_ang(_a, _bR)))
-            _leaves = _nxt
+    def _leaves_at(level):
+        _leaves = tree_build(_apex0, _B, _alpha, level)
         _leaves.sort(key=lambda lf: lf["aL"] + lf["aR"])
         return _leaves
 
@@ -1292,48 +1313,6 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _gy = np.linspace(-0.05, 1.05, 200)
     _GX, _GY = np.meshgrid(_gx, _gy)
     _cellA = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
-
-    def _swept_area(leaves):
-        _mask = np.zeros(_GX.shape, bool)
-        for _lf in leaves:
-            _dx, _dy = _GX - _lf["apex"][0], _GY - _lf["apex"][1]
-            _lo, _hi = min(_lf["aL"], _lf["aR"]), max(_lf["aL"], _lf["aR"])
-            _mask |= (
-                (np.hypot(_dx, _dy) <= _L0)
-                & (np.arctan2(_dy, _dx) >= _lo - 1e-9)
-                & (np.arctan2(_dy, _dx) <= _hi + 1e-9)
-            )
-        return float(_mask.sum() * _cellA)
-
-    def _u(t):
-        return np.array([np.cos(t), np.sin(t)])
-
-    def _sectors(leaves):
-        _xs, _ys = [], []
-        for _lf in leaves:
-            _arc = np.linspace(_lf["aL"], _lf["aR"], 16)
-            _xs += [_lf["apex"][0], *(_lf["apex"][0] + _L0 * np.cos(_arc)), _lf["apex"][0], None]
-            _ys += [_lf["apex"][1], *(_lf["apex"][1] + _L0 * np.sin(_arc)), _lf["apex"][1], None]
-        return go.Scatter(
-            x=_xs,
-            y=_ys,
-            mode="lines",
-            fill="toself",
-            fillcolor="rgba(149,225,211,0.13)",
-            line={"color": COLORS["accent1"], "width": 0.8},
-            opacity=0.85,
-            showlegend=False,
-        )
-
-    def _needle(apex, t):
-        _e = apex + _L0 * _u(t)
-        return go.Scatter(
-            x=[apex[0], _e[0]],
-            y=[apex[1], _e[1]],
-            mode="lines",
-            line={"color": COLORS["secondary"], "width": 6},
-            showlegend=False,
-        )
 
     def _label(level, area):
         return go.Scatter(
@@ -1346,7 +1325,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
         )
 
     def _poses_for(level):
-        _leaves = _build(level)
+        _leaves = _leaves_at(level)
         _spl = max(2, min(8, round(150 / len(_leaves))))
         _seq = []
         for _li, _lf in enumerate(_leaves):
@@ -1361,63 +1340,12 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
 
     _levels = [2, 3, 4, 5]
     _data = {_L: _poses_for(_L) for _L in _levels}
-    _areas = {_L: _swept_area(_data[_L][0]) for _L in _levels}
+    _areas = {_L: tree_swept_area(_data[_L][0], _GX, _GY, _cellA, _L0) for _L in _levels}
 
-    _rd = 1.0
-    _t_start = _ang(_apex0, np.array([-_B, 0.0]))
+    _t_start = tree_angle(_apex0, np.array([-_B, 0.0]))
 
     def _orient(t):
         return t + np.pi
-
-    def _dial_outline():
-        _p = np.linspace(0.0, np.pi, 120)
-        return go.Scatter(
-            x=[_rd, *(_rd * np.cos(_p)), -_rd],
-            y=[0.0, *(_rd * np.sin(_p)), 0.0],
-            mode="lines",
-            line={"color": COLORS["grid"], "width": 1.5},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
-
-    def _dial_ticks():
-        return go.Scatter(
-            x=[1.16, 0.0, -1.16],
-            y=[-0.04, 1.14, -0.04],
-            mode="text",
-            text=["0°", "90°", "180°"],
-            textfont={"color": COLORS["muted"], "size": 11},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
-
-    def _covered(t_cur):
-        _p = np.linspace(_orient(_t_start), _orient(t_cur), 40)
-        return go.Scatter(
-            x=[0.0, *(_rd * np.cos(_p)), 0.0],
-            y=[0.0, *(_rd * np.sin(_p)), 0.0],
-            mode="lines",
-            fill="toself",
-            fillcolor="rgba(0,212,255,0.22)",
-            line={"color": COLORS["primary"], "width": 3},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
-
-    def _dial_needle(t_cur):
-        _ph = _orient(t_cur)
-        return go.Scatter(
-            x=[0.0, _rd * np.cos(_ph)],
-            y=[0.0, _rd * np.sin(_ph)],
-            mode="lines",
-            line={"color": COLORS["secondary"], "width": 4},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
 
     _fig = make_subplots(
         rows=1,
@@ -1426,13 +1354,13 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
         subplot_titles=("One tree: the needle turning through its fan", "Directions covered"),
     )
     _lv1, _seq1 = _data[_levels[0]]
-    _fig.add_trace(_sectors(_lv1), row=1, col=1)
-    _fig.add_trace(_needle(*_seq1[0]), row=1, col=1)
+    _fig.add_trace(tree_sectors(go, COLORS, _lv1, _L0), row=1, col=1)
+    _fig.add_trace(tree_needle(go, COLORS, *_seq1[0], _L0), row=1, col=1)
     _fig.add_trace(_label(_levels[0], _areas[_levels[0]]), row=1, col=1)
-    _fig.add_trace(_dial_outline(), row=1, col=2)
-    _fig.add_trace(_covered(_seq1[0][1]), row=1, col=2)
-    _fig.add_trace(_dial_needle(_seq1[0][1]), row=1, col=2)
-    _fig.add_trace(_dial_ticks(), row=1, col=2)
+    _fig.add_trace(dial_outline(go, COLORS), row=1, col=2)
+    _fig.add_trace(dial_wedge(go, COLORS, _orient(_t_start), _orient(_seq1[0][1]), n=40), row=1, col=2)
+    _fig.add_trace(dial_needle(go, COLORS, _orient(_seq1[0][1])), row=1, col=2)
+    _fig.add_trace(dial_ticks(go, COLORS), row=1, col=2)
 
     _frames, _names = [], {}
     for _L in _levels:
@@ -1441,38 +1369,25 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
         for _k in range(len(_seq)):
             _nm = f"L{_L}_{_k}"
             _keys.append(_nm)
+            _wedge = dial_wedge(go, COLORS, _orient(_t_start), _orient(_seq[_k][1]), n=40)
+            _dn = dial_needle(go, COLORS, _orient(_seq[_k][1]))
             if _k == 0:
                 _fd = [
-                    _sectors(_leaves),
-                    _needle(*_seq[_k]),
+                    tree_sectors(go, COLORS, _leaves, _L0),
+                    tree_needle(go, COLORS, *_seq[_k], _L0),
                     _label(_L, _areas[_L]),
-                    _covered(_seq[_k][1]),
-                    _dial_needle(_seq[_k][1]),
+                    _wedge,
+                    _dn,
                 ]
                 _tr = [0, 1, 2, 4, 5]
             else:
-                _fd = [_needle(*_seq[_k]), _covered(_seq[_k][1]), _dial_needle(_seq[_k][1])]
+                _fd = [tree_needle(go, COLORS, *_seq[_k], _L0), _wedge, _dn]
                 _tr = [1, 4, 5]
             _frames.append(go.Frame(data=_fd, traces=_tr, name=_nm))
         _names[_L] = _keys
     _fig.frames = _frames
 
-    def _btn(level):
-        return {
-            "label": f"▶ {2**level} slices",
-            "method": "animate",
-            "args": [
-                _names[level],
-                {
-                    "frame": {"duration": 75, "redraw": True},
-                    "transition": {"duration": 0},
-                    "mode": "immediate",
-                    "fromcurrent": False,
-                },
-            ],
-        }
-
-    _buttons = [_btn(_L) for _L in _levels] + [
+    _buttons = [slice_button(_names, _L, 75) for _L in _levels] + [
         {
             "label": "❚❚ Pause",
             "method": "animate",
@@ -1542,7 +1457,24 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
+def _(
+    COLORS,
+    base_layout,
+    dial_needle,
+    dial_outline,
+    dial_ticks,
+    dial_wedge,
+    go,
+    make_subplots,
+    np,
+    slice_button,
+    style_subplot_axes,
+    tree_build,
+    tree_needle,
+    tree_sectors,
+    tree_swept_area,
+    tree_unit,
+):
     """
     Visualizes the combination of Perron trees and Pál joins to cover all directions.
     """
@@ -1552,30 +1484,6 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _B = _H * np.tan(np.radians(_fan / 2.0))
     _apex0 = np.array([0.0, _H])
 
-    def _ang(a, p):
-        return np.arctan2(p[1] - a[1], p[0] - a[0])
-
-    def _build(level):
-        _leaves = [
-            dict(
-                apex=_apex0.copy(),
-                bL=np.array([-_B, 0.0]),
-                bR=np.array([_B, 0.0]),
-                aL=_ang(_apex0, np.array([-_B, 0.0])),
-                aR=_ang(_apex0, np.array([_B, 0.0])),
-            )
-        ]
-        for _ in range(level):
-            _nxt = []
-            for _lf in _leaves:
-                _a, _bL, _bR = _lf["apex"], _lf["bL"], _lf["bR"]
-                _m = (_bL + _bR) / 2.0
-                _s = np.array([_alpha * (_bR[0] - _m[0]), 0.0])
-                _nxt.append(dict(apex=_a + _s, bL=_bL + _s, bR=_m + _s, aL=_ang(_a, _bL), aR=_ang(_a, _m)))
-                _nxt.append(dict(apex=_a - _s, bL=_m - _s, bR=_bR - _s, aL=_ang(_a, _m), aR=_ang(_a, _bR)))
-            _leaves = _nxt
-        return _leaves
-
     _O = np.array([0.0, 0.0])
 
     def _rot_about(pt, piv, d):
@@ -1584,7 +1492,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
         return piv + np.array([_c * _v[0] - _s * _v[1], _s * _v[0] + _c * _v[1]])
 
     def _bands(level):
-        _base = _build(level)
+        _base = tree_build(_apex0, _B, _alpha, level)
         _out = []
         for _k in range(_ntrees):
             _d = np.radians(-90.0 + _fan / 2.0 + _k * _fan)
@@ -1598,52 +1506,10 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _GX, _GY = np.meshgrid(_gx, _gy)
     _cellA = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
 
-    def _swept_area(leaves):
-        _mask = np.zeros(_GX.shape, bool)
-        for _lf in leaves:
-            _dx, _dy = _GX - _lf["apex"][0], _GY - _lf["apex"][1]
-            _lo, _hi = min(_lf["aL"], _lf["aR"]), max(_lf["aL"], _lf["aR"])
-            _mask |= (
-                (np.hypot(_dx, _dy) <= _L0)
-                & (np.arctan2(_dy, _dx) >= _lo - 1e-9)
-                & (np.arctan2(_dy, _dx) <= _hi + 1e-9)
-            )
-        return float(_mask.sum() * _cellA)
-
-    def _u(t):
-        return np.array([np.cos(t), np.sin(t)])
-
-    def _sectors(leaves):
-        _xs, _ys = [], []
-        for _lf in leaves:
-            _arc = np.linspace(_lf["aL"], _lf["aR"], 7)
-            _xs += [_lf["apex"][0], *(_lf["apex"][0] + _L0 * np.cos(_arc)), _lf["apex"][0], None]
-            _ys += [_lf["apex"][1], *(_lf["apex"][1] + _L0 * np.sin(_arc)), _lf["apex"][1], None]
-        return go.Scatter(
-            x=_xs,
-            y=_ys,
-            mode="lines",
-            fill="toself",
-            fillcolor="rgba(149,225,211,0.11)",
-            line={"color": COLORS["accent1"], "width": 0.7},
-            opacity=0.85,
-            showlegend=False,
-        )
-
-    def _needle(apex, t):
-        _e = apex + _L0 * _u(t)
-        return go.Scatter(
-            x=[apex[0], _e[0]],
-            y=[apex[1], _e[1]],
-            mode="lines",
-            line={"color": COLORS["secondary"], "width": 6},
-            showlegend=False,
-        )
-
     def _accum(needle_list):
         _xs, _ys = [], []
         for _ap, _t in needle_list:
-            _e = _ap + _L0 * _u(_t)
+            _e = _ap + _L0 * tree_unit(_t)
             _xs += [_ap[0], _e[0], None]
             _ys += [_ap[1], _e[1], None]
         return go.Scatter(
@@ -1689,58 +1555,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
 
     _levels = [2, 3, 4, 5]
     _data = {_L: _poses_for(_L) for _L in _levels}
-    _areas = {_L: _swept_area(_data[_L][0]) for _L in _levels}
-
-    _rd = 1.0
-
-    def _dial_outline():
-        _p = np.linspace(0.0, np.pi, 120)
-        return go.Scatter(
-            x=[_rd, *(_rd * np.cos(_p)), -_rd],
-            y=[0.0, *(_rd * np.sin(_p)), 0.0],
-            mode="lines",
-            line={"color": COLORS["grid"], "width": 1.5},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
-
-    def _dial_ticks():
-        return go.Scatter(
-            x=[1.16, 0.0, -1.16],
-            y=[-0.04, 1.14, -0.04],
-            mode="text",
-            text=["0°", "90°", "180°"],
-            textfont={"color": COLORS["muted"], "size": 11},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
-
-    def _covered(phi):
-        _p = np.linspace(0.0, phi, 20)
-        return go.Scatter(
-            x=[0.0, *(_rd * np.cos(_p)), 0.0],
-            y=[0.0, *(_rd * np.sin(_p)), 0.0],
-            mode="lines",
-            fill="toself",
-            fillcolor="rgba(0,212,255,0.22)",
-            line={"color": COLORS["primary"], "width": 3},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
-
-    def _dial_needle(phi):
-        return go.Scatter(
-            x=[0.0, _rd * np.cos(phi)],
-            y=[0.0, _rd * np.sin(phi)],
-            mode="lines",
-            line={"color": COLORS["secondary"], "width": 4},
-            xaxis="x2",
-            yaxis="y2",
-            showlegend=False,
-        )
+    _areas = {_L: tree_swept_area(_data[_L][0], _GX, _GY, _cellA, _L0) for _L in _levels}
 
     _fig = make_subplots(
         rows=1,
@@ -1749,14 +1564,14 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
         subplot_titles=("Bases superposed at the centre: every direction", "Directions covered"),
     )
     _lv1, _seq1, _acc1 = _data[_levels[0]]
-    _fig.add_trace(_sectors(_lv1), row=1, col=1)
+    _fig.add_trace(tree_sectors(go, COLORS, _lv1, _L0, arc_n=7, fill="rgba(149,225,211,0.11)", width=0.7), row=1, col=1)
     _fig.add_trace(_accum(_acc1[0]), row=1, col=1)
-    _fig.add_trace(_needle(_seq1[0][0], _seq1[0][1]), row=1, col=1)
+    _fig.add_trace(tree_needle(go, COLORS, _seq1[0][0], _seq1[0][1], _L0), row=1, col=1)
     _fig.add_trace(_label(_levels[0], _areas[_levels[0]]), row=1, col=1)
-    _fig.add_trace(_dial_outline(), row=1, col=2)
-    _fig.add_trace(_covered(_seq1[0][2]), row=1, col=2)
-    _fig.add_trace(_dial_needle(_seq1[0][2]), row=1, col=2)
-    _fig.add_trace(_dial_ticks(), row=1, col=2)
+    _fig.add_trace(dial_outline(go, COLORS), row=1, col=2)
+    _fig.add_trace(dial_wedge(go, COLORS, 0.0, _seq1[0][2], n=20), row=1, col=2)
+    _fig.add_trace(dial_needle(go, COLORS, _seq1[0][2]), row=1, col=2)
+    _fig.add_trace(dial_ticks(go, COLORS), row=1, col=2)
 
     _frames, _names = [], {}
     for _L in _levels:
@@ -1766,7 +1581,11 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
         for _k, (_apx, _t, _phi, _new, _li) in enumerate(_seq):
             _nm = f"B{_L}_{_k}"
             _keys.append(_nm)
-            _fd = [_needle(_apx, _t), _covered(_phi), _dial_needle(_phi)]
+            _fd = [
+                tree_needle(go, COLORS, _apx, _t, _L0),
+                dial_wedge(go, COLORS, 0.0, _phi, n=20),
+                dial_needle(go, COLORS, _phi),
+            ]
             _tr = [2, 5, 6]
             if _new:
                 _run = _run + _acc[_li]
@@ -1774,28 +1593,16 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
                     _fd.append(_accum(_run))
                     _tr.append(1)
             if _k == 0:
-                _fd += [_sectors(_leaves), _label(_L, _areas[_L])]
+                _fd += [
+                    tree_sectors(go, COLORS, _leaves, _L0, arc_n=7, fill="rgba(149,225,211,0.11)", width=0.7),
+                    _label(_L, _areas[_L]),
+                ]
                 _tr += [0, 3]
             _frames.append(go.Frame(data=_fd, traces=_tr, name=_nm))
         _names[_L] = _keys
     _fig.frames = _frames
 
-    def _btn(level):
-        return {
-            "label": f"▶ {2**level} slices",
-            "method": "animate",
-            "args": [
-                _names[level],
-                {
-                    "frame": {"duration": 55, "redraw": True},
-                    "transition": {"duration": 0},
-                    "mode": "immediate",
-                    "fromcurrent": False,
-                },
-            ],
-        }
-
-    _buttons = [_btn(_L) for _L in _levels] + [
+    _buttons = [slice_button(_names, _L, 55) for _L in _levels] + [
         {
             "label": "❚❚ Pause",
             "method": "animate",
@@ -2544,42 +2351,12 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
+def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
     """
     Visualizes the small overlap between two tubes at an angle.
     """
     _w = 0.22
     _L = 2.6
-
-    def _menu(label, dur):
-        return [
-            {
-                "type": "buttons",
-                "showactive": False,
-                "y": 1.12,
-                "x": 0.5,
-                "xanchor": "center",
-                "buttons": [
-                    {
-                        "label": label,
-                        "method": "animate",
-                        "args": [
-                            None,
-                            {
-                                "frame": {"duration": dur, "redraw": True},
-                                "fromcurrent": True,
-                                "transition": {"duration": int(dur * 0.6)},
-                            },
-                        ],
-                    },
-                    {
-                        "label": "❚❚ Pause",
-                        "method": "animate",
-                        "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}],
-                    },
-                ],
-            }
-        ]
 
     def _dirvec(a):
         return np.array([np.cos(a), np.sin(a)]), np.array([-np.sin(a), np.cos(a)])
@@ -2721,7 +2498,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _fig.update_xaxes(title_text="angle between the needles (degrees)", range=[12, 94], row=1, col=2)
     _fig.update_yaxes(title_text="shared area", range=[0, max(_shares) * 1.1], row=1, col=2)
     style_subplot_axes(_fig, show_ticklabels=True)
-    _fig.update_layout(updatemenus=_menu("▶ Widen the angle", 260))
+    _fig.update_layout(updatemenus=play_pause("▶ Widen the angle", duration=260, transition=0.6, y=1.12))
     _fig
     return
 
@@ -2756,36 +2533,13 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
+def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
     """
     Visualizes the 'bush' and 'hairbrush' constructions.
     """
     _K = 44
     _sweeps = 3
     _hx0, _hx1 = -1.05, 1.05
-
-    def _menu(label, dur):
-        return [
-            {
-                "type": "buttons",
-                "showactive": False,
-                "y": 1.12,
-                "x": 0.5,
-                "xanchor": "center",
-                "buttons": [
-                    {
-                        "label": label,
-                        "method": "animate",
-                        "args": [None, {"frame": {"duration": dur, "redraw": True}, "fromcurrent": True}],
-                    },
-                    {
-                        "label": "❚❚ Pause",
-                        "method": "animate",
-                        "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}],
-                    },
-                ],
-            }
-        ]
 
     def _seg(cx, cy, a, half):
         return [cx - half * np.cos(a), cx + half * np.cos(a)], [cy - half * np.sin(a), cy + half * np.sin(a)]
@@ -2882,7 +2636,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     _fig.update_xaxes(range=[-1.6, 1.6], row=1, col=2, scaleanchor="y2", constrain="domain")
     _fig.update_yaxes(range=[-0.75, 0.75], row=1, col=2)
     style_subplot_axes(_fig)
-    _fig.update_layout(updatemenus=_menu("▶ Turn the needle", 130))
+    _fig.update_layout(updatemenus=play_pause("▶ Turn the needle", duration=130, y=1.12))
     _fig
     return
 
@@ -2897,7 +2651,7 @@ def _(mo):
 
 
 @app.cell
-def _(COLORS, base_layout, go, np):
+def _(COLORS, base_layout, go, np, play_pause):
     """
     Visualizes the 'sticky comb' concept.
     """
@@ -2919,36 +2673,6 @@ def _(COLORS, base_layout, go, np):
         return (_lo + _hi) / 2.0
 
     _stk_cx = np.array([_cantor(_d / np.pi) for _d in _dirs])
-
-    def _menu(label, dur):
-        return [
-            {
-                "type": "buttons",
-                "showactive": False,
-                "y": 1.12,
-                "x": 0.5,
-                "xanchor": "center",
-                "buttons": [
-                    {
-                        "label": label,
-                        "method": "animate",
-                        "args": [
-                            None,
-                            {
-                                "frame": {"duration": dur, "redraw": True},
-                                "fromcurrent": True,
-                                "transition": {"duration": int(dur * 0.7)},
-                            },
-                        ],
-                    },
-                    {
-                        "label": "❚❚ Pause",
-                        "method": "animate",
-                        "args": [[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate"}],
-                    },
-                ],
-            }
-        ]
 
     def _lerp(c1, c2, f):
         return tuple(round(c1[_i] + (c2[_i] - c1[_i]) * f) for _i in range(3))
@@ -3012,7 +2736,7 @@ def _(COLORS, base_layout, go, np):
         showticklabels=False,
     )
     _fig.update_yaxes(range=[-1.0, 1.7], gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"], showticklabels=False)
-    _fig.update_layout(updatemenus=_menu("▶ Comb it neat", 220))
+    _fig.update_layout(updatemenus=play_pause("▶ Comb it neat", duration=220, transition=0.7, y=1.12))
     _fig
     return
 
