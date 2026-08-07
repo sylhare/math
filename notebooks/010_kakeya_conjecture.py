@@ -898,69 +898,116 @@ def _(mo):
 
 @app.cell
 def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
-    # Show the construction *happening*: start from ONE triangle, cut it down the middle,
-    # then slide the two halves together until they overlap. Each half only ever TRANSLATES
-    # -- so a needle that starts on one side lands on the other side pointing the exact same
-    # way (its direction never changes), yet the shared footprint (and its area) shrinks.
-    _apex = np.array([0.5, 1.0])
-    _whole = np.array([[0.0, 0.0], [1.0, 0.0], _apex])  # the original, un-cut triangle
-    _left = np.array([[0.0, 0.0], [0.5, 0.0], _apex])  # left half-triangle
-    _right = np.array([[0.5, 0.0], [1.0, 0.0], _apex])  # right half-triangle
+    # Show the construction *happening*. First the single cut: from ONE circular sector (the region a
+    # fixed-length needle sweeps pivoting about its top tip), cut it down the middle, slide the two
+    # halves to overlap, then slide them back to the whole sector. Then the fuller build: split the
+    # fan into four wedges, overlap each adjacent pair on its own side, then slide the two pairs across
+    # the centre so they cross and overlap. Every piece only ever TRANSLATES, so a needle keeps pointing
+    # the exact same way (its direction never changes) yet the shared footprint (and its area) shrinks.
+    # The four crossed wedges are the first leaves of a Perron tree.
+    _apex_y = 1.0
+    _L = 0.95  # needle length == sector radius; every drawn needle has this same length
+    # The needle fan: straight down at the middle, opening left and right to the two side directions.
+    _a_lo = np.arctan2(-1.0, -0.5)  # left extreme direction
+    _a_mid = -np.pi / 2  # straight down: where the sector is first cut in half
+    _a_hi = np.arctan2(-1.0, 0.5)  # right extreme direction
+    _edges = np.linspace(_a_lo, _a_hi, 5)  # split the fan into four equal wedges; _edges[2] == _a_mid
+    _D1 = 0.15  # how far the two halves slide to overlap (the single-cut demo)
+    # Four-wedge build, bottom-up. First each adjacent pair overlaps on its own side (apexes _Bx):
+    # the left pair (cool) clusters left, the right pair (warm) clusters right. Then the two pairs
+    # slide across the centre and cross, overlapping into the finished figure (apexes _Fx). g and h
+    # below are 0->1 progress fractions for the two moves; _four_x interpolates apex x for wedge k.
+    _pair_gap = 0.15  # how far each pair sits from the centre once formed
+    _pair_ovl = 0.09  # how much the two wedges of a pair overlap (apex offset within a pair)
+    _cross = 0.15  # how far each pair crosses past the centre in the final figure
+    _Bx = [
+        0.5 - _pair_gap + _pair_ovl,
+        0.5 - _pair_gap - _pair_ovl,
+        0.5 + _pair_gap + _pair_ovl,
+        0.5 + _pair_gap - _pair_ovl,
+    ]
+    _Fx = [0.5 + _cross + _pair_ovl, 0.5 + _cross - _pair_ovl, 0.5 - _cross + _pair_ovl, 0.5 - _cross - _pair_ovl]
 
-    def _shift(tri, dx):
-        out = tri.copy()
-        out[:, 0] = out[:, 0] + dx
-        return out
+    def _four_x(k, g, h):
+        return 0.5 + g * (_Bx[k] - 0.5) + h * (_Fx[k] - _Bx[k])
 
-    def _in_triangle(px, py, tri):
-        (ax, ay), (bx, by), (cx, cy) = tri
-        v0x, v0y = cx - ax, cy - ay
-        v1x, v1y = bx - ax, by - ay
-        v2x, v2y = px - ax, py - ay
-        d00 = v0x * v0x + v0y * v0y
-        d01 = v0x * v1x + v0y * v1y
-        d11 = v1x * v1x + v1y * v1y
-        d20 = v2x * v0x + v2y * v0y
-        d21 = v2x * v1x + v2y * v1y
-        denom = d00 * d11 - d01 * d01
-        u = (d11 * d20 - d01 * d21) / denom
-        v = (d00 * d21 - d01 * d20) / denom
-        return (u >= 0) & (v >= 0) & (u + v <= 1)
+    def _sector_pts(apex_x, a0, a1, n=30):
+        # apex, then the arc from a0 to a1 at radius _L, then back to the apex: a filled sector.
+        _ts = np.linspace(a0, a1, n)
+        _xs = [apex_x, *(apex_x + _L * np.cos(_ts)), apex_x]
+        _ys = [_apex_y, *(_apex_y + _L * np.sin(_ts)), _apex_y]
+        return _xs, _ys
 
-    _gx = np.linspace(-0.4, 1.4, 340)
-    _gy = np.linspace(-0.05, 1.05, 230)
+    def _in_sector(px, py, apex_x, a0, a1):
+        # inside the radius-_L disk about the (shifted) apex, and within the angular fan [a0, a1].
+        _dx = px - apex_x
+        _dy = py - _apex_y
+        _ang = np.arctan2(_dy, _dx)
+        return (_dx * _dx + _dy * _dy <= _L * _L) & (_ang >= a0) & (_ang <= a1)
+
+    _gx = np.linspace(-0.5, 1.5, 360)
+    _gy = np.linspace(-0.02, 1.05, 210)
     _GX, _GY = np.meshgrid(_gx, _gy)
     _cell = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
 
-    def _union_area(s):
-        _ins = _in_triangle(_GX, _GY, _shift(_left, s)) | _in_triangle(_GX, _GY, _shift(_right, -s))
+    # Each colored piece is ONE sub-sector: an apex x-position, the angular fan it carries, and the
+    # sample directions (bold needles) that ride rigidly with it. A sector stands for one needle
+    # pivoting about its top tip, EVERY position the same length _L. The "demo" mode shows the single
+    # cut: two halves that slide to overlap and then slide back. The "four" mode splits the fan into
+    # four wedges and builds the figure bottom-up: g slides neighbours together in pairs, then h slides
+    # the two pairs together. Colors keep a warm/cool family per pair so the grouping reads clearly.
+    _cool = (COLORS["primary"], "rgba(0, 212, 255, 0.26)")
+    _cool2 = (COLORS["accent3"], "rgba(170, 150, 218, 0.28)")
+    _warm = (COLORS["secondary"], "rgba(255, 107, 107, 0.26)")
+    _warm2 = (COLORS["accent2"], "rgba(243, 129, 129, 0.28)")
+
+    def _pieces(mode, d, g, h):
+        if mode == "demo":  # one cut: left half slides right, right half slides left, they overlap
+            return [
+                dict(
+                    x=0.5 + d,
+                    a0=_edges[0],
+                    a1=_edges[2],
+                    angs=np.linspace(_edges[0], _edges[2], 3),
+                    col=_cool[0],
+                    fill=_cool[1],
+                ),
+                dict(
+                    x=0.5 - d,
+                    a0=_edges[2],
+                    a1=_edges[4],
+                    angs=np.linspace(_edges[2], _edges[4], 3),
+                    col=_warm[0],
+                    fill=_warm[1],
+                ),
+            ]
+        # Four wedges grouped bottom-up. Wedges 0,1 are the left pair (cool), wedges 2,3 the right pair
+        # (warm). g forms each pair on its own side; h then slides both pairs across the centre so they
+        # cross and overlap into the finished figure. _four_x carries wedge k from 0.5 to _Bx to _Fx.
+        _cols = [_cool, _cool2, _warm2, _warm]
+        return [
+            dict(
+                x=_four_x(_k, g, h),
+                a0=_edges[_k],
+                a1=_edges[_k + 1],
+                angs=np.linspace(_edges[_k], _edges[_k + 1], 2),
+                col=_cols[_k][0],
+                fill=_cols[_k][1],
+            )
+            for _k in range(4)
+        ]
+
+    def _union_area(pieces):
+        _ins = np.zeros(_GX.shape, bool)
+        for _p in pieces:
+            _ins |= _in_sector(_GX, _GY, _p["x"], _p["a0"], _p["a1"])
         return float(_ins.sum() * _cell)
 
-    # A triangle stands for ONE needle pivoting about its top tip (the apex): swung through the
-    # fan between the two sides, it points across a range of directions, EVERY position the same
-    # length. So the bold needles below all share one length _L and only differ in angle; each
-    # rides rigidly with its half as it slides, so its length and direction never change.
-    _apex_y = 1.0
-    _L = 0.95  # every drawn needle has this same length
-    # The directions each half covers: from the apex to its two base corners.
-    _left_angs = np.linspace(np.arctan2(-1.0, -0.5), np.arctan2(-1.0, 0.0), 3)
-    _right_angs = np.linspace(np.arctan2(-1.0, 0.0), np.arctan2(-1.0, 0.5), 3)
-
-    def _needles(apex_x, angs):
-        _xs, _ys_out = [], []
-        for _a in angs:
-            _xs += [apex_x, apex_x + _L * np.cos(_a), None]
-            _ys_out += [_apex_y, _apex_y + _L * np.sin(_a), None]
-        return _xs, _ys_out
-
-    def _outline(tri):
-        return [*list(tri[:, 0]), tri[0, 0]], [*list(tri[:, 1]), tri[0, 1]]
-
-    def _tri_trace(tri, col, fill):
-        _ox, _oy = _outline(tri)
+    def _sector_trace(apex_x, a0, a1, col, fill):
+        _sx, _sy = _sector_pts(apex_x, a0, a1)
         return go.Scatter(
-            x=_ox,
-            y=_oy,
+            x=_sx,
+            y=_sy,
             mode="lines",
             fill="toself",
             fillcolor=fill,
@@ -970,21 +1017,25 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
             showlegend=False,
         )
 
-    def _needle_trace(xs, ys, col):
+    def _needle_trace(apex_x, angs):
+        _xs, _ys_out = [], []
+        for _a in angs:
+            _xs += [apex_x, apex_x + _L * np.cos(_a), None]
+            _ys_out += [_apex_y, _apex_y + _L * np.sin(_a), None]
         return go.Scatter(
-            x=xs,
-            y=ys,
+            x=_xs,
+            y=_ys_out,
             mode="lines",
-            line={"color": col, "width": 4},
+            line={"color": COLORS["highlight"], "width": 4},
             xaxis="x",
             yaxis="y",
             showlegend=False,
             name="needles",
         )
 
-    def _arrows(apex_x, angs, col):
+    def _arrow_trace(apex_x, angs):
         # Arrowheads at each needle tip, angled along the needle so its DIRECTION is visible and
-        # stays fixed as the half slides. Marker angle is clockwise from "up", so 90 - heading.
+        # stays fixed as the piece slides. Marker angle is clockwise from "up", so 90 - heading.
         _tx = [apex_x + _L * np.cos(_a) for _a in angs]
         _ty = [_apex_y + _L * np.sin(_a) for _a in angs]
         _headings = np.degrees(angs)
@@ -992,12 +1043,22 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
             x=_tx,
             y=_ty,
             mode="markers",
-            marker={"symbol": "arrow", "size": 13, "angle": list(90.0 - _headings), "angleref": "up", "color": col},
+            marker={
+                "symbol": "arrow",
+                "size": 13,
+                "angle": list(90.0 - _headings),
+                "angleref": "up",
+                "color": COLORS["highlight"],
+            },
             xaxis="x",
             yaxis="y",
             showlegend=False,
             name="direction",
         )
+
+    def _empty():
+        # Placeholder so the trace count stays fixed at four pieces even when round 1 shows only two.
+        return go.Scatter(x=[], y=[], mode="lines", xaxis="x", yaxis="y", showlegend=False)
 
     def _label_trace(text):
         return go.Scatter(
@@ -1011,17 +1072,18 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
             showlegend=False,
         )
 
-    # The square tabletop we spun, with a triangle inscribed in it: apex at the top-edge midpoint,
-    # base along the bottom edge. Cutting the two shaded corners off the square leaves the triangle.
-    _off_left = np.array([[0.0, 0.0], [0.0, 1.0], [0.5, 1.0]])  # left corner trimmed off the square
-    _off_right = np.array([[1.0, 0.0], [1.0, 1.0], [0.5, 1.0]])  # right corner trimmed off
-
-    def _offcut_trace(tri, op):
-        # a discarded square corner; op fades it out as the triangle is cut from the table
-        _ox, _oy = _outline(tri)
+    # The square tabletop we spun, with the sector cut out of it: apex at the top-edge midpoint. The
+    # two offcuts are the left and right halves of the square minus the two half-sectors (their inner
+    # edge is the sector's arc); op fades them out as the sector is freed from the table in round 1.
+    def _offcut(op, a_from, a_to, corner_x):
+        _arc = np.linspace(a_from, a_to, 18)
+        _ax = [0.5 + _L * np.cos(_a) for _a in _arc]
+        _ay = [_apex_y + _L * np.sin(_a) for _a in _arc]
+        _px = [0.5, corner_x, corner_x, 0.5, *_ax, 0.5]
+        _py = [1.0, 1.0, 0.0, 0.0, *_ay, 1.0]
         return go.Scatter(
-            x=_ox,
-            y=_oy,
+            x=_px,
+            y=_py,
             mode="lines",
             fill="toself",
             fillcolor=f"rgba(125, 139, 163, {0.32 * op:.3f})",
@@ -1032,22 +1094,29 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
             name="offcut",
         )
 
-    def _frame_traces(s, label, op):
-        _lx, _lyy = _needles(0.5 + s, _left_angs)
-        _rx, _ryy = _needles(0.5 - s, _right_angs)
-        _area = _union_area(s)
+    def _frame_traces(mode, d, g, h, prog, label, op):
+        _pcs = _pieces(mode, d, g, h)
+        _sect, _ndl, _arr = [], [], []
+        for _i in range(4):  # always four slots; padded with empties in the two-piece demo
+            if _i < len(_pcs):
+                _p = _pcs[_i]
+                _sect.append(_sector_trace(_p["x"], _p["a0"], _p["a1"], _p["col"], _p["fill"]))
+                _ndl.append(_needle_trace(_p["x"], _p["angs"]))
+                _arr.append(_arrow_trace(_p["x"], _p["angs"]))
+            else:
+                _sect.append(_empty())
+                _ndl.append(_empty())
+                _arr.append(_empty())
+        _area = _union_area(_pcs)
         return [
-            _tri_trace(_shift(_left, s), COLORS["primary"], "rgba(0, 212, 255, 0.28)"),
-            _tri_trace(_shift(_right, -s), COLORS["secondary"], "rgba(255, 107, 107, 0.28)"),
-            _needle_trace(_lx, _lyy, COLORS["accent1"]),
-            _needle_trace(_rx, _ryy, COLORS["quaternary"]),
-            _arrows(0.5 + s, _left_angs, COLORS["accent1"]),
-            _arrows(0.5 - s, _right_angs, COLORS["quaternary"]),
-            _offcut_trace(_off_left, op),
-            _offcut_trace(_off_right, op),
+            *_sect,
+            *_ndl,
+            *_arr,
+            _offcut(op, _a_mid, _a_lo, 0.0),
+            _offcut(op, _a_mid, _a_hi, 1.0),
             _label_trace(label),
             go.Scatter(
-                x=[s],
+                x=[prog],
                 y=[_area],
                 mode="markers",
                 xaxis="x2",
@@ -1056,7 +1125,7 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
                 name="current",
             ),
             go.Scatter(
-                x=[s],
+                x=[prog],
                 y=[_area + 0.02],
                 mode="text",
                 text=[f"area {_area:.3f}"],
@@ -1067,32 +1136,57 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
             ),
         ]
 
-    # Frame schedule (monotonic, never backtracks): first "cut" the triangle out of the square
-    # table (fade the two corners away), then hold while the two colored halves show the cut, then
-    # "slide" the halves one direction until they overlap. s = 0 tiled, s > 0 overlapping; op fades.
-    _cut_label = "1. Cut a triangle from the table"
-    _slice_label = "2. Slice down the middle"
-    _slide_label = "3. Slide to overlap"
-    _cut_ops = np.concatenate([np.ones(3), np.linspace(1.0, 0.0, 7)])
-    _steps = [(0.0, _cut_label, _op) for _op in _cut_ops]
-    _steps += [(0.0, _slice_label, 0.0)] * 4  # hold with the cut showing (two colored halves)
-    _steps += [(_sv, _slide_label, 0.0) for _sv in np.linspace(0.0, 0.25, 22)[1:]]
-    _steps += [(0.25, _slide_label, 0.0)] * 3  # hold on the overlapped result
+    # Frame schedule. First the single cut: slice the sector free of the table (fade the offcuts),
+    # slide the two halves to overlap, then slide them back to the whole sector. Then the four-wedge
+    # build: slice into four, slide neighbours together in pairs, then slide the two pairs together.
+    # prog runs 0 -> 1 over the whole timeline (holds excluded) and drives the area readout at right.
+    _lbl_slice = "1. Slice down the middle"
+    _lbl_slide = "2. Slide the halves to overlap"
+    _lbl_back = "3. Slide back to the whole sector"
+    _lbl_four = "4. Slice into four wedges"
+    _lbl_pairs = "5. Group each two on its own side"
+    _lbl_groups = "6. Slide the two pairs across the centre"
 
-    _curve_s = np.linspace(0.0, 0.25, 70)
-    _curve_a = [_union_area(_sv) for _sv in _curve_s]
+    _steps = [
+        ("demo", 0.0, 0.0, 0.0, 0.0, _lbl_slice, _op) for _op in np.concatenate([np.ones(3), np.linspace(1.0, 0.0, 7)])
+    ]
+    _steps += [("demo", 0.0, 0.0, 0.0, 0.0, _lbl_slice, 0.0)] * 3  # hold on the two halves
+    _steps += [("demo", _dv, 0.0, 0.0, 0.22 * _dv / _D1, _lbl_slide, 0.0) for _dv in np.linspace(0.0, _D1, 16)[1:]]
+    _steps += [("demo", _D1, 0.0, 0.0, 0.22, _lbl_slide, 0.0)] * 3  # hold on the overlap
+    _steps += [
+        ("demo", _dv, 0.0, 0.0, 0.22 + 0.16 * (1.0 - _dv / _D1), _lbl_back, 0.0)
+        for _dv in np.linspace(_D1, 0.0, 14)[1:]
+    ]
+    _steps += [("demo", 0.0, 0.0, 0.0, 0.38, _lbl_back, 0.0)] * 3  # hold on the reassembled sector
+    _steps += [("four", 0.0, 0.0, 0.0, 0.38, _lbl_four, 0.0)] * 5  # reveal the four wedges (same footprint)
+    _steps += [("four", 0.0, _gv, 0.0, 0.38 + 0.30 * _gv, _lbl_pairs, 0.0) for _gv in np.linspace(0.0, 1.0, 18)[1:]]
+    _steps += [("four", 0.0, 1.0, 0.0, 0.68, _lbl_pairs, 0.0)] * 4  # hold on the two side-by-side pairs
+    _steps += [("four", 0.0, 1.0, _hv, 0.68 + 0.32 * _hv, _lbl_groups, 0.0) for _hv in np.linspace(0.0, 1.0, 20)[1:]]
+    _steps += [("four", 0.0, 1.0, 1.0, 1.0, _lbl_groups, 0.0)] * 4  # hold on the finished figure
+
+    def _area_at(p):
+        if p <= 0.22:  # slide the two halves together
+            return _union_area(_pieces("demo", (p / 0.22) * _D1, 0.0, 0.0))
+        if p <= 0.38:  # slide them back to the whole sector
+            return _union_area(_pieces("demo", (1.0 - (p - 0.22) / 0.16) * _D1, 0.0, 0.0))
+        if p <= 0.68:  # form each pair on its own side
+            return _union_area(_pieces("four", 0.0, (p - 0.38) / 0.30, 0.0))
+        return _union_area(_pieces("four", 0.0, 1.0, (p - 0.68) / 0.32))  # slide the pairs across to overlap
+
+    _curve_p = np.linspace(0.0, 1.0, 160)
+    _curve_a = [_area_at(_p) for _p in _curve_p]
 
     _fig = make_subplots(
         rows=1,
         cols=2,
         column_widths=[0.58, 0.42],
         subplot_titles=(
-            "Cut a triangle from the table, slide the halves to overlap",
-            "Total area covered as they overlap",
+            "One cut and slide, then four wedges grouped in pairs",
+            "Total area at each step",
         ),
     )
 
-    # index 0: the square tabletop grid (static), so the triangle reads as a patch cut from it.
+    # index 0: the square tabletop grid (static), so each sector reads as a patch cut from it.
     _tgx, _tgy = [], []
     for _c in np.linspace(0.0, 1.0, 5):
         _tgx += [_c, _c, None]
@@ -1114,8 +1208,8 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         col=1,
     )
 
-    # index 1: static dotted outline of the ORIGINAL triangle, so the shrinkage is visible.
-    _wx, _wy = _outline(_whole)
+    # index 1: static dotted outline of the ORIGINAL, un-cut sector, so the shrinkage stays visible.
+    _wx, _wy = _sector_pts(0.5, _a_lo, _a_hi)
     _fig.add_trace(
         go.Scatter(
             x=_wx,
@@ -1125,25 +1219,19 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
             xaxis="x",
             yaxis="y",
             showlegend=False,
-            name="original triangle",
+            name="original sector",
         ),
         row=1,
         col=1,
     )
 
+    # indices 2..16: four sectors, four needle sets, four arrow sets, two offcuts, phase label.
     _init = _frame_traces(*_steps[0])
-    _fig.add_trace(_init[0], row=1, col=1)  # 2: left half
-    _fig.add_trace(_init[1], row=1, col=1)  # 3: right half
-    _fig.add_trace(_init[2], row=1, col=1)  # 4: left needles
-    _fig.add_trace(_init[3], row=1, col=1)  # 5: right needles
-    _fig.add_trace(_init[4], row=1, col=1)  # 6: left direction arrows
-    _fig.add_trace(_init[5], row=1, col=1)  # 7: right direction arrows
-    _fig.add_trace(_init[6], row=1, col=1)  # 8: left offcut corner
-    _fig.add_trace(_init[7], row=1, col=1)  # 9: right offcut corner
-    _fig.add_trace(_init[8], row=1, col=1)  # 10: phase label
-    _fig.add_trace(  # 11: static area curve
+    for _t in _init[:-2]:
+        _fig.add_trace(_t, row=1, col=1)
+    _fig.add_trace(  # 17: static area curve
         go.Scatter(
-            x=_curve_s,
+            x=_curve_p,
             y=_curve_a,
             mode="lines",
             line={"color": COLORS["muted"], "width": 3},
@@ -1152,17 +1240,11 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         row=1,
         col=2,
     )
-    _fig.add_trace(_init[9], row=1, col=2)  # 12: moving star
-    _fig.add_trace(_init[10], row=1, col=2)  # 13: area readout
+    _fig.add_trace(_init[-2], row=1, col=2)  # 18: moving star
+    _fig.add_trace(_init[-1], row=1, col=2)  # 19: area readout
 
-    _fig.frames = [
-        go.Frame(
-            data=_frame_traces(_sv, _lbl, _op),
-            traces=[2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13],
-            name=str(_i),
-        )
-        for _i, (_sv, _lbl, _op) in enumerate(_steps)
-    ]
+    _dyn = [*range(2, 17), 18, 19]  # every trace a frame redraws (all but the two statics and the curve)
+    _fig.frames = [go.Frame(data=_frame_traces(*_st), traces=_dyn, name=str(_i)) for _i, _st in enumerate(_steps)]
 
     _fig.update_layout(
         **base_layout(
@@ -1172,7 +1254,7 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
     )
     _fig.update_xaxes(range=[-0.4, 1.4], row=1, col=1, scaleanchor="y", constrain="domain")
     _fig.update_yaxes(range=[-0.08, 1.32], row=1, col=1)
-    _fig.update_xaxes(title_text="slide s  (0 → overlapping)", range=[-0.02, 0.27], row=1, col=2)
+    _fig.update_xaxes(title_text="construction progress  (one cut → four grouped)", range=[-0.02, 1.02], row=1, col=2)
     _fig.update_yaxes(title_text="area", range=[min(_curve_a) - 0.03, max(_curve_a) + 0.03], row=1, col=2)
     style_subplot_axes(_fig, show_ticklabels=True)
     _fig.update_layout(updatemenus=play_pause("▶ Slice & Slide"))
@@ -1215,6 +1297,10 @@ def _(mo):
 
     And it compounds: slice each piece again and slide again (the **Perron tree**), and the area keeps falling.
     Iterate slice-and-slide into a full **Perron tree** and a real needle turns through a single 60° fan.
+
+    The tree is named after **Oskar Perron**, who in the 1920s reduced the construction to this one
+    clean, repeatable rule: split every triangle, then slide the halves to overlap. The overlaps
+    branching out from a shared trunk are what make the figure look like a tree.
     """)
     return
 
@@ -1308,7 +1394,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
             x=[0.0],
             y=[1.15],
             mode="text",
-            text=[f"<b>{2**level} slices · area ≈ {area:.2f}</b>"],
+            text=[f"<b>{2**level} slices"],
             textfont={"color": COLORS["text"], "size": 13},
             showlegend=False,
         )
@@ -1450,7 +1536,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
         }
     ]
 
-    _fig.update_layout(**base_layout(title="A real needle, turning", height=470))
+    _fig.update_layout(**base_layout(title="Building the Perron tree", height=470))
     _fig.update_xaxes(range=[-0.8, 0.8], scaleanchor="y", constrain="domain", showticklabels=False, row=1, col=1)
     _fig.update_yaxes(range=[-0.12, 1.28], showticklabels=False, row=1, col=1)
     _fig.update_xaxes(range=[-1.25, 1.25], scaleanchor="y2", constrain="domain", showticklabels=False, row=1, col=2)
@@ -1490,7 +1576,10 @@ def _(mo):
     needle far out along its own length (free, it has no width). Way out there, two parallel lines
     sit a fixed gap apart but subtend a vanishing angle, so the small hop from one to the other
     sweeps almost nothing. Slide back, and the needle is now on a parallel line, same direction, at
-    negligible cost. That move is the **Pál join**.
+    negligible cost. That move is the **Pál join**, named after **Gyula Pál** (Julius Pál), who in
+    the early 1920s introduced this way of connecting one segment to another for almost no area. The
+    "join" is exactly that: it is the connector that stitches the separate fans into one continuous
+    set, and its whole value is that it adds no area worth counting.
 
     Now chain three trees, for the bands [0°, 60°], [60°, 120°], [120°, 180°]. At each seam the
     needle already points the shared direction, so a Pál join carries it straight to the next tree.
@@ -1502,14 +1591,17 @@ def _(mo):
 
 @app.cell
 def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
-    # Every direction, by slice-and-slide plus Pal joins. Three 60-deg Perron trees, joined at a
-    # shared apex, tile the half-turn (all orientations). One needle slice-slides through each band;
-    # at each seam it already points the shared direction, so a join carries it on without turning.
-    # The dial (a pie of ray-directions) fills the whole half-turn and closes: every direction. The
-    # overlapping pieces keep the swept area well under a full spin, and falling with every slice.
-    # Buttons subdivide each tree 4 -> 8 -> 16 -> 32 slices; areas are rasterised.
+    # Every direction, by slice-and-slide plus Pal joins. Narrow Perron trees all share one base at
+    # the centre: each needle's far end sits on the origin, and the trees are rotated to fan their
+    # spikes across the top, tiling the half-turn. Sliding superposes the bases on that one spot,
+    # which is what shrinks the area. One needle slice-slides through a tree's fan, then a Pal join
+    # carries it (without turning) to the next; its positions accumulate, dense at the shared base
+    # and thinning into the spikes. The dial fills 0 -> 180. The area falls with every slice (a
+    # Perron tree's area ~ 1/n). Buttons subdivide each tree 4 -> 8 -> 16 -> 32; areas rasterised.
     _H, _alpha, _L0 = 1.0, 0.34, 1.0
-    _B = _H * np.tan(np.radians(30.0))
+    _fan = 30.0  # apex angle of each tree; narrow, so its base is short and hugs the shared centre
+    _ntrees = round(180.0 / _fan)  # trees needed to tile the half-turn (here 6)
+    _B = _H * np.tan(np.radians(_fan / 2.0))
     _apex0 = np.array([0.0, _H])
 
     def _ang(a, p):
@@ -1536,22 +1628,29 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
             _leaves = _nxt
         return _leaves
 
-    def _rot(pt, d):
+    _O = np.array([0.0, 0.0])  # shared base centre; all three trees' bases pass through the origin
+
+    def _rot_about(pt, piv, d):
         _c, _s = np.cos(d), np.sin(d)
-        _v = pt - _apex0
-        return _apex0 + np.array([_c * _v[0] - _s * _v[1], _s * _v[0] + _c * _v[1]])
+        _v = pt - piv
+        return piv + np.array([_c * _v[0] - _s * _v[1], _s * _v[0] + _c * _v[1]])
 
     def _bands(level):
-        _base = _build(level)
+        # Narrow Perron trees, all sharing a base at the origin. Each tree's base-end sits within _B
+        # of the centre, so rotating copies to tile the half-turn keeps every base superposed on the
+        # same central spot (the dense shared base) while the spikes fan outward. The needle
+        # slice-slides one tree's fan, then a Pal join carries it to the next.
+        _base = _build(level)  # base tree, spike pointing straight up, fan centred on vertical
         _out = []
-        for _d in np.radians([-60.0, 0.0, 60.0]):  # three trees, joined at the apex, tile the half-turn
+        for _k in range(_ntrees):
+            _d = np.radians(-90.0 + _fan / 2.0 + _k * _fan)  # rotate so the spikes fan across the top
             for _lf in _base:
-                _out.append(dict(apex=_rot(_lf["apex"], _d), aL=_lf["aL"] + _d, aR=_lf["aR"] + _d))
-        _out.sort(key=lambda lf: (lf["aL"] + lf["aR"]) / 2.0)
+                _out.append(dict(apex=_rot_about(_lf["apex"], _O, _d), aL=_lf["aL"] + _d, aR=_lf["aR"] + _d))
+        _out.sort(key=lambda lf: ((lf["aL"] + lf["aR"]) / 2.0) % np.pi)  # sweep by orientation, 0 -> 180
         return _out
 
-    _gx = np.linspace(-1.05, 1.05, 260)
-    _gy = np.linspace(-0.05, 1.05, 260)
+    _gx = np.linspace(-1.2, 1.2, 320)
+    _gy = np.linspace(-0.2, 1.2, 320)
     _GX, _GY = np.meshgrid(_gx, _gy)
     _cellA = (_gx[1] - _gx[0]) * (_gy[1] - _gy[0])
 
@@ -1573,7 +1672,7 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
     def _sectors(leaves):
         _xs, _ys = [], []
         for _lf in leaves:
-            _arc = np.linspace(_lf["aL"], _lf["aR"], 12)
+            _arc = np.linspace(_lf["aL"], _lf["aR"], 7)
             _xs += [_lf["apex"][0], *(_lf["apex"][0] + _L0 * np.cos(_arc)), _lf["apex"][0], None]
             _ys += [_lf["apex"][1], *(_lf["apex"][1] + _L0 * np.sin(_arc)), _lf["apex"][1], None]
         return go.Scatter(
@@ -1597,10 +1696,26 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
             showlegend=False,
         )
 
+    def _accum(needle_list):
+        # every needle laid down so far, faint: the accumulating star
+        _xs, _ys = [], []
+        for _ap, _t in needle_list:
+            _e = _ap + _L0 * _u(_t)
+            _xs += [_ap[0], _e[0], None]
+            _ys += [_ap[1], _e[1], None]
+        return go.Scatter(
+            x=_xs,
+            y=_ys,
+            mode="lines",
+            line={"color": COLORS["quaternary"], "width": 1},
+            opacity=0.45,
+            showlegend=False,
+        )
+
     def _label(level, area):
         return go.Scatter(
             x=[0.0],
-            y=[_H + 0.13],
+            y=[_H + 0.12],
             mode="text",
             text=[f"<b>{2**level} slices · area ≈ {area:.2f}</b>"],
             textfont={"color": COLORS["text"], "size": 13},
@@ -1609,27 +1724,31 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
 
     def _poses_for(level):
         _leaves = _bands(level)
-        _spl = max(2, min(5, round(110 / len(_leaves))))
-        _seq = []
+        _spl = max(2, min(3, round(90 / len(_leaves))))  # sweep samples per leaf
+        _seq = []  # (apex, t_raw, phi, new_leaf, leaf_idx)
+        _acc = []  # per leaf: list of (apex, t_raw) sweep needles, accumulated into the star
         for _li, _lf in enumerate(_leaves):
-            _lo, _hi = min(_lf["aL"], _lf["aR"]), max(_lf["aL"], _lf["aR"])
-            for _t in np.linspace(_lo, _hi, _spl):
-                _seq.append((_lf["apex"], float(_t)))
-            if _li < len(_leaves) - 1:
+            _aL, _aR = _lf["aL"], _lf["aR"]
+            _omid = ((_aL + _aR) / 2.0) % np.pi  # orientation (line direction) at the leaf centre
+            _w = abs(_aR - _aL)
+            _needles = []
+            for _u2 in np.linspace(0.0, 1.0, _spl):
+                _t = _aL + _u2 * (_aR - _aL)
+                _phi = min(np.pi, max(0.0, _omid - _w / 2.0 + _u2 * _w))  # dial orientation, 0 -> 180
+                _seq.append((_lf["apex"], float(_t), float(_phi), _u2 == 0.0, _li))
+                _needles.append((_lf["apex"], float(_t)))
+            _acc.append(_needles)
+            if _li < len(_leaves) - 1:  # Pal-join hop to the next tree: translate, direction fixed
                 _nx = _leaves[_li + 1]
-                for _f in np.linspace(0.0, 1.0, 3)[1:]:
-                    _seq.append((_lf["apex"] + _f * (_nx["apex"] - _lf["apex"]), float(_hi)))
-        return _leaves, _seq
+                _apx = _lf["apex"] + 0.5 * (_nx["apex"] - _lf["apex"])
+                _seq.append((_apx, float(_aR), float(min(np.pi, _omid + _w / 2.0)), False, _li))
+        return _leaves, _seq, _acc
 
     _levels = [2, 3, 4, 5]  # 4 / 8 / 16 / 32 slices per tree
     _data = {_L: _poses_for(_L) for _L in _levels}
     _areas = {_L: _swept_area(_data[_L][0]) for _L in _levels}
 
     _rd = 1.0
-    _t_start = -np.pi  # first ray of the joined bands (-180 deg)
-
-    def _orient(t):  # ray direction -> orientation on the 0..180 deg protractor
-        return t + np.pi
 
     def _dial_outline():
         _p = np.linspace(0.0, np.pi, 120)
@@ -1655,8 +1774,8 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
             showlegend=False,
         )
 
-    def _covered(t_cur):
-        _p = np.linspace(_orient(_t_start), _orient(t_cur), 36)
+    def _covered(phi):
+        _p = np.linspace(0.0, phi, 20)
         return go.Scatter(
             x=[0.0, *(_rd * np.cos(_p)), 0.0],
             y=[0.0, *(_rd * np.sin(_p)), 0.0],
@@ -1669,11 +1788,10 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
             showlegend=False,
         )
 
-    def _dial_needle(t_cur):
-        _ph = _orient(t_cur)
+    def _dial_needle(phi):
         return go.Scatter(
-            x=[0.0, _rd * np.cos(_ph)],
-            y=[0.0, _rd * np.sin(_ph)],
+            x=[0.0, _rd * np.cos(phi)],
+            y=[0.0, _rd * np.sin(phi)],
             mode="lines",
             line={"color": COLORS["secondary"], "width": 4},
             xaxis="x2",
@@ -1685,36 +1803,36 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
         rows=1,
         cols=2,
         column_widths=[0.6, 0.4],
-        subplot_titles=("Three joined trees: every direction", "Directions covered"),
+        subplot_titles=("Bases superposed at the centre: every direction", "Directions covered"),
     )
-    _lv1, _seq1 = _data[_levels[0]]
-    _fig.add_trace(_sectors(_lv1), row=1, col=1)  # 0 the pieces
-    _fig.add_trace(_needle(*_seq1[0]), row=1, col=1)  # 1 needle (anim)
-    _fig.add_trace(_label(_levels[0], _areas[_levels[0]]), row=1, col=1)  # 2 label
-    _fig.add_trace(_dial_outline(), row=1, col=2)  # 3 dial outline (static)
-    _fig.add_trace(_covered(_seq1[0][1]), row=1, col=2)  # 4 covered wedge (anim)
-    _fig.add_trace(_dial_needle(_seq1[0][1]), row=1, col=2)  # 5 dial needle (anim)
-    _fig.add_trace(_dial_ticks(), row=1, col=2)  # 6 tick labels (static)
+    _lv1, _seq1, _acc1 = _data[_levels[0]]
+    _fig.add_trace(_sectors(_lv1), row=1, col=1)  # 0 the pieces (per level)
+    _fig.add_trace(_accum(_acc1[0]), row=1, col=1)  # 1 accumulated needles (anim)
+    _fig.add_trace(_needle(_seq1[0][0], _seq1[0][1]), row=1, col=1)  # 2 current needle (anim)
+    _fig.add_trace(_label(_levels[0], _areas[_levels[0]]), row=1, col=1)  # 3 label (per level)
+    _fig.add_trace(_dial_outline(), row=1, col=2)  # 4 dial outline (static)
+    _fig.add_trace(_covered(_seq1[0][2]), row=1, col=2)  # 5 covered wedge (anim)
+    _fig.add_trace(_dial_needle(_seq1[0][2]), row=1, col=2)  # 6 dial needle (anim)
+    _fig.add_trace(_dial_ticks(), row=1, col=2)  # 7 tick labels (static)
 
     _frames, _names = [], {}
     for _L in _levels:
-        _leaves, _seq = _data[_L]
+        _leaves, _seq, _acc = _data[_L]
         _keys = []
-        for _k in range(len(_seq)):
+        _run = []  # needles laid down so far this level, growing into the star
+        for _k, (_apx, _t, _phi, _new, _li) in enumerate(_seq):
             _nm = f"B{_L}_{_k}"
             _keys.append(_nm)
-            if _k == 0:  # send the static pieces + label only when the level (re)starts
-                _fd = [
-                    _sectors(_leaves),
-                    _needle(*_seq[_k]),
-                    _label(_L, _areas[_L]),
-                    _covered(_seq[_k][1]),
-                    _dial_needle(_seq[_k][1]),
-                ]
-                _tr = [0, 1, 2, 4, 5]
-            else:
-                _fd = [_needle(*_seq[_k]), _covered(_seq[_k][1]), _dial_needle(_seq[_k][1])]
-                _tr = [1, 4, 5]
+            _fd = [_needle(_apx, _t), _covered(_phi), _dial_needle(_phi)]
+            _tr = [2, 5, 6]
+            if _new:  # entering a new leaf: grow the accumulated star (emit every 3rd, to cap size)
+                _run = _run + _acc[_li]
+                if _li % 3 == 0 or _li == len(_leaves) - 1:
+                    _fd.append(_accum(_run))
+                    _tr.append(1)
+            if _k == 0:  # level (re)start: reset the pieces + label
+                _fd += [_sectors(_leaves), _label(_L, _areas[_L])]
+                _tr += [0, 3]
             _frames.append(go.Frame(data=_fd, traces=_tr, name=_nm))
         _names[_L] = _keys
     _fig.frames = _frames
@@ -1742,9 +1860,9 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
         }
     ]
 
-    _fig.update_layout(**base_layout(title="Every direction", height=480))
-    _fig.update_xaxes(range=[-1.05, 1.05], scaleanchor="y", constrain="domain", showticklabels=False, row=1, col=1)
-    _fig.update_yaxes(range=[-0.12, 1.12], showticklabels=False, row=1, col=1)
+    _fig.update_layout(**base_layout(title="Every direction", height=520))
+    _fig.update_xaxes(range=[-1.2, 1.2], scaleanchor="y", constrain="domain", showticklabels=False, row=1, col=1)
+    _fig.update_yaxes(range=[-0.2, 1.24], showticklabels=False, row=1, col=1)
     _fig.update_xaxes(range=[-1.25, 1.25], scaleanchor="y2", constrain="domain", showticklabels=False, row=1, col=2)
     _fig.update_yaxes(range=[-0.22, 1.25], showticklabels=False, row=1, col=2)
     style_subplot_axes(_fig)
@@ -1768,19 +1886,19 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
 @app.cell
 def _(mo):
     mo.md(r"""
-    Three Perron trees joined at the apex, tiling the half-turn.
-    The needle slice-slides through each band and the joins carry it across,
-    so it points in every direction and the dial closes, exactly like the disk and the deltoid did.
+    Every needle shares one base at the centre: the trees are narrow, so each needle's far end lands
+    on the same central spot, and they are rotated so their spikes fan across the top to reach every
+    direction. Sliding is what puts the bases there, superposing them so the shared ground is counted
+    once. The needle slice-slides through one tree's fan, then a Pal join carries it to the next
+    without turning; its positions pile up, dense at the shared base and thinning into the spikes.
 
-    But the overlapping pieces hold the swept area well under a full spin (the disk, 0.79),
-    and every extra slice lowers it further. Carried finer than this animation can draw,
-    it drops past the deltoid (0.39, the small region we turned the needle in earlier)
-    toward almost nothing.
+    The area starts near a full spin (the disk, 0.79) and falls with every slice as the overlap grows.
+    It keeps dropping (a Perron tree's area falls like 1/n in the number of subdivisions), heading
+    toward zero far finer than this animation can draw.
 
-    It never quite reaches zero, though: to change direction the needle must pivot slightly
-    into each new position, and sweeping those positions always leaves a sliver.
-    Motion itself is what pins the area above zero, which points the next way out,
-    can it be done without moving?
+    Even in the limit it never quite reaches zero: to change direction the needle must pivot slightly
+    into each new position, and sweeping those positions always leaves a sliver. Motion itself is what
+    pins the area above zero, which points the next way out: can it be done without moving?
     """)
     return
 
