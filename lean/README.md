@@ -8,6 +8,8 @@ the proof or points at the hole. Self-contained: nothing here touches `../notebo
 - `Examples/Trig.lean` — the Pythagorean identity and angle-addition formulas from
   `notebooks/007_trigonometry.py`, proved against [Mathlib](https://leanprover-community.github.io/).
 - `bridge/lean_check.py` — runs a Lean snippet, returns pass/fail. The link to Python.
+- `demo/notebook_lean_demo.py` — a marimo notebook where each formula renders as LaTeX **and**
+  gets validated by Lean live.
 
 ## Install
 
@@ -37,6 +39,37 @@ lake build                         # compiles Examples/, verifies every theorem
 
 To see a failure, change `4` to `5` in `Basics.lean` and rerun: Lean reports the exact
 goal it could not close.
+
+## The Python bridge and notebook
+
+The bridge compiles a snippet and reports the result:
+
+```bash
+uv run python bridge/lean_check.py     # self-test: verified / error / verified
+```
+
+The notebook pairs rendered LaTeX with a live Lean badge (green = verified, red = rejected):
+
+```bash
+uv run marimo edit lean/demo/notebook_lean_demo.py     # from the repo root
+```
+
+The first check per session starts the toolchain (~2 s); Mathlib snippets import one module
+rather than all of Mathlib, so they stay fast.
+
+## How LaTeX and Lean line up
+
+Same claim, two forms. The LaTeX is for the reader; the Lean is for the machine:
+
+| LaTeX (rendered)                  | Lean (checked)                                       |
+| --------------------------------- | ---------------------------------------------------- |
+| `\sin^2\theta + \cos^2\theta = 1` | `example (θ : ℝ) : sin θ ^ 2 + cos θ ^ 2 = 1 := ...` |
+| `2 + 2 = 4`                       | `example : 2 + 2 = 4 := rfl`                         |
+
+There is no automatic LaTeX-to-Lean translation: you write both, and the bridge guarantees
+the Lean side actually holds. Mathlib names for common results are searchable via
+[Loogle](https://loogle.lean-lang.org) and [Moogle](https://www.moogle.ai).
+
 ## Docs
 
 - Lean manual — https://lean-lang.org/documentation/
