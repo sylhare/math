@@ -44,9 +44,26 @@ class NotebookMetadata:
     path: Path
 
 
-def get_all_notebooks() -> list[Path]:
-    """Get all notebook files in the notebooks directory, sorted by name."""
-    return sorted(NOTEBOOKS_DIR.glob("*.py"))
+# A notebook is a draft (kept out of the deployed site and the deploy-gating
+# tests) when its module docstring carries a `Status: draft` line.
+_DRAFT_MARKER = re.compile(r"^\s*Status:\s*draft\b", re.IGNORECASE | re.MULTILINE)
+
+
+def is_draft(notebook_path: Path) -> bool:
+    """True if the notebook marks itself a draft via a `Status: draft` line."""
+    return bool(_DRAFT_MARKER.search(notebook_path.read_text()[:1000]))
+
+
+def get_all_notebooks(include_drafts: bool = False) -> list[Path]:
+    """Notebook files in the notebooks directory, sorted by name.
+
+    Drafts are excluded by default so they are neither deployed nor gate the
+    build. Pass ``include_drafts=True`` to get every notebook.
+    """
+    notebooks = sorted(NOTEBOOKS_DIR.glob("*.py"))
+    if include_drafts:
+        return notebooks
+    return [nb for nb in notebooks if not is_draft(nb)]
 
 
 def extract_metadata(notebook_path: Path) -> NotebookMetadata:
@@ -467,8 +484,13 @@ def export_all(output_dir: Path | None = None, include_code: bool = False) -> li
     output_dir.mkdir(parents=True, exist_ok=True)
     generated_files = []
 
-    # Get all notebooks and extract metadata
+    # Get publishable notebooks; drop any HTML left behind by ones now marked draft.
     notebooks = get_all_notebooks()
+    for draft in (nb for nb in get_all_notebooks(include_drafts=True) if nb not in notebooks):
+        stale = output_dir / f"{draft.stem}.html"
+        note = f" (removing stale {stale.name})" if stale.exists() else ""
+        print(f"  Skipping draft {draft.stem}{note}")
+        stale.unlink(missing_ok=True)
     metadata_list = [extract_metadata(nb) for nb in notebooks]
 
     # Export each notebook

@@ -5,6 +5,8 @@ A guided-discovery walk through the Kakeya needle problem — from the 1917 tabl
 puzzle about the smallest area a needle can sweep, through the leap from a single moving
 needle to a static pile of needles, to dimension as the right ruler and the 2025 proof of
 the three-dimensional conjecture by Hong Wang and Joshua Zahl.
+
+Status: draft
 """
 
 import marimo
