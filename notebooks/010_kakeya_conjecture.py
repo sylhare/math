@@ -1045,7 +1045,7 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         )
 
     def _empty():
-        return go.Scatter(x=[], y=[], mode="lines", xaxis="x", yaxis="y", showlegend=False)
+        return go.Scatter(x=[None], y=[None], mode="lines", xaxis="x", yaxis="y", showlegend=False)
 
     def _label_trace(text):
         return go.Scatter(
@@ -1340,7 +1340,7 @@ def _(
                     _seq.append((_lf["apex"] + _f * (_nx["apex"] - _lf["apex"]), float(_hi)))
         return _leaves, _seq
 
-    _levels = [2, 3, 4, 5]
+    _levels = [2, 3, 4]
     _data = {_L: _poses_for(_L) for _L in _levels}
     _areas = {_L: tree_swept_area(_data[_L][0], _GX, _GY, _cellA, _L0) for _L in _levels}
 
@@ -1555,7 +1555,7 @@ def _(
                 _seq.append((_apx, float(_aR), float(min(np.pi, _omid + _w / 2.0)), False, _li))
         return _leaves, _seq, _acc
 
-    _levels = [2, 3, 4, 5]
+    _levels = [2, 3, 4]
     _data = {_L: _poses_for(_L) for _L in _levels}
     _areas = {_L: tree_swept_area(_data[_L][0], _GX, _GY, _cellA, _L0) for _L in _levels}
 
