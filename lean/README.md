@@ -5,6 +5,38 @@ A LaTeX formula only looks right; Lean checks it against definitions and either 
 the proof or points at the hole. Self-contained: nothing here touches `../notebooks`.
 
 - `Examples/Basics.lean` — arithmetic, algebra, induction, logic. No library.
+- `Examples/Trig.lean` — the Pythagorean identity and angle-addition formulas from
+  `notebooks/007_trigonometry.py`, proved against [Mathlib](https://leanprover-community.github.io/).
+- `bridge/lean_check.py` — runs a Lean snippet, returns pass/fail. The link to Python.
+
+## Install
+
+Lean is managed by `elan` (like `rustup`). One command installs everything:
+
+```bash
+curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y
+source ~/.elan/env          # or restart your shell
+```
+
+`lean-toolchain` pins Lean `v4.32.2`; `elan` fetches it automatically on first use.
+
+## Build
+
+`Basics.lean` needs no library, so `lean` checks it directly. Silence means it passed:
+
+```bash
+lean Examples/Basics.lean          # exit 0 = every statement proved
+```
+
+`Trig.lean` uses Mathlib. Download the prebuilt cache once (~2 GB), then build:
+
+```bash
+lake exe cache get                 # prebuilt Mathlib .olean files, skips a long compile
+lake build                         # compiles Examples/, verifies every theorem
+```
+
+To see a failure, change `4` to `5` in `Basics.lean` and rerun: Lean reports the exact
+goal it could not close.
 ## Docs
 
 - Lean manual — https://lean-lang.org/documentation/
