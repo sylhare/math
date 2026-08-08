@@ -67,6 +67,14 @@ ignore = [
     "RUF052",  # local dummy variable accessed (marimo _var pattern)
     "B905",    # zip without strict= (plotting loops don't need it)
 ]
+"lean/**/*.py" = [
+    "F841",    # marimo cell pattern
+    "E402",    # marimo cells import inline
+    "B018",    # marimo displays last expression
+    "RUF001",  # ambiguous unicode in strings (Greek letters in math)
+    "RUF003",  # ambiguous unicode in comments
+    "RUF052",  # local dummy variable accessed (marimo _var pattern)
+]
 "tests/*.py" = [
     "B011",    # assert False (valid pytest pattern for multi-condition assertions)
     "E731",    # lambda assignment (convenient in test fixtures)
