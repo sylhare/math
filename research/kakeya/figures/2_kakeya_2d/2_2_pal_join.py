@@ -1,35 +1,17 @@
-"""Figure: the Pal join (Pal worm) lemma (beat 2d of ../kakeya.md).
+"""Pal join (Pal worm) lemma (kakeya.md 2d).
 
-Lemma (Pal): given two PARALLEL unit needles G1, G2 and any eps > 0, there is a set J with
-area(J) < eps inside which the needle can be moved CONTINUOUSLY from G1 to G2. The trick is a far
-detour: slide the needle out along its own axis a long distance D (a needle sliding along its own
-line sweeps zero area), make a small rotation way out where turning is cheap, slide across, rotate
-back, and slide home.
+Given two PARALLEL unit needles G1, G2 and any eps > 0, there is a set J with area(J) < eps inside
+which the needle moves CONTINUOUSLY from G1 to G2 by a far detour: slide out along its own axis a
+distance D (sweeps ~0 area), rotate a little far out, slide across, rotate back, slide home.
 
-Why the area shrinks with D. To cross the fixed lateral gap g between the two parallel lines using a
-pivot a distance ~D away, the needle only has to turn through
+Crossing the fixed lateral gap g from a pivot ~D away turns the needle through
 
-    phi(D) = 2 * arctan( g / (2D) )                  small turn, from a far pivot
+    phi(D) = 2 * arctan( g / (2D) )
 
-and each of the two little rotations of the unit needle (length 1) sweeps a circular sector
-
-    A_sector = (1/2) * r^2 * phi = phi / 2   (r = 1)
-
-while every sliding phase is along the needle's own axis and sweeps ~0 area. So the whole maneuver's
-swept area is
+and each unit-needle rotation sweeps a sector A_sector = (1/2) r^2 phi = phi/2 (r = 1); sliding
+sweeps ~0 area, so the total swept area
 
     A(D)  ~  2 * A_sector  =  phi(D)  =  2 * arctan( g / (2D) )   -> 0   as D grows.
-
-This file MEASURES the area of exactly the region drawn (union of the sampled needle positions along
-the maneuver, via shapely) and prints A vs D to confirm the decrease.
-
-SCHEMATIC: the drawn maneuver has a concrete, positive area; the rigorous lemma is the limiting claim
-area(J) < eps for every eps > 0 (reached as D -> infinity), not the area of any one picture.
-
-Reference: none dedicated (relates to wiki_kakeya_needle_set.gif, where Pal joins glue the needle
-positions into a continuously-turnable set).
-ALTERNATIVES: the true minimal join is a long thin sliver; here the two rotation sectors are drawn at
-readable size so the maneuver is legible, and the sliding slivers are shown thin (near-zero area).
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/pal_join.py
 """

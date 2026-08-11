@@ -1,27 +1,16 @@
-"""Figure: assembling a Besicovitch set from three Perron trees (beats 2e-2f of ../kakeya.md).
+"""Besicovitch set from three Perron trees (kakeya.md 2e-2f).
 
 One equilateral Perron tree carries only its 60 deg apex fan (here 60..120 deg). Translation
-preserves every segment's direction, so rotating three finished trees by 0 / 120 / 240 deg about the
-apex spreads those fans over the full 180 deg of directions (a direction and its reverse are the
-same), giving an all-directions set: a Besicovitch set.
+preserves direction, so rotating three finished trees by 0 / 120 / 240 deg about the apex spreads
+those fans over the full 180 deg (a direction and its reverse are the same): an all-directions set.
 
     tree fan            = 60..120 deg
     + rotate 120 deg    = 180..240 deg == 0..60 deg (mod 180)
     + rotate 240 deg    = 300..360 deg == 120..180 deg (mod 180)
     union               = 0..180 deg   -> a unit segment in EVERY direction.
 
-Honesty note. Besicovitch (1919/1928): there is such a set K with |K| = 0 (Lebesgue measure zero).
-That is a LIMIT (subdivision level n -> infinity), and the true area shrinks only ~1/log N (Keich),
-so a zero-area set cannot be drawn. This file renders the minimum-visible approximation at a finite
-level and prints the real area readout with the "-> 0 in the limit" note.
-
-The cut-and-shift merge is replicated locally (per the task: do NOT import perron_tree.py).
-
-Reference: wiki_kakeya_needle_set.gif (the three-fold star with needles radiating in all directions).
-ALTERNATIVES: a parallelogram-strip version also reaches all directions; the three-rotated-trees star
-is drawn here to match the wiki figure. Repo palette is used (region fill + needle-blue rays), so the
-colours differ from the yellow wiki art while the silhouette (central body + rays fanning to every
-direction) matches.
+True |K| = 0 (Besicovitch) is a limit (n -> inf), area shrinking only ~1/log N (Keich), so this
+renders the minimum-visible finite-level approximation.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/besicovitch_assembly.py
 """
@@ -103,7 +92,7 @@ def main():
     covered = _covered_directions(tris, rotations, APEX)
     lo, hi = triangle_fan_degrees(equilateral(1.0))
 
-    # honest area decay for THIS visible schedule (plateaus; true Besicovitch needs Keich schedule)
+    # tree area by level (this schedule plateaus)
     decay = {k: perron_tree(k, s)[0].area for k in (1, 3, 6, 9)}
 
     math_check(

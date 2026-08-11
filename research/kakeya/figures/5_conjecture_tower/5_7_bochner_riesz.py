@@ -1,26 +1,11 @@
-"""Figure: Bochner-Riesz multiplier profile (kakeya.md section 5c-ii).
+"""Bochner-Riesz multiplier profile (kakeya.md 5c-ii).
 
-The Bochner-Riesz means smooth the sharp ball cutoff with an exponent alpha >= 0 through the radial
-multiplier
+Radial multiplier m^alpha_R(xi) = (1 - |xi|^2 / R^2)_+^alpha, (.)_+ = max(., 0). alpha = 0 is
+Fefferman's hard-edge ball multiplier; larger alpha rounds the edge. Radial slice at R = 1:
 
-    m^alpha_R(xi) = ( 1 - |xi|^2 / R^2 )_+^alpha ,
+    m^alpha(x) = (1 - x^2)_+^alpha .
 
-where (.)_+ = max(., 0).  alpha = 0 is Fefferman's failing ball multiplier (a hard edge at |xi| = R);
-raising alpha rounds the edge and is conjectured to restore L^p convergence for a range of p.  The
-radial slice xi in R (with R = 1) is the profile
-
-    m^alpha(x) = ( 1 - x^2 )_+^alpha .
-
-At alpha = 1/4 (Hickman Fig 8) the profile is nearly flat across the interior and drops to 0 with a
-vertical-tangent corner at x = +-R.
-
-MATH CHECK: the alpha = 1/4 profile equals (1 - x^2)^{1/4} on [-1, 1] and 0 outside, verified at
-sample points; it is continuous and has a corner (slope -> -infinity) at x = +-1.
-
-ALTERNATIVES: left panel reproduces Fig 8 (the alpha = 1/4 slice with the dotted bounding box and the
-+-R axis marks); right panel overlays alpha = 0 (the discontinuous ball cutoff), 1/4, and 1 (a smooth
-vanishing edge) to show how alpha rounds the corner.  R = 1 is used so the slice is literally
-(1 - x^2)^alpha; the axis is labelled +-R to match the general R.
+Left: alpha = 1/4 slice (corner with slope -> -inf at x = +-1). Right: alpha = 0, 1/4, 1 overlaid.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/bochner_riesz.py
 """
@@ -72,7 +57,7 @@ def main():
 
     x = np.linspace(-1.6, 1.6, 800)
 
-    # --- left panel: reproduce Fig 8 (alpha = 1/4 slice, dotted box, +-R marks) ----------
+    # left panel: alpha = 1/4 slice, dotted box, +-R marks
     axis_lw = 1.1
     for a in ax:
         a.annotate("", xy=(1.62, 0), xytext=(-1.62, 0),
@@ -91,13 +76,13 @@ def main():
     ax[0].text(1.0, -0.02, r"$R$", ha="center", va="top", fontsize=13)
     ax[0].set_title(r"$m^{\alpha}_R(\xi)=(1-|\xi|^2/R^2)_+^{\alpha}$,  $\alpha=\frac{1}{4}$")
 
-    # --- right panel: overlay alpha = 0, 1/4, 1 -----------------------------------------
+    # right panel: overlay alpha = 0, 1/4, 1
     styles = [(0.0, COLORS["accent"], r"$\alpha=0$"),
               (0.25, "blue", r"$\alpha=\frac{1}{4}$"),
               (1.0, COLORS["outer"], r"$\alpha=1$")]
     for a_val, col, lab in styles:
         y = profile(x, a_val)
-        if a_val == 0.0:  # draw the hard edges of the indicator honestly (vertical jumps)
+        if a_val == 0.0:  # hard edges of the indicator (vertical jumps)
             xin = x[np.abs(x) <= 1]
             ax[1].plot(xin, np.ones_like(xin), color=col, lw=2.4, label=lab)
             ax[1].plot([-1, -1], [0, 1], color=col, lw=2.4)

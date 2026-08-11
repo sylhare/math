@@ -1,10 +1,7 @@
-"""Animation: a unit needle turning through every direction (beats 2a-2b of ../kakeya.md).
+"""Animation: a unit needle turning through every direction.
 
-Two panels, the two clean continuous rotations:
   * disc   - needle pivots about its midpoint, sweeps the disc of radius 1/2 (area pi/4);
-  * deltoid- needle stays a tangent chord of the three-cusped hypocycloid (length 4b=1), sweeps pi/8.
-The turning needle is drawn bold; all past positions accumulate faintly (the swept family).
-Geometric honesty: the needle length is exactly 1 in every frame (checked).
+  * deltoid- needle stays a tangent chord of the three-cusped hypocycloid (chord 4b=1), sweeps pi/8.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/needle_rotation_anim.py
 """
@@ -21,11 +18,11 @@ FRAMES = 72
 
 def disc_needle(theta):
     d = np.array([math.cos(theta), math.sin(theta)])
-    return -0.5 * d, 0.5 * d  # midpoint at origin, length 1
+    return -0.5 * d, 0.5 * d  # length 1, midpoint at origin
 
 
 def deltoid_needle(t):
-    for _ in range(5):  # cusps have zero velocity; nudge off them
+    for _ in range(5):  # nudge off cusps (zero velocity there)
         d = np.array([-2 * B * math.sin(t) - 2 * B * math.sin(2 * t), 2 * B * math.cos(t) - 2 * B * math.cos(2 * t)])
         if np.linalg.norm(d) > 1e-4:
             break

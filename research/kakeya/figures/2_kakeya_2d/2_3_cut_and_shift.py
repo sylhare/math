@@ -1,25 +1,13 @@
-"""Figure: one cut-and-shift (Perron sprouting) step (beat 2d of ../kakeya.md).
+"""One cut-and-shift (Perron sprouting) step (kakeya.md 2d).
 
-The single move that makes area shrink: bisect a triangle's base into two subtriangles that
-together still carry the whole apex fan, then TRANSLATE them so they overlap. Translation preserves
-every segment's direction, so the direction fan is unchanged, yet the union footprint is strictly
-smaller than the original triangle.
+Bisect a triangle's base into two subtriangles that together carry the whole apex fan, then
+TRANSLATE them to overlap. Translation preserves every segment's direction, so the fan is unchanged
+while the union footprint shrinks below the original triangle.
 
-Math (symbolic first, then numeric), equilateral triangle of base 1, height h = sqrt3/2:
-  area(before)  = area of the original triangle = union of the two disjoint subtriangles
-                = sqrt3/4  ~ 0.4330                          (nothing overlaps yet)
-  area(after)   = area of the union once each subtriangle is shifted inward by t = 1/4
-                < area(before)                               (the overlap is subtracted once)
-  fan(before)   = fan(after) = 60 deg  (apex fan 60..120 deg, split 60..90 | 90..120)
-
-Reference: hickman_fig2a_cut.png (the bisected triangle, labelled Delta_1 / Delta_2) and
-hickman_fig2b_shift.png (the two subtriangles slid inward, crossing, with inward arrows).
-
-ALTERNATIVES: the reference draws yellow needles on a blue outline; here the repo palette is used
-(COLORS["needle"] for the fan, COLORS["guide"] for outlines, COLORS["region"] for the overlap fill),
-so the colours differ from the article while the geometry (bisection, inward shift, crossing X,
-preserved fan) matches. A deeper 2-vs-8 subtriangle version (like the wiki SVG) is left to
-perron_tree.py; this file is the single-step close-up.
+Equilateral triangle of base 1, height h = sqrt3/2:
+  area(before)  = sqrt3/4  ~ 0.4330                two disjoint subtriangles, nothing overlaps
+  area(after)   < area(before)                     union once each shifts inward by t = 1/4
+  fan(before)   = fan(after) = 60 deg              apex fan 60..120 deg, split 60..90 | 90..120
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/cut_and_shift.py
 """

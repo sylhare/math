@@ -1,22 +1,10 @@
-"""Figure: the Davies overlap engine for the 2D theorem (section 4 of ../kakeya.md).
+"""Figure: the Davies overlap engine for the 2D theorem (Davies 1971: Kakeya sets in R^2 have dimension 2).
 
-Davies (1971): every Kakeya set in R^2 has Hausdorff and Minkowski dimension 2, even with area 0.
-The mechanism: fatten each unit segment into a delta-thin rectangle. Two 1 x delta rectangles
-crossing at angle theta overlap in area
+Two 1 x delta rectangles crossing at angle theta overlap in a parallelogram of area
 
     | R_1 cap R_2 |  ~  delta^2 / sin theta        (small delta).
 
-Two strips of width delta crossing at angle theta meet in a parallelogram of that area, so
-rectangles in well-separated directions barely overlap. Summed over all pairs the overlaps are
-small, which FORCES the union to be large and spread out: you cannot compress the set below full
-dimension. That is the "area 0 but dimension 2" mechanism, and the seed of the modern compression
-framing.
-
-No reference image. STANDARD REPRESENTATION: (left) two 1 x delta rectangles crossing at angle
-theta, their measured intersection parallelogram shaded, with measured-vs-formula printed on plot;
-(right) a fan of many 1 x delta rectangles in evenly spread directions through a common center, the
-union shaded, showing the footprint grows as directions spread. MATH CHECK: measured overlap agrees
-with delta^2/sin(theta) to a few percent at delta = 0.01, and the fan union grows with the spread.
+Small overlaps force the union to spread out: the "area 0 but dimension 2" mechanism.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/davies_rectangles.py
 """
@@ -58,8 +46,8 @@ def main():
         rows.append((f"theta={td:>2} deg  overlap",
                      f"measured {measured:.3e}  formula {formula:.3e}  err {rel*100:.2f}%"))
 
-    # fan of many rectangles through a common center, footprint grows as directions spread
-    delta_fan = 0.05  # visible thickness for the drawn fan
+    # fan of rectangles through a common center
+    delta_fan = 0.05  # drawn rectangle thickness
     fan_counts = [1, 6, 12, 24]
     union_rows = []
     fan_polys_full = None
@@ -83,7 +71,7 @@ def main():
 
     fig, ax = new_axes(2, figsize=(11, 5.6))
 
-    # left: two rectangles at theta = 30 deg (widened for visibility) + shaded intersection
+    # left: two rectangles at theta = 30 deg + shaded intersection
     dvis, thv = 0.18, math.radians(30)
     ra = poly(rectangle(1.0, dvis, 0.0))
     rb = poly(rectangle(1.0, dvis, thv))
@@ -101,7 +89,7 @@ def main():
     _f = delta**2 / math.sin(thv)
     ax[0].set_title(f"two 1 x delta rects, theta=30\noverlap ~ delta^2/sin theta  (err {abs(_m-_f)/_f*100:.1f}% @ delta=0.01)")
 
-    # right: fan through a common center; union shaded (drawn thickness delta = 0.05)
+    # right: fan through a common center, union shaded
     for r in fan_polys_full:
         xs, ys = r.exterior.xy
         ax[1].fill(xs, ys, color=COLORS["needle"], alpha=0.25, lw=0)

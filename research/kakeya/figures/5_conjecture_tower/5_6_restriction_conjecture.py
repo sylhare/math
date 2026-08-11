@@ -1,28 +1,15 @@
-"""Figure: Stein's restriction/extension conjecture (kakeya.md section 5c-i).
+"""Stein's restriction/extension conjecture (kakeya.md 5c-i).
 
-The extension operator on a curved surface S^{n-1},
+Extension operator on a curved surface S^{n-1}:
 
     E g(x) = int_{S^{n-1}} g(w) e^{2 pi i x . w} dsigma(w),
 
-superposes plane waves whose frequencies lie on the surface.  Localised in frequency to a cap of
-the surface, each piece of E g is a wave packet: a thin tube in physical space TANGENT to the
-surface (the wave travels in the normal direction, so it is spread along the tangent).  The
-conjecture bounds the operator,
+each frequency-localised piece a wave packet: a thin tube tangent to the surface. The conjecture:
 
     || E g ||_{L^q(R^n)}  <~  || g ||_{L^inf(S^{n-1})}        for  q > 2n/(n-1),
 
-and the threshold q = 2n/(n-1) is sharp (a bump's extension decays like |x|^{-(n-1)/2}).  This is
-the picture: a paraboloid (drawn here as its 2D profile, a parabola) carpeted with wave-packet
-tubes each tangent to it, the same tangency geometry that drives the Kakeya problem below it.
-
-MATH CHECK: the threshold q = 2n/(n-1) is printed for n = 2 (q = 4) and n = 3 (q = 3); each drawn
-wave packet is tangent to the paraboloid -- its centre lies on the curve and its long axis is
-parallel to the curve's tangent there (angle deviation 0 to machine precision).
-
-ALTERNATIVES: drawn over a parabola y = a x^2 (the standard restriction model surface, the local
-model of the sphere); a full circle S^1 would look like Fefferman Fig 6a, so the paraboloid is used
-to keep the two figures visually distinct.  Tubes are centred on the curve (wave packets straddle
-the surface); shifting them outward along the normal is an equally valid convention.
+with sharp threshold q = 2n/(n-1) (n = 2: q = 4; n = 3: q = 3). Drawn over a parabola y = a x^2
+carpeted with tangent wave packets (centre on the curve, long axis along the tangent).
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/restriction_conjecture.py
 """
@@ -98,11 +85,11 @@ def main():
         poly_xy = np.vstack([pk, pk[0]])
         ax.fill(poly_xy[:, 0], poly_xy[:, 1], color="#c8d0f0", alpha=0.75, zorder=1)
         ax.plot(poly_xy[:, 0], poly_xy[:, 1], color=COLORS["outer"], lw=1.1, zorder=2)
-    # a normal arrow on one packet, pointing OUT of the bowl (away from the centred equations)
+    # outward normal arrow on one packet
     x0 = 0.8625
     p0 = np.array([x0, a * x0 * x0])
     t0 = tangent_unit(a, x0)
-    ext = np.array([t0[1], -t0[0]])  # exterior normal (points down-right, into empty space)
+    ext = np.array([t0[1], -t0[0]])  # exterior normal
     ax.annotate("", xy=tuple(p0 + 0.30 * ext), xytext=tuple(p0),
                 arrowprops=dict(arrowstyle="->", color=COLORS["guide"], lw=1.3))
     ax.text(*(p0 + 0.37 * ext), r"$\omega$", fontsize=13, ha="left", va="top")

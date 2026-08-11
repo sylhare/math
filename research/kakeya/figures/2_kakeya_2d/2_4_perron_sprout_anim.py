@@ -1,18 +1,12 @@
-"""Animation: the Perron tree sprouting level by level (beats 2d-2f of ../kakeya.md).
+"""Animation of the Perron tree sprouting level by level (kakeya.md 2d-2f).
 
-Mirrors perron_tree.py / cut_and_shift.py in motion. Start from the 2^n thin slivers that tile the
-base-1 equilateral triangle (they already carry its whole 60 deg apex fan). Then run the cut-and-
-shift merge one level at a time: neighbouring blocks slide toward each other and OVERLAP. Because
-every move is a pure horizontal translation, each segment keeps its direction, so the fan stays
-60..120 deg while the union footprint only shrinks.
+Start from the 2^n thin slivers tiling the base-1 equilateral triangle (they carry its whole 60 deg
+apex fan). Run the cut-and-shift merge one level at a time: neighbouring blocks slide together and
+OVERLAP. Every move is a pure horizontal translation, so each segment keeps its direction, the fan
+stays 60..120 deg, and the union footprint shrinks.
 
-Honesty note (kakeya.md 2f): this fixed-fraction merge reduces area to a plateau near ~47% of the
-triangle, not to zero. The true Besicovitch area -> 0 needs the Keich schedule and decays only
-~1/log N, so it cannot be shown collapsing on screen. We accumulate the whole family and print the
-real area readout per level.
-
-INVARIANT: the union area is non-increasing across the whole sprouting, and the direction fan stays
-60..120 deg at every frame (translation preserves direction).
+This fixed-fraction merge reduces area to a plateau near ~47% of the triangle, not to zero; the true
+Besicovitch area -> 0 only ~1/log N (Keich), not drawable.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/perron_sprout_anim.py
 """
@@ -93,8 +87,7 @@ def main():
     spans = [fan_span(ts) for ts in tri_sets]
 
     # --- INVARIANT checks ---
-    # Area is compared at level checkpoints: within a level adjacent pairs slide apart, so the
-    # instantaneous union can wiggle, but each completed merge leaves the footprint strictly smaller.
+    # checkpoint per completed level: within a level the union can wiggle, but each merge shrinks it
     level_area = {L: unary_union([poly(t) for t in tris_at(base_tris, start_offsets[L + 1])]).area
                   for L in range(N_LEVELS)}
     checkpoints = [areas[0]] + [level_area[L] for L in range(N_LEVELS)]

@@ -1,18 +1,9 @@
-"""Animation: self-similar fractals building by iteration depth (section 3b of ../kakeya.md).
+"""Animation: self-similar fractals building by iteration depth.
 
-Mirrors dimension_fractal.py in motion. Two self-similar sets grow one iteration at a time:
+  * Sierpinski triangle - depth k has 3^k sub-triangles;  dim = log3/log2 = 1.5850
+  * Koch curve          - depth k has 4^k segments;       dim = log4/log3 = 1.2619
 
-  * Sierpinski triangle - depth k has  3^k  filled sub-triangles;  dim = log 3 / log 2 = 1.5850
-  * Koch curve          - depth k has  4^k  segments;              dim = log 4 / log 3 = 1.2619
-
-Each step replaces every piece by its scaled copies (N copies each at scale 1/r), so the piece
-count multiplies by N while the size divides by r. The similarity dimension
-
-    dim = log N / log r
-
-is the SAME at every depth (it is a property of the rule, not the depth); it is annotated on every
-frame while the count 3^k / 4^k climbs. Geometric honesty: the piece count is the actual number of
-triangles / segments drawn, not a formula, and it is checked against 3^k / 4^k for each depth.
+Similarity dimension dim = log N / log r is constant in k (a property of the rule).
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/fractal_iterate_anim.py
 """
@@ -29,7 +20,7 @@ HOLD = 7
 END_HOLD = 8
 
 
-# --- geometry: pure-numpy fractal builders (replicated locally, no figure imports) --------
+# --- geometry: pure-numpy fractal builders ---------------------------------------------
 def sierpinski_triangles(depth):
     base = np.array([[0.0, 0.0], [1.0, 0.0], [0.5, SQRT3 / 2.0]])
     tris = [base]
@@ -100,7 +91,7 @@ def main():
         a.set_aspect("equal")
         a.axis("off")
 
-    # stage sequence: depth 0..max, holding each; both fractals advance together (clamped)
+    # stage sequence: depth 0..max, holding each
     n_stages = max(SIERP_DEPTH, KOCH_DEPTH) + 1
     frame_stage = []
     for k in range(n_stages):

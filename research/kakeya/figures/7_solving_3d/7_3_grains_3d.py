@@ -1,29 +1,14 @@
-"""Figure: Guth's grains + the Besicovitch compression phenomenon (beats 7c-7d of ../kakeya.md).
+"""Guth's grains + Besicovitch compression (kakeya.md beats 7c-7d).
 
-Two panels, one argument:
+Left (3D): a fat tube (wireframe box) whose thin tubes cluster into GRAINS, parallel slabs of
+size delta x c x c (delta << c << 1), one tube thick, tiling the tube along its length. Within a
+fat tube the grains are disjoint (share only zero-volume faces), so every point lies in at most one
+grain.
 
-  (left, 3D)  A fat tube drawn as a wireframe box.  Inside it the thin tubes cluster into
-              GRAINS: red parallel slabs of size  delta x c x c  (delta << c << 1), one tube
-              thick, that TILE the tube along its length.  Within a single fat tube the grains
-              are essentially DISJOINT (they only share zero-volume faces), so every point of
-              the tube lies in at most ONE grain: "no point sits in too many grains" is the
-              quantitative ceiling on compression.  Matches guth_fig2 (red parallel slabs in a
-              wireframe box).
-
-  (right, 2D) The Besicovitch compression phenomenon made numeric (Zahl's survey framing):
-              1 x delta rectangles pointing in delta-separated directions whose areas SUM to
-              >= 1, yet whose UNION has measure < eta.  Total tube-content ~ 1, actual
-              footprint small.  The rectangles are laid out by the Perron cut-and-shift so they
-              overlap; we measure the union with shapely and print both numbers.
-
-Honesty note: the TRUE Besicovitch union -> 0, but only ~1/log N (Keich), so a visible drawing
-plateaus above 0 (see ../kakeya.md section 2f and perron_tree.py).  We render the minimum visible
-form and print the real measured union with that caveat.
-
-ALTERNATIVES: guth_fig2 is drawn landscape with the slabs stacked across the box; here the tube
-runs along X and grains tile its length (delta thin along the tube, c x c across the fat-tube
-cross-section).  A 2D slab cartoon is the fallback if the 3D reads poorly.
-
+Right (2D): Besicovitch compression: 1 x delta rectangles in delta-separated directions whose areas
+sum to >= 1 yet whose union has measure < eta. Laid out by the Perron cut-and-shift so they overlap;
+the union is measured with shapely. The true union -> 0 but only ~1/log N (Keich), so a visible
+drawing plateaus above 0.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/grains_3d.py
 """
 import math

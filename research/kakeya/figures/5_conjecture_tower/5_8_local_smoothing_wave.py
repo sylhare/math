@@ -1,22 +1,12 @@
-"""Figure: the half-wave propagator e^{it sqrt(-Delta)} and the light cone (Sogge local smoothing).
+"""Half-wave propagator e^{it sqrt(-Delta)} and the light cone (kakeya.md 5c-iii).
 
-Math (see ../kakeya.md section 5c(iii)):
-  u(x, t) = e^{it sqrt(-Delta)} f  solves the wave equation.  A point source at the origin sends its
-  energy out along the LIGHT CONE |x| = t: at time t the disturbance concentrates on the sphere of
-  radius t.  In space-time R^n x R_t that locus is the cone {(x, t) : |x| = t}.  Because |x| = t the
-  cone makes a 45-degree half-angle with the time axis (dr/dt = 1).
+u(x, t) = e^{it sqrt(-Delta)} f solves the wave equation; a point source spreads along the light cone
+|x| = t (45-degree half-angle, dr/dt = 1). Fixed-time Sobolev loss s_p = (n-1)|1/2 - 1/p|; the local
+smoothing conjecture recovers it by averaging in t:
 
-  A single fixed time-slice loses regularity; the sharp fixed-time Sobolev loss is
-        s_p = (n-1) |1/2 - 1/p|.
-  Averaging in t over [1, 2] buys that regularity back (the local smoothing conjecture):
-        ( int_1^2 || e^{it sqrt(-Delta)} f ||_{L^p}^p dt )^{1/p}  <~  || f ||_{L^p_{s_p - sigma}}.
+    ( int_1^2 || e^{it sqrt(-Delta)} f ||_{L^p}^p dt )^{1/p}  <~  || f ||_{L^p_{s_p - sigma}}.
 
-Panels:
-  (a) 2D space: three expanding circular wavefronts at t1 < t2 < t3 (radius = t).
-  (b) 3D space-time: the cone surface |x| = t over t in [0, T].
-
-ALTERNATIVES: could draw a single 2+1D cone only; here we keep both the fixed-time slices (a) and the
-space-time cone (b) so the "average over t" idea is visible as stacking slices up the cone.
+(a) 2D: expanding wavefronts radius = t. (b) 3D space-time cone |x| = t.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/local_smoothing_wave.py
 """
@@ -56,7 +46,7 @@ def main():
     ax.set_aspect("equal")
     ax.axis("off")
     shades = [COLORS["region"], COLORS["needle"], COLORS["outer"]]
-    for t, col in zip(times, shades):
+    for t, col in zip(times, shades, strict=False):
         c = circle(r=t, n=200)
         ring = np.vstack([c, c[:1]])
         ax.plot(ring[:, 0], ring[:, 1], color=col, lw=2.2, label=f"t = {t:g},  |x| = {t:g}")
@@ -80,7 +70,7 @@ def main():
     ax3.plot_surface(X, Y, TT, color=COLORS["outer"], alpha=0.35,
                      linewidth=0, antialiased=True, shade=True)
     # stack the three fixed-time slices as rings up the cone (the t we average over)
-    for t, col in zip(times, shades):
+    for t, col in zip(times, shades, strict=False):
         c = circle(r=t, n=120)
         ring = np.vstack([c, c[:1]])
         ax3.plot(ring[:, 0], ring[:, 1], zs=t, color=col, lw=2.0)

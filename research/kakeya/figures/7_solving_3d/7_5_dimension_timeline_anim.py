@@ -1,19 +1,13 @@
-"""Animation: R^3 Kakeya dimension lower-bound milestones revealed over the years (beat 6).
+"""R^3 Kakeya dimension lower-bound milestones revealed over the years (kakeya.md beat 6).
 
-Motion version of `dimension_timeline.py`.  A marker climbs toward the dashed y = 3 line, revealing
+Motion version of `dimension_timeline.py`. A marker climbs toward the dashed y = 3 line, revealing
 the Hausdorff / Minkowski lower bounds one milestone at a time:
-
   * Wolff (1995):          >= 5/2   = (n+2)/2      (Hausdorff & Minkowski)
-  * Katz-Laba-Tao (2000):  > 5/2                   (Minkowski, strict improvement)
+  * Katz-Laba-Tao (2000):  > 5/2                   (Minkowski)
   * Katz-Zahl (2017):      >= 5/2 + eps            (Hausdorff)
   * Wang-Zahl (2025):      = 3                      (Hausdorff & Minkowski: the conjecture)
 
-The bounds just above 5/2 are drawn with a small visible offset so they do not collide; their TRUE
-symbolic values (> 5/2 and 5/2 + eps) are annotated and printed.
-
-INVARIANT (printed + asserted): the revealed values equal the exact milestones; the final marker
-lands at dimension 3.
-
+Bounds just above 5/2 are drawn with a small offset so they do not collide. Final marker lands at 3.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/dimension_timeline_anim.py
 """
 import numpy as np

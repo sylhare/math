@@ -1,18 +1,9 @@
-"""Animation: Minkowski box-counting dimension as delta shrinks (section 3a of ../kakeya.md).
+"""Animation: Minkowski box-counting dimension as delta shrinks through 1/2 .. 1/64.
 
-Mirrors dimension_boxcount.py in motion. delta shrinks through 1/2, 1/4, ..., 1/64 over two sets:
+  * unit segment      -> N(delta) = delta^-1   (dimension 1)
+  * filled unit square -> N(delta) = delta^-2  (dimension 2)
 
-  * a unit segment   -> covering box count  N(delta) = delta^-1   (dimension 1)
-  * a filled unit sq -> covering box count  N(delta) = delta^-2   (dimension 2)
-
-The delta-grid, the shaded covering boxes and the running count animate on the left/middle panels;
-the right panel plots log N against log(1/delta), a point per delta, and fits the slope. The two
-point-clouds ride lines of slope 1 (segment) and 2 (square): those slopes ARE the box dimensions
-
-    dim_box K = lim_{delta->0} log N(delta) / log(1/delta).
-
-Geometric honesty: N is measured by actually testing every grid box against the set (Liang-Barsky
-for the segment), not asserted; the invariant N(seg)=1/delta, N(sq)=(1/delta)^2 is checked per delta.
+Log-log slope of N vs 1/delta is the box dimension: dim_box K = lim log N(delta) / log(1/delta).
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/boxcount_anim.py
 """
@@ -23,14 +14,14 @@ from _shared import COLORS, math_check, save_gif
 from matplotlib.animation import FuncAnimation
 
 DELTAS = [1 / 2, 1 / 4, 1 / 8, 1 / 16, 1 / 32, 1 / 64]
-HOLD = 6          # frames held per delta stage
-END_HOLD = 8      # extra hold on the final (finest) stage
-SEG_Y = 0.55      # horizontal unit segment, strictly inside one grid row
+HOLD = 6          # frames per delta stage
+END_HOLD = 8      # extra hold on the finest stage
+SEG_Y = 0.55      # segment y, strictly inside one grid row
 
 
-# --- geometry: pure-numpy box-counting (honest measurement, mirrors the static figure) ----
+# --- geometry: pure-numpy box-counting -------------------------------------------------
 def _seg_hits_box(p0, p1, xmin, xmax, ymin, ymax):
-    """Liang-Barsky: does segment p0->p1 meet the closed axis-aligned box? (touch counts)."""
+    """Liang-Barsky: does segment p0->p1 meet the closed axis-aligned box?"""
     x0, y0 = p0
     dx, dy = p1[0] - x0, p1[1] - y0
     t0, t1 = 0.0, 1.0
@@ -50,7 +41,7 @@ def _seg_hits_box(p0, p1, xmin, xmax, ymin, ymax):
 
 
 def boxcount_segment(p0, p1, delta):
-    """Boxes of side delta (grid over [0,1]^2) the segment meets; returns (count, hit indices)."""
+    """Side-delta boxes the segment meets; returns (count, hit indices)."""
     n = round(1.0 / delta)
     hits = [(i, j) for i in range(n) for j in range(n)
             if _seg_hits_box(p0, p1, i * delta, (i + 1) * delta, j * delta, (j + 1) * delta)]
@@ -60,7 +51,7 @@ def boxcount_segment(p0, p1, delta):
 def main():
     seg_p0, seg_p1 = np.array([0.0, SEG_Y]), np.array([1.0, SEG_Y])
 
-    # precompute (once) the honest box count + hit boxes for every delta stage
+    # box count + hit boxes per delta stage
     stages = []
     for delta in DELTAS:
         n = round(1.0 / delta)
@@ -68,7 +59,7 @@ def main():
         n_sq = n * n
         stages.append(dict(delta=delta, n=n, n_seg=n_seg, hits_seg=hits_seg, n_sq=n_sq))
 
-    # invariant + log-log data
+    # log-log data
     logs_x = [math.log(1.0 / s["delta"]) for s in stages]
     logs_seg = [math.log(s["n_seg"]) for s in stages]
     logs_sq = [math.log(s["n_sq"]) for s in stages]

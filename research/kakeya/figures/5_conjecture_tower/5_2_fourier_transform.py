@@ -1,26 +1,12 @@
-"""Figure: a signal as a sum of sines, and its spectrum (Part 4 of ../kakeya.md, "Fourier").
+"""Fourier synthesis of a square wave (kakeya.md Part 4).
 
-The Fourier transform (convention used throughout the tower in ../kakeya.md):
-
-    f_hat(xi) = int f(x) e^{-2 pi i x xi} dx.
-
-For a 1-periodic signal this collapses to Fourier coefficients on the integer frequencies. We
-reconstruct the odd square wave  sq(x) = sign(sin 2 pi x)  from its first N harmonics. Its sine
-series (symbolic first, then the picture):
+Fourier transform: f_hat(xi) = int f(x) e^{-2 pi i x xi} dx. Odd square wave sq(x) = sign(sin 2 pi x)
+has sine series
 
     sq(x) = (4 / pi) * sum_{k odd} sin(2 pi k x) / k,     b_k = 4 / (pi k)  (k odd), 0 (k even).
 
-Two exact facts this figure verifies numerically:
-  * L2 reconstruction error  ||sq - S_N||_2  decreases monotonically as N grows (adding an
-    orthogonal harmonic can only shrink the residual; Gibbs overshoot is an L-infinity effect,
-    not L2).
-  * Parseval / energy identity.  Signal energy over one period is  int_0^1 sq^2 dx = 1.  For a
-    sine series the energy equals  (1/2) sum_k b_k^2 , and  (1/2) * (16/pi^2) * sum_{k odd} 1/k^2
-    = (1/2)(16/pi^2)(pi^2/8) = 1.  Partial sums match to a few percent once N is moderate.
+L2 error ||sq - S_N||_2 decreases monotonically in N. Parseval: int_0^1 sq^2 dx = 1 = (1/2) sum_k b_k^2.
 
-Reference: none (standard Fourier synthesis picture). This is an analysis / line plot, not an
-equal-aspect geometry figure, so it builds its own matplotlib axes and hands the figure to
-save_preview.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/fourier_transform.py
 """
 import math
@@ -53,7 +39,7 @@ def main():
     f = square_wave(x)
     energy = np.trapezoid(f * f, x)  # = 1 exactly
 
-    k_top = 49  # 25 odd harmonics; tail ~ 1/(2*49) => Parseval within ~1%
+    k_top = 49  # highest harmonic (25 odd terms)
     ks, bk = coeffs(k_top)
     parseval = 0.5 * np.sum(bk**2)
 

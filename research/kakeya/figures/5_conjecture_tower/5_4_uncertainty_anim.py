@@ -1,18 +1,8 @@
-"""Animation: the uncertainty principle as a Gaussian narrowing in x, widening in xi (Hickman Fig 5).
+"""Uncertainty principle: Gaussian narrowing in x, widening in xi (kakeya.md Part 4).
 
-Mirror of the static `uncertainty_principle.py`, set in motion. Sweep the width of a Gaussian
-g(x) = exp(-x^2 / (2 sigma^2)) (physical std sigma_x = sigma). Its Fourier transform is again
-Gaussian, with frequency std
-
-    sigma_xi = 1 / (2 pi sigma),
-
-so the two widths are reciprocal. As sigma shrinks the bump in x narrows while its transform in xi
-widens, and the dual "uncertainty box" (sigma_x wide, sigma_xi tall) swaps aspect from short-and-wide
-to tall-and-narrow while keeping the same area.
-
-INVARIANT asserted at the end: the product  sigma_x * sigma_xi = 1 / (2 pi)  is held constant across
-ALL frames (min and max of the measured product are printed and pinned to 1/(2 pi)). sigma_xi is
-measured by FFT of the sampled Gaussian, not just quoted.
+Sweep sigma of g(x) = exp(-x^2 / (2 sigma^2)); its transform is Gaussian with frequency std
+sigma_xi = 1/(2 pi sigma). The dual box sigma_x x sigma_xi keeps constant area:
+sigma_x * sigma_xi = 1/(2 pi). sigma_xi measured by FFT each frame.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/uncertainty_anim.py
 """

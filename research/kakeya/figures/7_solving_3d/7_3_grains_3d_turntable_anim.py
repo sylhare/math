@@ -1,17 +1,9 @@
-"""Animation: turntable of Guth's grain slabs in a fat-tube box (kakeya.md section 7c).
+"""Turntable of Guth's grain slabs in a fat-tube box (kakeya.md section 7c).
 
-A rotating (azimuth 0 -> 360) 3D view of red parallel GRAIN slabs of size  delta x c x c
-(delta << c << 1) tiling a wireframe fat-tube box  [0,1] x [0,c] x [0,c].  The grains are one tube
-thick (delta thin along the tube axis X) and span the c x c cross-section; they tile the tube along
-its length and are essentially disjoint (they share only zero-volume faces), so no point of the tube
-lies in more than one grain: "no point sits in too many grains", the ceiling on compression.
-
-Only the camera moves (ax.view_init); the geometry is fixed and built once, so the grains keep their
-fixed  delta x c x c  size in every frame (geometric honesty).
-
-INVARIANT (asserted in MATH CHECK): grain dimensions delta x c x c with delta << c << 1, and the
-grains are pairwise-disjoint within the box (max pairwise overlap volume ~ 0).
-
+Rotating (azimuth 0 -> 360) view of parallel GRAIN slabs of size delta x c x c (delta << c << 1)
+tiling a wireframe fat-tube box [0,1] x [0,c] x [0,c]. Grains are one tube thick (delta-thin along
+the tube axis X), span the c x c cross-section, and are pairwise disjoint (share only zero-volume
+faces), so every point lies in at most one grain. Only the camera moves; the geometry is built once.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/grains_3d_turntable_anim.py
 """
 import numpy as np
@@ -20,9 +12,7 @@ from _shared import COLORS, math_check, save_gif
 FRAMES = 72  # turntable: azimuth step 360 / 72 = 5 degrees
 
 
-# ---------------------------------------------------------------------------
-# GEOMETRY (pure numpy, replicated locally from grains_3d.py; do not import it)
-# ---------------------------------------------------------------------------
+# GEOMETRY (replicated locally from grains_3d.py; do not import it)
 def grain_boxes(delta: float, c: float, x_starts) -> list[tuple]:
     """Axis-aligned grains delta x c x c inside a fat tube [0,1] x [0,c] x [0,c].
     Each grain is delta-thin along the tube axis X and spans the c x c cross-section."""
@@ -104,7 +94,7 @@ def main():
     _draw_box_wire(ax, fat_tube, COLORS["guide"], lw=1.3)
     for g in grains:
         _draw_box_solid(ax, g, COLORS["accent"], alpha=0.6)
-    # a few thin tubes running lengthwise through the grains
+    # a few thin tubes running lengthwise
     for (y, z) in [(0.09, 0.18), (0.20, 0.09), (0.15, 0.24), (0.24, 0.20)]:
         ax.plot([0, 1], [y, y], [z, z], color=COLORS["outer"], lw=0.9, alpha=0.85)
     ax.set_box_aspect((1.0, c, c))

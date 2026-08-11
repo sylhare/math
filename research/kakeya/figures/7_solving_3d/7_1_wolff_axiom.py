@@ -1,28 +1,12 @@
-"""Figure: the Wolff axiom (kakeya.md section 6, Hickman Def. 5.6).
+"""Wolff axiom (kakeya.md section 6, Hickman Def. 5.6).
 
-Math (symbolic first, then numeric):
-  * Wolff axiom: for every rectangular prism R in R^3 and a direction-separated family of
-    delta-tubes,
-        #{ T in T : T subset of R }  <=  delta^-2 |R| .
-    No prism swallows more tubes than its volume allows; this rules out the degenerate
-    "all tubes crammed into one thin slab" cheat that would build a low-dimensional Kakeya set.
-    Reason: each tube has volume |T| = delta^2, and tubes inside R overlap boundedly, so
-    (#tubes) * delta^2  <~  |R|,  i.e.  #tubes <~ delta^-2 |R|.
-  * The bound is tight for a slab R = 1 x 1 x w: it holds ~ delta^-2 w tubes, all lying in the
-    slab plane. Trying to pack more than delta^-2 |R| tubes is exactly what the axiom forbids.
-  * Wolff's resulting R^3 dimension lower bound (1995):  (n+2)/2 = (3+2)/2 = 5/2.
+For every rectangular prism R in R^3 and a direction-separated family of delta-tubes,
+    #{ T in T : T subset of R }  <=  delta^-2 |R| .
+Each tube has |T| = delta^2 and tubes in R overlap boundedly, so #tubes <~ delta^-2 |R|.
+Wolff's resulting R^3 dimension lower bound (1995): (n+2)/2 = (3+2)/2 = 5/2.
 
-This file draws two slab prisms R with the same delta:
-  * SATISFYING: tube count <= delta^-2 |R|  (a legal direction-separated packing).
-  * FORBIDDEN:  a thinner slab crammed with more tubes than delta^-2 |R| allows (overlapping /
-    degenerate); the Wolff axiom rules this out.
-
-MATH CHECK: prints delta^-2 |R| for each slab and the tube count; the satisfying slab has
-count <= bound, the forbidden slab has count > bound; prints the R^3 Wolff bound (n+2)/2 = 5/2.
-
-Reference: none (a prism with tubes; guth_fig1 palette: red tubes, blue/guide prism).
-ALTERNATIVES: 2D-ish slab framing (thin in z) keeps the count/volume relation readable; a fat
-prism would push the bound far above any drawable count and hide the point.
+Two slab prisms R at the same delta: SATISFYING (count <= delta^-2 |R|) and FORBIDDEN (a thinner
+slab with count > delta^-2 |R|).
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/wolff_axiom.py
 """
 import numpy as np
@@ -44,10 +28,8 @@ def wolff_bound(delta: float, dims) -> float:
 
 
 def slab_tubes(dims, delta, n, rng):
-    """n horizontal (in-slab) unit tubes: (center, direction) with distinct in-plane directions.
-
-    Directions are delta-separated in-plane (angular gap ~ delta); tubes lie in the slab plane
-    z in [-Lz/2, Lz/2]. Honest length 1, radius delta/2."""
+    """n unit tubes (center, direction) with distinct in-plane directions lying in the slab plane
+    z in [-Lz/2, Lz/2]; length 1, radius delta/2."""
     lx, ly, lz = dims
     angles = np.linspace(0.0, np.pi, n, endpoint=False)  # distinct directions in [0, pi)
     tubes = []
@@ -104,7 +86,7 @@ def main():
     bound_ok = wolff_bound(delta, dims_ok)     # 100 * 0.432 = 43.2
     n_ok = 18
 
-    # FORBIDDEN slab: count > delta^-2 |R| (thin slab crammed beyond its volume budget)
+    # FORBIDDEN slab: count > delta^-2 |R|
     dims_bad = (1.2, 1.2, 0.12)
     bound_bad = wolff_bound(delta, dims_bad)   # 100 * 0.1728 = 17.28
     n_bad = 26
@@ -125,7 +107,7 @@ def main():
     radius = delta / 2.0
     fig = plt.figure(figsize=(12.5, 6.2))
 
-    for idx, (dims, n, bound, ok, title) in enumerate(
+    for idx, (dims, n, _bound, ok, title) in enumerate(
         [
             (dims_ok, n_ok, bound_ok, True, f"satisfying:  {n_ok} tubes <= delta^-2|R| = {bound_ok:.0f}"),
             (dims_bad, n_bad, bound_bad, False, f"forbidden:  {n_bad} tubes > delta^-2|R| = {bound_bad:.0f}"),
@@ -134,7 +116,7 @@ def main():
         ax = fig.add_subplot(1, 2, idx + 1, projection="3d")
         ax.set_title(title, color=(COLORS["outer"] if ok else COLORS["accent"]))
         for a, b in prism_edges(dims):
-            ax.plot(*zip(a, b), color=COLORS["outer"], lw=1.1, alpha=0.9)
+            ax.plot(*zip(a, b, strict=False), color=COLORS["outer"], lw=1.1, alpha=0.9)
         rng = np.random.default_rng(3 if ok else 4)
         for c, d in slab_tubes(dims, delta, n, rng):
             X, Y, Z = tube_surface(c, d, 1.0, radius)

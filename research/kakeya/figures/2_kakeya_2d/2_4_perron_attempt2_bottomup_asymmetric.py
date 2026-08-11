@@ -1,14 +1,13 @@
-"""Perron tree, correct bottom-up merge (area -> 0).  Ref: Falconer, Geometry of Fractal Sets.
+"""Perron tree, bottom-up asymmetric merge (right shape slid left).
 
-Elementary slivers: split the base [0,1] into N = 2^n equal blocks; sliver E_i has that block
-as base and the shared apex A = (1/2, h).  The slivers tile the triangle T (total area = |T|).
-Each sliver carries unit segments in its own narrow direction-fan (base-point -> A).
+Split the base [0,1] into N = 2^n equal blocks; sliver E_i has that block as base and shared apex
+A = (1/2, h). The slivers tile the triangle T. Each carries unit segments in its own narrow fan
+(base-point -> A).
 
-Merge (bottom up): pair consecutive shapes; translate the RIGHT shape left so its base slides
-over the left shape's base, overlapping on a fraction (1-s) of a block, keeping s*block of new
-base.  Translation preserves every segment's DIRECTION, so the merged shape covers the union of
-both fans while its area drops.  Repeat n times.  Cover all 180 deg by rotating three 60 deg
-trees by 0, 60, 120 deg.
+Merge (bottom up): pair consecutive shapes; translate the RIGHT shape left so its base overlaps the
+left shape's on a fraction (1-s) of a block, keeping s*block of new base. Translation preserves each
+segment's direction, so the merge covers the union of both fans while area drops; repeat n times.
+Three copies rotated 0/60/120 deg cover all 180 deg.
 """
 import math
 

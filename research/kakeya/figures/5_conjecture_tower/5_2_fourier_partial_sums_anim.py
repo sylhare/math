@@ -1,20 +1,10 @@
-"""Animation: Fourier partial sums reconstruct an odd square wave as N grows (Part 4, "Fourier").
+"""Fourier partial sums of an odd square wave as N grows (kakeya.md Part 4).
 
-Mirror of the static `fourier_transform.py`, set in motion. The odd square wave of period 1 has the
-sine series (symbolic first, then the picture):
+Odd square wave sq(x) = sign(sin 2 pi x), sine series
 
     sq(x) = (4 / pi) * sum_{k odd} sin(2 pi k x) / k,     b_k = 4 / (pi k)  (k odd), 0 (k even).
 
-As N climbs through the odd harmonics 1, 3, 5, ..., 49 the partial sum S_N closes on the target and
-the spectrum fills in one bar at a time. Two honest facts carry the animation:
-
-  * L2 reconstruction error  ||sq - S_N||_2  decreases MONOTONICALLY as N grows (each added
-    orthogonal harmonic can only shrink the residual).
-  * The Gibbs overshoot near the jump does NOT vanish: the peak of S_N stays about 9% above the
-    step no matter how large N gets (it narrows but never shrinks below ~8.9%).
-
-INVARIANT asserted at the end: errors strictly decreasing (first vs last printed) and the Gibbs
-overshoot persists at ~9% (first vs last printed).
+L2 error ||sq - S_N||_2 decreases monotonically in N; Gibbs overshoot persists at ~8.95% of the jump.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/fourier_partial_sums_anim.py
 """

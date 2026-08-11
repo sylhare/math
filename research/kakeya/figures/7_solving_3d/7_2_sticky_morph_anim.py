@@ -1,21 +1,13 @@
-"""Animation: morph non-sticky -> sticky tubes (kakeya.md section 7a, Hickman Def. 5.8).
+"""Morph non-sticky -> sticky tubes (kakeya.md section 7a, Hickman Def. 5.8).
 
-Motion version of `sticky_vs_nonsticky.py`.  We watch the delta-tubes reorganize from the
-NON-STICKY regime (same-direction thin tubes scattered across space) into the STICKY regime
-(same-direction thin tubes clumped inside one fat rho-tube).  Each thin tube travels in a straight
-line from its scattered position to its clumped position; nothing is created or destroyed.
+Motion version of `sticky_vs_nonsticky.py`. Each thin tube travels in a straight line from a
+scattered (non-sticky) position to a clumped (sticky) position; the total thin-tube count
+delta^-2 = 256 is conserved every frame. At the sticky end each fat rho-tube holds
+~(rho/delta)^2 = 16 same-direction thin tubes.
+rho = 1/4, delta = 1/16: (rho/delta)^2 = 16 thin per fat, rho^-2 = 16 fat, delta^-2 = 256 = 16 x 16.
 
-Projection: 2D CROSS-SECTION (the plane perpendicular to the tube bundle).  A thin delta-tube is a
-red dot (its delta x delta cross-section), a fat rho-tube a blue rho x rho square.  One
-direction-family (16 same-direction thin tubes) is outlined in guide grey so the clumping is legible.
-
-Numbers:  rho = 1/4, delta = 1/16  ->  rho/delta = 4, (rho/delta)^2 = 16 thin tubes per fat tube at
-the sticky end;  rho^-2 = 16 fat tubes;  total thin tubes = delta^-2 = 256 = 16 x 16.
-
-INVARIANT (printed + asserted): the total thin-tube count delta^-2 = 256 is conserved in EVERY
-frame; at the sticky end each fat rho-tube holds ~(rho/delta)^2 = 16 same-direction thin tubes; at
-the non-sticky end far fewer.
-
+2D cross-section: thin delta-tube = red dot, fat rho-tube = blue rho x rho square; one
+direction-family outlined in guide grey.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/sticky_morph_anim.py
 """
 import numpy as np
@@ -25,7 +17,7 @@ from matplotlib.animation import FuncAnimation
 
 def fat_centers(rho):
     """Centres of the rho^-2 fat tubes on a regular grid tiling the unit-square cross-section."""
-    m = int(round(1.0 / rho))
+    m = round(1.0 / rho)
     xs = (np.arange(m) + 0.5) * rho
     gx, gy = np.meshgrid(xs, xs)
     return np.column_stack([gx.ravel(), gy.ravel()])
@@ -33,7 +25,7 @@ def fat_centers(rho):
 
 def sub_offsets(rho, delta):
     """The (rho/delta)^2 sub-grid offsets of thin tubes packed inside one fat tube."""
-    k = int(round(rho / delta))
+    k = round(rho / delta)
     xs = (np.arange(k) - (k - 1) / 2) * delta
     gx, gy = np.meshgrid(xs, xs)
     return np.column_stack([gx.ravel(), gy.ravel()])
@@ -52,8 +44,8 @@ def sticky_positions(rho, delta):
 
 def nonsticky_positions(rho, delta, rng):
     """Same bins/counts, but each direction-bin's thin tubes scattered across the whole square."""
-    n_bins = int(round(1.0 / rho)) ** 2
-    per = int(round(rho / delta)) ** 2
+    n_bins = round(1.0 / rho) ** 2
+    per = round(rho / delta) ** 2
     pos, bins = [], []
     for i in range(n_bins):
         pos.append(rng.uniform(0.0, 1.0, size=(per, 2)))
@@ -82,9 +74,9 @@ def main():
     import matplotlib.pyplot as plt
 
     rho, delta = 0.25, 0.0625
-    per_fat = int(round((rho / delta) ** 2))   # 16
-    n_fat = int(round(1.0 / rho)) ** 2         # 16
-    n_thin = int(round(1.0 / delta)) ** 2      # 256
+    per_fat = round((rho / delta) ** 2)   # 16
+    n_fat = round(1.0 / rho) ** 2         # 16
+    n_thin = round(1.0 / delta) ** 2      # 256
 
     pos_s, bins_s = sticky_positions(rho, delta)
     pos_n, bins_n = nonsticky_positions(rho, delta, np.random.default_rng(11))

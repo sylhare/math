@@ -1,21 +1,8 @@
-"""Animation: a traveling plane wave  cos(2 pi (x . xi - c t))  in R^2 (Hickman Fig 4, Part 4).
+"""Traveling plane wave u(x, t) = cos(2 pi (x . xi - c t)) in R^2 (kakeya.md Part 4).
 
-Mirror of the static `plane_wave.py`, set in motion. A single Fourier mode carried in time is
-
-    u(x, t) = cos(2 pi (x . xi - c t)),
-
-a rigid pattern of parallel stripes sliding along its own normal. Two facts stay fixed as t runs:
-
-  * the wavefronts (level lines  x . xi = const) are PERPENDICULAR to the frequency vector xi, and
-    successive crests are one WAVELENGTH  1/|xi|  apart;
-  * the crest advances at a CONSTANT phase speed: the wavefront normal moves by  c / |xi|  per unit
-    t, so a fixed per-frame time step gives a fixed per-frame crest displacement.
-
-Both are measured, not asserted: each frame's field is FFT'd, the dominant bin gives the wavelength
-(constant), and the phase of that bin gives the crest position (advancing by equal steps).
-
-INVARIANT asserted at the end: wavelength = 1/|xi| constant across frames, and the measured
-per-frame crest displacement is constant and equals c/|xi| * dt (printed).
+Rigid parallel stripes sliding along their normal. Wavefronts x . xi = const perpendicular to xi,
+wavelength 1/|xi| (constant); crest advances at phase speed c/|xi| (displacement c/|xi| * dt per
+frame). Wavelength and crest position measured from the dominant FFT bin each frame.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/plane_wave_anim.py
 """
@@ -61,7 +48,7 @@ def main():
     dt = T / frames
     ts = np.arange(frames) * dt
 
-    # --- measure invariants frame by frame -------------------------------------------------
+    # measure wavelength + crest position per frame
     lambdas, phases = [], []
     for t in ts:
         fmag, ph = measure_freq_phase(wave_field(xi, c, t, L, n), L)

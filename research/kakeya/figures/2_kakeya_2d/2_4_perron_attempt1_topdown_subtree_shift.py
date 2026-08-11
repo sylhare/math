@@ -1,17 +1,13 @@
-"""Perron-tree / Besicovitch set: verify the math renders and that 60 deg is not a wall.
+"""Perron tree via top-down cevian split, right subtree shifted left to overlap.
 
-Construction (honest):
-  - A triangle with base on y=0 and apex P carries a unit segment in every direction
-    of the fan {base-point -> P}. That fan = the apex angle.
-  - Split by the cevian apex->base-midpoint into Left/Right (shared apex): Left carries the
-    left half of the fan, Right the right half.
-  - We may TRANSLATE each piece freely: translation preserves every interior segment's
-    DIRECTION, so coverage of the fan is unchanged while the union area can shrink.
-  - Perron sprout: translate Right left  so the two pieces overlap; recurse.
-  - All directions: rotate a finished 60 deg tree by 0,60,120 deg  (three copies tile 180 deg).
+  - A triangle with base on y=0 and apex P carries a unit segment in every direction of the fan
+    {base-point -> P} = the apex angle.
+  - Cevian apex->base-midpoint splits it into Left/Right (shared apex), each carrying half the fan.
+  - Translation preserves each segment's direction, so pieces slide to overlap (area shrinks) with
+    the fan unchanged; recurse.
+  - Three copies rotated 0/60/120 deg tile 180 deg (all directions).
 
-We measure the union area (shapely) to show it shrinks with depth, and sample directions to
-prove coverage. Then render PNGs.
+Measures union area vs depth and samples direction coverage, then renders PNGs.
 """
 import math
 

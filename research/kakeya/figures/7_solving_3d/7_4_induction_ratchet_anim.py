@@ -1,20 +1,13 @@
-"""Animation: the dimension ratchet 2.5 -> 3 (beat 7e of ../kakeya.md).
+"""Dimension ratchet 2.5 -> 3 (kakeya.md beat 7e).
 
-Motion version of `induction_on_scales.py`.  The Wang-Zahl finish is an induction on scales: assume
-the dimension bound K(d) and bootstrap to K(d + alpha) for a FIXED gain alpha = 0.1, repeating until
-d reaches 3.  Two staircases climb in parallel:
+Motion version of `induction_on_scales.py`. Induction on scales with fixed gain alpha = 0.1; two
+staircases climb in parallel:
+  * graininess (red): mu <~ mu_coarse * mu_fine, grains disjoint in a fat tube, so each step gains
+    alpha and the estimate ratchets 2.5 -> 3.0 in 5 steps;
+  * lossy "Chinese whispers" (blue): mu <~ mu_fat * mu_fine over-counts the fat tube, so it stalls
+    below 3.
 
-  * graininess induction (red): mu <~ mu_coarse * mu_fine, grains disjoint in a fat tube, so every
-    step GAINS exactly alpha and the estimate ratchets 2.5 -> 3.0 in 5 steps (the 5th reaches 3.000);
-  * "Chinese whispers" lossy induction (blue): mu <~ mu_fat * mu_fine over-counts the fat tube, the
-    per-step gain leaks and compounds, so the estimate stalls below 3.
-
-Schematic of the two behaviours (not the proof's constants): the gain alpha, the start 2.5 and the
-cap 3 are exact; the lossy leak is illustrative.
-
-INVARIANT (printed + asserted): each red step increments by exactly 0.10 and the 5th reaches 3.000;
-the lossy curve ends < 3.
-
+Schematic: alpha, start 2.5 and cap 3 are exact; the lossy leak is illustrative.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/induction_ratchet_anim.py
 """
 import math
@@ -58,7 +51,7 @@ def staircase_vertices(g):
 def revealed(v, p):
     """Polyline of `v` revealed up to segment-progress p in [0, len(v)-1]; also the whole-segment
     count k so callers can mark the settled corner vertices."""
-    k = min(int(math.floor(p)), len(v) - 1)
+    k = min(math.floor(p), len(v) - 1)
     pts = list(v[: k + 1])
     if k < len(v) - 1:
         frac = p - k
@@ -116,8 +109,8 @@ def main():
 
         gp, gk = revealed(good_v, p)
         bp, bk = revealed(bad_v, p)
-        gx, gy = zip(*gp)
-        bx, by = zip(*bp)
+        gx, gy = zip(*gp, strict=False)
+        bx, by = zip(*bp, strict=False)
         ax.plot(bx, by, color=COLORS["outer"], lw=2.0, label="lossy: mu ~ mu_fat * mu_fine")
         ax.plot(gx, gy, color=COLORS["accent"], lw=2.4, label="graininess: mu ~ mu_coarse * mu_fine")
 

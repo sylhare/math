@@ -1,22 +1,9 @@
-"""Animation: turntable of the Wang-Zahl 3D tube bundle (kakeya.md section 6).
+"""Turntable of the 3D tube bundle (kakeya.md section 6).
 
-A rotating (azimuth 0 -> 360) 3D view of a bundle of  delta x delta x 1  tubes pointing in
-delta-separated directions on the sphere S^2.  Two skew tubes are highlighted in red: as the camera
-turns you see them pass without ever touching, the geometric fact that makes R^3 harder than R^2.
-
-Symbolic first, then numeric:
-  * each tube is  delta x delta x 1  (length 1, radius delta/2), volume |T| = delta^2;
-  * directions are delta-separated on S^2 (area 4 pi), so the count is  #T ~ delta^-2,
-    hence total content  #T * |T| ~ 1;
-  * in the plane two lines in different directions always CROSS (min distance 0); in space two
-    generic lines are SKEW and MISS (min distance > 0).  The red pair shows the 3D miss.
-
-Only the camera moves (ax.view_init); the geometry is fixed and built once, so the tubes stay a
-rigid  delta x delta x 1  bundle in every frame (geometric honesty).
-
-INVARIANT (asserted in MATH CHECK): tube count ~ delta^-2 (count * delta^2 is O(1), roughly constant,
-quadrupling when delta halves) and the two red skew tube axes have min-distance > 0 (they never meet).
-
+Rotating (azimuth 0 -> 360) view of a bundle of delta x delta x 1 tubes in delta-separated
+directions on S^2. Each tube has volume |T| = delta^2; #T ~ delta^-2, so #T * |T| ~ 1. Two red
+skew tubes miss (min axis distance > 0), whereas two R^2 lines in different directions cross.
+Only the camera moves; the geometry is built once.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/tubes_3d_turntable_anim.py
 """
 import numpy as np
@@ -25,9 +12,7 @@ from _shared import COLORS, math_check, save_gif
 FRAMES = 72  # turntable: azimuth step 360 / 72 = 5 degrees
 
 
-# ---------------------------------------------------------------------------
-# GEOMETRY (pure numpy, replicated locally from tubes_3d.py; do not import it)
-# ---------------------------------------------------------------------------
+# GEOMETRY (replicated locally from tubes_3d.py; do not import it)
 def fibonacci_sphere(n: int) -> np.ndarray:
     """n roughly-uniform points on the unit sphere S^2 (for sampling directions)."""
     i = np.arange(n) + 0.5
@@ -96,9 +81,8 @@ def main():
     cen_b = np.array([0.15, 0.0, 0.35])
     miss_dist = line_line_distance(cen_a, dir_a, cen_b, dir_b)
 
-    # --- INVARIANT assertions ------------------------------------------------
     contents = [counts[d] * d ** 2 for d in (0.4, 0.2, 0.1)]
-    # count ~ delta^-2 means count*delta^2 is O(1) and roughly constant across delta.
+    # count ~ delta^-2  <=>  count*delta^2 is O(1), roughly constant across delta
     assert all(1.0 < ctd < 30.0 for ctd in contents), f"count*delta^2 not O(1): {contents}"
     assert max(contents) / min(contents) < 2.0, f"count*delta^2 not roughly constant: {contents}"
     assert counts[0.1] > counts[0.2] > counts[0.4], "count must grow as delta shrinks"
@@ -117,7 +101,7 @@ def main():
     )
 
     # --- STATIC GEOMETRY (built once; only the camera animates) --------------
-    delta_vis = 0.10  # display thickness so the thin tubes are visible; tubes stay length 1
+    delta_vis = 0.10  # display thickness for the thin tubes
     radius = delta_vis / 2.0
 
     fig = plt.figure(figsize=(6.4, 6.4))
@@ -126,7 +110,7 @@ def main():
 
     rng = np.random.default_rng(7)
     dirs = delta_separated(fibonacci_sphere(4000), 0.55)
-    dirs = dirs[dirs[:, 2] >= 0][:14]  # upper hemisphere, a viewable dozen or so
+    dirs = dirs[dirs[:, 2] >= 0][:14]  # upper hemisphere
     for d in dirs:
         c = rng.uniform(-0.18, 0.18, size=3)
         X, Y, Z = tube_surface(c, d, 1.0, radius)
@@ -135,7 +119,7 @@ def main():
     for c, d in ((cen_a, dir_a), (cen_b, dir_b)):
         X, Y, Z = tube_surface(c, d, 1.0, radius * 1.1)
         ax.plot_surface(X, Y, Z, color=COLORS["accent"], alpha=0.9, linewidth=0)
-    # their axes (guide) to make the miss legible as the camera turns
+    # their axes (guide)
     for c, d in ((cen_a, dir_a), (cen_b, dir_b)):
         seg = np.array([c - 0.5 * d, c + 0.5 * d])
         ax.plot(seg[:, 0], seg[:, 1], seg[:, 2], color=COLORS["guide"], lw=1.0)

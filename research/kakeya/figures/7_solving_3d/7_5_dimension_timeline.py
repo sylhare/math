@@ -1,17 +1,13 @@
-"""Figure: R^3 Kakeya dimension lower-bound history (beat 6 of ../kakeya.md).
+"""R^3 Kakeya dimension lower-bound history (kakeya.md beat 6).
 
-A timeline of the Hausdorff / Minkowski lower bounds for Kakeya sets in R^3, from Wolff's 5/2 to
-the Wang-Zahl theorem that closes it at 3:
-
+Hausdorff / Minkowski lower bounds for Kakeya sets in R^3:
   * Wolff (1995):          >= 5/2   = (n+2)/2      (Hausdorff & Minkowski)
-  * Katz-Laba-Tao (2000):  > 5/2                   (Minkowski, strict improvement)
+  * Katz-Laba-Tao (2000):  > 5/2                   (Minkowski)
   * Katz-Zahl (2017):      >= 5/2 + eps            (Hausdorff)
   * Wang-Zahl (2025):      = 3                      (Hausdorff & Minkowski: the conjecture)
 
-The bounds just above 5/2 are plotted with a small visible offset so they do not collide; their
-TRUE symbolic values (> 5/2 and 5/2 + eps) are annotated and printed in the MATH CHECK.  The top
-dashed line is dimension 3.
-
+Bounds just above 5/2 are plotted with a small offset so they do not collide; their symbolic values
+are annotated. Top dashed line is dimension 3.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/dimension_timeline.py
 """
 from _shared import COLORS, math_check, save_preview

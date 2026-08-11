@@ -1,6 +1,6 @@
-"""Confirm the Perron-tree area really keeps decreasing toward 0 (slow, ~1/log N), and make a
-clean symmetric render.  Symmetric merge: push both halves toward the shared centre so the tree
-stays centred and the 3 rotated copies tile symmetrically about the apex."""
+"""Perron tree, bottom-up symmetric merge: push both halves toward the pair centre so the tree
+stays centred and the 3 rotated copies tile symmetrically about the apex. Area -> 0 slowly
+(~1/log N). Prints area vs level n and renders a symmetric PNG."""
 import math
 
 import matplotlib

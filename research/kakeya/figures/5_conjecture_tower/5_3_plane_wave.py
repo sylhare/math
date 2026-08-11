@@ -1,20 +1,9 @@
-"""Figure: level sets of a plane wave  x -> cos(2 pi x . xi)  in R^2 (Hickman Fig 4, Part 4).
+"""Level sets of a plane wave x -> cos(2 pi x . xi) in R^2 (kakeya.md Part 4).
 
-A single Fourier mode  e^{2 pi i x . xi}  has real part  cos(2 pi x . xi).  Its level sets are
-parallel straight stripes:
+Fourier mode e^{2 pi i x . xi} has real part cos(2 pi x . xi); level sets are parallel stripes with
+wavefronts x . xi = const perpendicular to xi, spacing = wavelength 1/|xi|. Two xi shown; xi recovered
+from the dominant 2D-FFT bin.
 
-  * wavefronts (lines  x . xi = const) are PERPENDICULAR to the frequency vector xi;
-  * successive crests are one WAVELENGTH apart, and the wavelength is  1 / |xi|.
-
-This is the building block behind the whole Fourier tower in ../kakeya.md: a "wave packet" is such
-a plane wave cut off to a tube, and stacking packets tangent to a curved surface is what makes
-Kakeya geometry control the Fourier transform.
-
-Verification is a genuine measurement, not a restatement of the formula: we sample the field on a
-grid, take its 2D FFT, and read the dominant frequency bin. The measured frequency vector recovers
-xi, so measured spacing = 1/|xi| and measured stripe normal = xi/|xi|. Two different xi are shown.
-
-Reference: Hickman Fig 4 (not downloaded; redrawn from the description). Equal-aspect spatial plot.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/plane_wave.py
 """
 import numpy as np

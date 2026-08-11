@@ -1,34 +1,16 @@
-"""Figure: Fefferman's ball-multiplier geometry (kakeya.md section 5b).
+"""Fefferman's ball-multiplier geometry (kakeya.md 5b).
 
-Charles Fefferman (1971) disproved L^p convergence of the ball multiplier for p != 2 by turning
-Besicovitch/Perron geometry into a Fourier counterexample. Two dual pictures:
+Two dual pictures:
+  FREQUENCY: r x r^2 rectangles tangent to the unit circle |xi| = 1 (long side r along the tangent,
+             thickness r^2 radial; inner edge at distance 1 from the centre).
+  PHYSICAL:  dual (1/r) x (1/r^2) tubes through the origin, piling up there.
 
-  FREQUENCY side  (Hickman Fig 6a): many thin rectangles of size  r x r^2  tangent to the unit
-                  circle |xi| = 1.  Long side r runs ALONG the tangent, short side r^2 runs
-                  radially outward.  Their long inner edge touches the circle (distance 1 from
-                  the centre), so the slabs hug the sphere the way the sphere is curved.
+  frequency rectangle   r x r^2,     aspect r : r^2 = 1 : r
+  physical tube         1/r^2 x 1/r, aspect 1/r^2 : 1/r = 1 : r
+  duality               (r)(1/r) = 1,  (r^2)(1/r^2) = 1
 
-  PHYSICAL side   (Hickman Fig 6b): the uncertainty-principle duals, tubes of size (1/r) x (1/r^2)
-                  through the origin.  Frequency thin direction (radial, width r^2) becomes the
-                  long physical direction (length 1/r^2); frequency wide direction (tangential,
-                  width r) becomes the short physical direction (width 1/r).  All tubes share the
-                  origin, so they pile up there exactly as needles pile up in a Besicovitch set.
-
-Symbolic first:
-  frequency rectangle   width  x thickness = r x r^2,   aspect  r : r^2  = 1 : r      (thin as r->0)
-  physical tube         length x width     = 1/r^2 x 1/r, aspect 1/r^2 : 1/r = 1 : r  (long as r->0)
-  duality               (r)(1/r) = 1  and  (r^2)(1/r^2) = 1                (Heisenberg boxes)
-
-MATH CHECK: every frequency rectangle's long (inner) edge is tangent to the unit circle, i.e. the
-distance from the centre to that edge-line is exactly 1 at the touch point; the aspect ratios
-r : r^2 and 1/r : 1/r^2 hold to machine precision.
-
-ALTERNATIVES: r is chosen so N = 12 rectangles tile the circle (chord r = 2 sin(pi/N)), matching the
-~12 slabs of Fig 6a; aspect r:r^2 ~ 2:1 as in the reference. Smaller r (more, thinner slabs) makes
-the frequency rectangles thinner and the physical tubes correspondingly longer -- that is the true
-r -> 0 limit, but fewer slabs read more cleanly on screen. The physical panel draws the 6 distinct
-tube orientations (opposite tangent points give the same origin-centred tube) with translucent fill
-so the overlap count is visible as darkening at the origin (the pile-up).
+N = 12 slabs tile the circle (chord r = 2 sin(pi/N)); physical panel draws 6 distinct orientations
+(opposite tangent points share a tube).
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/fefferman_ball_multiplier.py
 """
@@ -39,12 +21,10 @@ from _shared import COLORS, circle, math_check, new_axes, save_preview
 
 
 def freq_rectangle(phi: float, r: float, r2: float) -> np.ndarray:
-    """Corners of an r x r^2 rectangle tangent to the unit circle at angle phi.
-
-    Inner long edge (length r) lies on the tangent line at the touch point p = (cos phi, sin phi)
-    (distance 1 from the centre); the rectangle extends radially outward by r^2."""
-    n = np.array([math.cos(phi), math.sin(phi)])   # outward radial (unit normal)
-    t = np.array([-math.sin(phi), math.cos(phi)])  # tangential (unit, along long side)
+    """Corners of an r x r^2 rectangle tangent to the unit circle at angle phi (inner long edge r on
+    the tangent at p = (cos phi, sin phi); extends radially outward by r^2)."""
+    n = np.array([math.cos(phi), math.sin(phi)])   # outward radial unit normal
+    t = np.array([-math.sin(phi), math.cos(phi)])  # tangential unit, along long side
     p = n                                          # touch point on the unit circle
     return np.array([
         p - (r / 2) * t,
@@ -55,10 +35,8 @@ def freq_rectangle(phi: float, r: float, r2: float) -> np.ndarray:
 
 
 def phys_tube(phi: float, r: float, r2: float) -> np.ndarray:
-    """Corners of the dual (1/r) x (1/r^2) tube through the origin for frequency angle phi.
-
-    Long axis (length 1/r^2) points radially (dual to the thin r^2 side); short axis (width 1/r)
-    points tangentially (dual to the wide r side)."""
+    """Corners of the dual (1/r) x (1/r^2) tube through the origin (long axis 1/r^2 radial, width
+    1/r tangential)."""
     n = np.array([math.cos(phi), math.sin(phi)])
     t = np.array([-math.sin(phi), math.cos(phi)])
     half_len = 0.5 / r2

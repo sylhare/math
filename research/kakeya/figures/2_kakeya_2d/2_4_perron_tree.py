@@ -1,13 +1,11 @@
-"""Figure: Perron tree -> Besicovitch set (beats 2d-2f of ../kakeya.md).
+"""Perron tree -> Besicovitch set (kakeya.md 2d-2f).
 
-Math validated here:
-  * one equilateral tree carries a 60 deg fan (apex angle);  translation preserves direction, so
-    three copies rotated 0/60/120 deg cover all 180 deg  (=> 60 deg is NOT a limitation);
-  * the cut-and-shift overlap strictly REDUCES area while keeping every direction.
+  * one equilateral tree carries a 60 deg apex fan; translation preserves direction, so three copies
+    rotated 0/60/120 deg cover all 180 deg;
+  * cut-and-shift overlap strictly reduces area while keeping every direction.
 
-Honesty note (see the user's guidance): the true Besicovitch area -> 0, but only logarithmically
-slowly (~1/log N, Keich), and a zero-area shape cannot be drawn.  So we render the *minimum visible*
-approximation and print the real area readout, rather than pretending the region vanishes.
+True Besicovitch area -> 0 as N->inf, but only ~1/log N (Keich): not drawable, so this renders the
+minimum visible approximation.
 
 Run:  uv run --with matplotlib --with shapely python research/kakeya/figures/perron_tree.py
 """
@@ -51,7 +49,7 @@ def _draw_region(ax, geom, color, alpha):
 
 
 def _draw_needles(ax, tris, color, k=48):
-    """Overlay a sample of unit-direction segments (base point -> apex) like Hickman Fig 3."""
+    """Overlay a sample of unit-direction segments (base point -> apex)."""
     for t in tris[:: max(1, len(tris) // k)]:
         xy = np.array(t.exterior.coords)[:3]
         base_mid = 0.5 * (xy[0] + xy[1])
@@ -68,7 +66,7 @@ def main():
     lo, hi = triangle_fan_degrees(equilateral(1.0))
     pivot = (APEX_X, H)
     full = unary_union([shp_rotate(tree, a, origin=pivot) for a in (0, 120, 240)])
-    # area decay is monotone but plateaus for THIS visible schedule; report honestly
+    # tree area at a few levels
     areas = {k: perron_tree(k, s)[0].area for k in (1, 3, 6)}
     areas[n] = tree.area  # reuse the already-built n=9 union instead of rebuilding it
     math_check(

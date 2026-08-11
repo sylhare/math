@@ -1,29 +1,12 @@
-"""Figure: sticky vs non-sticky tubes (kakeya.md section 7a, Hickman Def. 5.8).
+"""Sticky vs non-sticky tubes (kakeya.md section 7a, Hickman Def. 5.8).
 
-Math (symbolic first, then numeric):
-  * Look at delta-tubes at an intermediate scale delta <= rho <= 1 by fattening each into a
-    rho-tube. There are  rho^-2  fat tubes, and the whole family has  delta^-2  thin tubes.
-  * STICKY: thin tubes clump inside fat tubes as much as possible, so each fat tube holds
-        #{ T in T : T subset of T_rho }  ~  (rho / delta)^2
-    thin tubes, and tubes pointing in nearly the same direction also sit near each other in space.
-  * NON-STICKY: thin tubes with nearly-equal directions wander far apart; a fat tube's worth of
-    same-direction tubes is NOT co-located, so no fat tube realizes the (rho/delta)^2 occupancy.
+At an intermediate scale delta <= rho <= 1 there are rho^-2 fat rho-tubes and delta^-2 thin
+delta-tubes. STICKY: each fat tube holds #{ T : T subset of T_rho } ~ (rho/delta)^2 thin tubes of
+one direction. NON-STICKY: same-direction thin tubes scatter, so no fat tube reaches that occupancy.
+rho = 1/4, delta = 1/16: (rho/delta)^2 = 16 thin per fat, rho^-2 = 16 fat, delta^-2 = 256 = 16 x 16.
 
-  Numbers used:  rho = 1/4,  delta = 1/16  ->  rho/delta = 4,  (rho/delta)^2 = 16 thin tubes per
-  fat tube;  rho^-2 = 16 fat tubes;  total thin tubes = delta^-2 = 256 = 16 x 16 (consistent).
-
-Projection used: 2D CROSS-SECTION (the plane perpendicular to the tube bundle). A thin delta-tube
-shows as a red dot (its delta x delta cross-section), a fat rho-tube as a blue rho x rho square.
-Colouring by DIRECTION-bin would
-need extra colours, so instead one direction-family (16 same-direction thin tubes) is outlined in
-guide grey: sticky keeps that family inside a single fat tube; non-sticky scatters it everywhere.
-
-MATH CHECK: prints (rho/delta)^2 = 16; the sticky panel realizes ~16 same-direction thin tubes
-inside one fat tube (occupancy ~ 16); the non-sticky panel does not (occupancy ~ 1).
-
-Reference: none (2D cross-section cartoon; palette: thin tubes red, fat tubes blue, family grey).
-ALTERNATIVES: a full 3D render of 256 tubes is unwieldy and unreadable; the cross-section makes the
-clumping-vs-scatter distinction legible while keeping the counts exact.
+2D cross-section: thin delta-tube = red dot, fat rho-tube = blue rho x rho square; one
+direction-family outlined in guide grey.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/sticky_vs_nonsticky.py
 """
 import numpy as np
@@ -35,7 +18,7 @@ from _shared import COLORS, math_check, save_preview
 # ---------------------------------------------------------------------------
 def fat_centers(rho: float) -> np.ndarray:
     """Centres of the rho^-2 fat tubes on a regular grid tiling the unit square cross-section."""
-    m = int(round(1.0 / rho))
+    m = round(1.0 / rho)
     xs = (np.arange(m) + 0.5) * rho
     gx, gy = np.meshgrid(xs, xs)
     return np.column_stack([gx.ravel(), gy.ravel()])
@@ -43,7 +26,7 @@ def fat_centers(rho: float) -> np.ndarray:
 
 def sub_offsets(rho: float, delta: float) -> np.ndarray:
     """The (rho/delta)^2 sub-grid offsets of thin tubes packed inside one fat tube."""
-    k = int(round(rho / delta))
+    k = round(rho / delta)
     xs = (np.arange(k) - (k - 1) / 2) * delta
     gx, gy = np.meshgrid(xs, xs)
     return np.column_stack([gx.ravel(), gy.ravel()])
@@ -63,8 +46,8 @@ def sticky_positions(rho, delta):
 
 def nonsticky_positions(rho, delta, rng):
     """Same bins/counts, but each direction-bin's thin tubes scattered across the whole square."""
-    n_bins = int(round(1.0 / rho)) ** 2
-    per = int(round(rho / delta)) ** 2
+    n_bins = round(1.0 / rho) ** 2
+    per = round(rho / delta) ** 2
     pos, bins = [], []
     for i in range(n_bins):
         pos.append(rng.uniform(0.0, 1.0, size=(per, 2)))
@@ -116,7 +99,7 @@ def main():
     # --- PREVIEW -------------------------------------------------------------
     fig, axes = plt.subplots(1, 2, figsize=(12.0, 6.2))
     centers = fat_centers(rho)
-    hi = 5  # the highlighted direction-family (one bin) to trace across both panels
+    hi = 5  # highlighted direction-family
 
     for ax, pos, bins, title in [
         (axes[0], pos_s, bins_s, "sticky: same-direction tubes clump in one fat tube"),
@@ -125,7 +108,7 @@ def main():
         ax.set_aspect("equal")
         ax.axis("off")
         ax.set_title(title)
-        for c in centers:  # the rho-tubes (fat): rho x rho cross-section, blue
+        for c in centers:  # fat rho-tubes (rho x rho cross-section)
             ax.add_patch(plt.Rectangle(c - rho / 2, rho, rho, fill=False, ec=COLORS["outer"], lw=1.3, alpha=0.9))
         other = bins != hi
         ax.scatter(pos[other, 0], pos[other, 1], s=8, color=COLORS["accent"], alpha=0.55)

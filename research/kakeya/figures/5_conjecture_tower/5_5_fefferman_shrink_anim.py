@@ -1,17 +1,11 @@
-"""Animation: the r -> 0 limit of Fefferman's ball-multiplier geometry (kakeya.md section 5b).
+"""r -> 0 limit of Fefferman's ball-multiplier geometry (kakeya.md 5b).
 
-As r shrinks, more and thinner  r x r^2  frequency slabs tile tangent to the unit circle, and their
-uncertainty-principle duals  1/r x 1/r^2  physical tubes get more elongated and pile up through the
-origin (the Besicovitch pile-up that drives Fefferman's 1971 counterexample).  Two panels advance as
-r decreases (N = number of slabs increases):
+As r = 2 sin(pi/N) shrinks (N slabs grows):
+  (a) FREQUENCY: N slabs of size r x r^2 tangent to the unit circle (long side r along the tangent,
+      thickness r^2 radial), thinner as r -> 0.
+  (b) PHYSICAL: dual 1/r x 1/r^2 tubes through the origin, drawn normalised to unit length (width r).
 
-  (a) FREQUENCY: the unit circle with N slabs of size r x r^2 tangent to it (long side r along the
-      tangent, thickness r^2 radial).  More slabs, thinner, as r -> 0.
-  (b) PHYSICAL: the dual tubes through the origin, drawn normalised to unit length so they fit; the
-      displayed width is r, so they visibly thin and their overlap darkens at the origin.
-
-Geometric honesty checked every frame: each slab's inner long edge stays tangent to the unit circle
-(distance from the centre = 1), and both aspect ratios (freq r:r^2 and phys 1/r^2:1/r) equal 1/r.
+Each slab's inner edge stays at distance 1 from the centre; aspects r:r^2 and 1/r^2:1/r equal 1/r.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/fefferman_shrink_anim.py
 """
@@ -21,7 +15,7 @@ import numpy as np
 from _shared import COLORS, circle, math_check, save_gif
 from matplotlib.animation import FuncAnimation
 
-N_MIN, N_MAX = 6, 60
+N_MIN, N_MAX = 8, 60  # slab-count range
 HOLD = 10  # frames held at the finest scale
 
 
@@ -97,9 +91,17 @@ def main():
     for a in ax:
         a.set_aspect("equal"); a.axis("off")
 
+    # frequency limits from the actual largest slab (fattest at N_MIN), so nothing is clipped
+    _fext = 0.0
+    for _n in ns:
+        _r = 2.0 * math.sin(math.pi / int(_n)); _r2 = _r * _r
+        for _phi in np.linspace(0.0, 2 * math.pi, int(_n), endpoint=False):
+            _fext = max(_fext, float(np.max(np.linalg.norm(freq_rectangle(_phi, _r, _r2), axis=1))))
+    _flim = _fext * 1.08
+
     disc = circle(1.0, 400)
     ring = np.vstack([disc, disc[:1]])
-    ax[0].set_xlim(-1.55, 1.55); ax[0].set_ylim(-1.55, 1.55)
+    ax[0].set_xlim(-_flim, _flim); ax[0].set_ylim(-_flim, _flim)
     ax[0].set_title(r"Frequency: $r\times r^2$ slabs tangent to $|\xi|=1$")
     ax[1].set_xlim(-0.62, 0.62); ax[1].set_ylim(-0.62, 0.62)
     ax[1].set_title(r"Physical: dual $1/r\times 1/r^2$ tubes pile up at $0$")
@@ -127,8 +129,8 @@ def main():
             tube = np.vstack([tube, tube[0]])
             (p,) = ax[1].fill(tube[:, 0], tube[:, 1], color=COLORS["outer"], alpha=0.20, zorder=1)
             artists.append(p)
-        (txt,) = [ax[0].text(-1.5, 1.34, f"N = {n_rect},   r = {r:.3f}", fontsize=11,
-                             color=COLORS["outer"])]
+        txt = ax[0].text(0.02, 0.97, f"N = {n_rect},   r = {r:.3f}", transform=ax[0].transAxes,
+                         va="top", fontsize=11, color=COLORS["outer"])
         artists.append(txt)
         return artists
 

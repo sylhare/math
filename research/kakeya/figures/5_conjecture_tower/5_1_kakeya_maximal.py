@@ -1,25 +1,11 @@
-r"""Figure: the Kakeya maximal function (kakeya.md section 5a).
+r"""Kakeya maximal function (kakeya.md 5a).
 
-The analytic form of the conjecture the harmonic analysts chase.  For a direction e in S^{n-1} the
-Kakeya maximal function of f averages |f| over the delta-tube in direction e that maximises the
-average through the point:
-
-    f^*_delta(e)(x) = sup_{ x in T, T // e } (1/|T|) \int_T |f| ,
-
-and the Kakeya maximal function conjecture bounds it on the sphere by f itself, losing only an
-epsilon power of delta:
+f^*_delta(e)(x) = sup_{x in T, T // e} (1/|T|) \int_T |f|, and the maximal function conjecture:
 
     || f^*_delta ||_{L^n(S^{n-1})}  <=  C_eps  delta^{-eps}  || f ||_{L^n(R^n)}   for all eps > 0.
 
-The exponent is n, the dimension of the ambient space (n = 2, 3 the solved cases).
-
-Left panel: several delta-tubes through one common point x0 (a fan of thin rectangles), the object
-the sup is taken over.  Right panel: a heatmap of the maximal average M f(y) over a delta-tube
-family, with f the indicator of a small disc.  By construction the maximal average at any point is
-the sup of the individual tube averages there, so it dominates each of them.
-
-INVARIANT (printed + asserted): at the common point x0 the maximal average equals the largest, and
-is >= each, of the individual tube averages there; prints the exponent n (= 2, 3) and the bound.
+Left: delta-tubes through a common point x0. Right: maximal average M f heatmap over a delta-tube
+family (f = indicator of a disc). M f(x0) = sup over tubes >= each individual tube average.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/kakeya_maximal.py
 """
@@ -37,8 +23,8 @@ def tube_mask(X, Y, angle, p0=(0.0, 0.0), length=1.0, half_width=DELTA / 2):
     """Boolean grid mask of the delta-tube through p0 in direction `angle` (length 1, radius delta/2)."""
     ca, sa = np.cos(angle), np.sin(angle)
     dx, dy = X - p0[0], Y - p0[1]
-    along = dx * ca + dy * sa        # coordinate along the tube axis
-    perp = -dx * sa + dy * ca        # signed distance from the axis
+    along = dx * ca + dy * sa        # coordinate along tube axis
+    perp = -dx * sa + dy * ca        # signed distance from axis
     return (np.abs(perp) <= half_width) & (np.abs(along) <= length / 2)
 
 
@@ -51,7 +37,7 @@ def main():
     X, Y = np.meshgrid(xs, xs)
     f = (((X - BLOB_C[0]) ** 2 + (Y - BLOB_C[1]) ** 2) <= BLOB_R ** 2).astype(float)
 
-    # Family of delta-tubes through the common point x0 = origin, delta-separated directions.
+    # delta-tubes through x0 = origin, delta-separated directions
     angles = np.linspace(0.0, np.pi, 60, endpoint=False)
     tube_avgs = []
     Mf = np.zeros_like(f)
@@ -59,16 +45,16 @@ def main():
         m = tube_mask(X, Y, a)
         if not m.any():
             continue
-        avg = float(f[m].mean())          # (1/|T|) int_T f  on the discretised tube
+        avg = float(f[m].mean())          # (1/|T|) int_T f
         tube_avgs.append(avg)
         Mf = np.maximum(Mf, np.where(m, avg, 0.0))
     tube_avgs = np.array(tube_avgs)
 
-    # --- INVARIANT: maximal average at x0 dominates every individual tube average there ----------
-    oi = int(np.argmin(np.abs(xs)))       # grid index nearest x0 = origin (in every tube)
+    # M f(x0) >= every individual tube average
+    oi = int(np.argmin(np.abs(xs)))       # grid index nearest x0 = origin
     m_at_x0 = float(Mf[oi, oi])
-    assert m_at_x0 >= tube_avgs.max() - 1e-12          # sup >= max
-    assert all(m_at_x0 >= a - 1e-12 for a in tube_avgs)  # >= each individual tube average
+    assert m_at_x0 >= tube_avgs.max() - 1e-12
+    assert all(m_at_x0 >= a - 1e-12 for a in tube_avgs)
 
     math_check(
         "Kakeya maximal function conjecture",
@@ -85,7 +71,7 @@ def main():
 
     fig, ax = new_axes(2, figsize=(12.0, 6.0))
 
-    # --- Left: several delta-tubes through the common point x0 -------------------------------------
+    # Left: delta-tubes through the common point x0
     ax[0].set_xlim(-EXTENT, EXTENT)
     ax[0].set_ylim(-EXTENT, EXTENT)
     fan = np.linspace(0.0, np.pi, 7, endpoint=False)
@@ -106,7 +92,7 @@ def main():
     ax[0].text(0.02, -0.06, "x0", color=COLORS["guide"], fontsize=10)
     ax[0].set_title("delta-tubes through a common point x0", fontsize=12)
 
-    # --- Right: maximal-average heatmap over the tube family ---------------------------------------
+    # Right: maximal-average heatmap over the tube family
     im = ax[1].imshow(np.ma.masked_where(Mf <= 0, Mf), origin="lower",
                       extent=(-EXTENT, EXTENT, -EXTENT, EXTENT), cmap="magma", vmin=0.0)
     ax[1].plot(BLOB_C[0] + BLOB_R * np.cos(th), BLOB_C[1] + BLOB_R * np.sin(th),

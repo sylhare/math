@@ -1,27 +1,14 @@
-"""Figure: Hausdorff dimension via self-similar fractals (section 3b of ../kakeya.md).
-
-Hausdorff measure and dimension. For s >= 0,
+"""Figure: Hausdorff dimension via self-similar fractals.
 
     H^s_delta(E) = inf { sum_i (diam U_i)^s : E in union U_i, diam U_i <= delta },
     H^s(E)       = lim_{delta -> 0+} H^s_delta(E),
+    dim_H E      = inf { s : H^s(E) = 0 } = sup { s : H^s(E) = infinity },   dim_H E <= dim_box E.
 
-and the Hausdorff dimension is the single threshold s where H^s jumps from infinity to 0:
+Self-similar dimension (N copies each scaled by 1/r): dim = log N / log r.
 
-    dim_H E = inf { s >= 0 : H^s(E) = 0 } = sup { s >= 0 : H^s(E) = infinity }.
-
-Always  dim_H E <= dim_box E  (Hausdorff is the finer, smaller-or-equal notion).
-
-Self-similar dimension. If a set is N copies of itself each scaled by 1/r, then dim = log N / log r:
-
-    Cantor middle-thirds:  N=2, r=3   dim = log 2 / log 3 ~ 0.6309
-    Sierpinski triangle:   N=3, r=2   dim = log 3 / log 2 ~ 1.5850
-    Koch curve:            N=4, r=3   dim = log 4 / log 3 ~ 1.2619
-
-No reference image. STANDARD REPRESENTATION: three stacked panels rendering the three classic
-fractals to a few iterations (Cantor as a stack of shrinking segment-levels, Sierpinski as removed
-triangles, Koch as the polyline). The Sierpinski panel is additionally box-counted at several delta
-and the log-log slope is fit; it reproduces log 3 / log 2 ~ 1.585, showing dim_H = dim_box for a
-self-similar set (the safe place where the two notions agree, before Kakeya makes them bite).
+    Cantor middle-thirds:  N=2, r=3   log2/log3 ~ 0.6309
+    Sierpinski triangle:   N=3, r=2   log3/log2 ~ 1.5850
+    Koch curve:            N=4, r=3   log4/log3 ~ 1.2619
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/dimension_fractal.py
 """
@@ -79,9 +66,7 @@ def koch_curve(depth):
 
 
 def sierpinski_points(n_chains=150_000, steps=45, burn=8, seed=0):
-    """Chaos-game sample of the Sierpinski attractor (pure numpy). Many independent chains are run
-    in parallel and advanced with vectorized IFS steps, so we get millions of points fast and dense
-    enough to box-count down to fine scales."""
+    """Chaos-game sample of the Sierpinski attractor (parallel chains, vectorized IFS)."""
     rng = np.random.default_rng(seed)
     verts = np.array([[0.0, 0.0], [1.0, 0.0], [0.5, SQRT3 / 2.0]])
     p = rng.random((n_chains, 2)) * 0.3  # start inside the triangle
@@ -89,7 +74,7 @@ def sierpinski_points(n_chains=150_000, steps=45, burn=8, seed=0):
     for s in range(steps):
         idx = rng.integers(0, 3, size=n_chains)
         p = (p + verts[idx]) / 2.0
-        if s >= burn:  # drop burn-in, then keep every generation
+        if s >= burn:  # drop burn-in
             out.append(p.copy())
     return np.concatenate(out)
 
@@ -113,11 +98,11 @@ def main():
     dim_sierp = math.log(3) / math.log(2)
     dim_koch = math.log(4) / math.log(3)
 
-    # empirical Sierpinski box-count over a clean range of fine scales (delta = 2^-5 .. 2^-10)
+    # Sierpinski box-count over delta = 2^-5 .. 2^-10
     pts = sierpinski_points()
     ks = list(range(5, 11))
     _, counts, slope = boxcount_slope(pts, ks)
-    ratios = counts[1:] / counts[:-1]  # successive N(2^-(k+1)) / N(2^-k) -> 3
+    ratios = counts[1:] / counts[:-1]  # successive N ratios -> 3
 
     math_check(
         "Hausdorff / self-similar dimension  (dim = log N / log r)",

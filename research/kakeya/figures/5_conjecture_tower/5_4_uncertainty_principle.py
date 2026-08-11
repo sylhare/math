@@ -1,28 +1,10 @@
-"""Figure: the uncertainty principle as dual rectangles (Hickman Fig 5, Part 4).
+"""Uncertainty principle as dual rectangles (kakeya.md Part 4).
 
-A function whose Fourier transform is concentrated on a frequency box of side lengths  r x s
-cannot itself be concentrated: in physical space it must spread over the reciprocal box of side
-lengths  (1/r) x (1/s)  through the origin. Concentrated in frequency <=> spread in space, one axis
-at a time. This is the geometry every wave packet obeys, so it is the reason a delta-tube in space
-corresponds to a delta^{-1}-slab in frequency (the picture the Kakeya / Fefferman story is built on
-in ../kakeya.md).
+A frequency box of sides r x s pairs with a physical box of sides (1/r) x (1/s): r*(1/r) = 1,
+s*(1/s) = 1. Gaussian g(x) = exp(-x^2 / (2 sigma^2)) has g_hat(xi) = sigma sqrt(2 pi)
+exp(-2 pi^2 sigma^2 xi^2), frequency std sigma_xi = 1/(2 pi sigma), so sigma * sigma_xi = 1/(2 pi).
+sigma_xi measured by FFT.
 
-Symbolic first: with the transform  f_hat(xi) = int f(x) e^{-2 pi i x xi} dx, a frequency box of
-sides r, s pairs with a physical box of sides 1/r, 1/s, so the products of dual side lengths are
-
-    r * (1/r) = 1,      s * (1/s) = 1.
-
-Backing it with a 1D Gaussian. Take  g(x) = exp(-x^2 / (2 sigma^2))  (physical std = sigma). Its
-transform is again Gaussian,  g_hat(xi) = sigma sqrt(2 pi) exp(-2 pi^2 sigma^2 xi^2), with frequency
-std  sigma_xi = 1 / (2 pi sigma).  So the two widths are reciprocal up to the 2 pi convention
-constant:
-
-    sigma * sigma_xi = 1 / (2 pi),      (2 pi) * sigma * sigma_xi = 1  (Gaussian saturates Heisenberg).
-
-We verify sigma_xi by computing g_hat numerically (FFT) and measuring its standard deviation.
-
-Reference: Hickman Fig 5 (not downloaded; redrawn from the description). Schematic boxes + 1D
-Gaussian pair; builds its own matplotlib axes.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/uncertainty_principle.py
 """
 import math

@@ -1,26 +1,16 @@
-"""Figure: the harmonic-analysis tower resting on Kakeya (schematic implication diagram).
+"""Harmonic-analysis tower resting on Kakeya (kakeya.md 5c).
 
-Math (see ../kakeya.md section 5c):
-  Hickman's tower of conjectures.  The implications run ONE way, strongest at the top:
+Implications run one way, strongest at the top:
 
-      local smoothing  ==>  Bochner-Riesz  ==>  restriction  ==>  Kakeya
+    local smoothing  ==>  Bochner-Riesz  ==>  restriction  ==>  Kakeya
 
-  Kakeya sits at the BASE: it is the weakest statement, implied by every one above it, so proving
-  Kakeya is necessary for all of them (if Kakeya failed the whole tower falls).  The reverse
-  implications are NOT known: Kakeya does not imply the others.
+Kakeya is the base (weakest, implied by all above); the reverse implications are not known.
 
-  Status per rung:
-    local smoothing (Sogge)      known n=2 (Guth-Wang-Zhang 2020), open n>=3
-    Bochner-Riesz (Bochner/Riesz) known n=2, open n>=3
-    restriction (Stein)          known n=2 (Fefferman-Zygmund), open n>=3
-    Kakeya (base)                known n=2 (Davies); also n=3 (Wang-Zahl 2025); open n>=4
-
-Reference: none (schematic). ALTERNATIVES: a known/open table per conjecture.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/conjecture_tower.py
 """
 from _shared import COLORS, math_check, save_preview
 
-# Tower rungs, top (strongest) to bottom (weakest). The arrow order is the load-bearing fact.
+# Tower rungs, top (strongest) to bottom (weakest).
 TOWER = [
     ("Local smoothing", "Sogge",
      r"$(\int_1^2 \|e^{it\sqrt{-\Delta}}f\|_p^p\,dt)^{1/p} \lesssim \|f\|_{L^p_{s_p-\sigma}}$",
@@ -59,7 +49,7 @@ def main():
 
     centers_y = []
     for i, ((name, who, formula, status), w, fc, tc) in enumerate(
-        zip(TOWER, widths, fills, text_colors)
+        zip(TOWER, widths, fills, text_colors, strict=False)
     ):
         y = top_y - i * (box_h + gap)
         cy = y - box_h / 2
@@ -102,8 +92,8 @@ def main():
     order_ok = order == expected
     kakeya_at_base = order[-1] == "Kakeya"
     strongest_top = order[0] == "Local"  # local smoothing is strongest / at top
-    # honesty: no rung claims Kakeya implies the others (arrows only point strong -> weak, downward)
-    no_false_claim = kakeya_at_base  # Kakeya is a sink: arrows enter it, none leave it
+    # no rung claims Kakeya implies the others (arrows point strong -> weak only)
+    no_false_claim = kakeya_at_base  # Kakeya is a sink: arrows enter, none leave
 
     math_check(
         "conjecture tower implication order",

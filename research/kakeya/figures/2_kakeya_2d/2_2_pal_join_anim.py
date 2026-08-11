@@ -1,24 +1,16 @@
-"""Animation: the Pal join (Pal worm) detour (beat 2d of ../kakeya.md).
+"""Animation of the Pal join (Pal worm) detour (kakeya.md 2d).
 
-Mirrors pal_join.py in motion. A unit needle travels continuously from needle G1 (on the line y=0)
-to the parallel needle G2 (on y=GAP) by a FAR detour that keeps the swept area tiny:
+A unit needle travels continuously from needle G1 (line y=0) to the parallel needle G2 (y=GAP) by a
+far detour that keeps the swept area tiny:
 
-  1. slide out along its own axis by D          (sliding along the axis sweeps ~0 area)
-  2. rotate up by a small angle phi about the far trailing end   (a thin sector, area phi/2)
-  3. slide along the tilted axis until it has crossed the gap    (~0 area)
-  4. rotate back down by phi                                     (a thin sector, area phi/2)
+  1. slide out along its own axis by D          (~0 area)
+  2. rotate up by a small angle phi about the far trailing end   (sector, area phi/2)
+  3. slide along the tilted axis until it crosses the gap        (~0 area)
+  4. rotate back down by phi                                     (sector, area phi/2)
   5. slide home along -x to land on G2                           (~0 area)
 
-The needle is drawn bold at its current position; past positions accumulate faintly and the swept
-region (union of the quads between consecutive needle positions) fills in and its measured area is
-read out live.
-
-Because the two turns happen a distance ~D out, the needle only turns through
-phi(D) = 2*arctan(g/2D), so the whole swept area A(D) ~ phi(D) -> 0 as D grows.
-
-INVARIANT: the needle length is exactly 1 in every frame (geometric honesty). The final measured
-swept area is small; both are printed. This is a SCHEMATIC of a concrete maneuver; the rigorous
-lemma is area(J) < eps for every eps > 0 (the limit D -> inf), not the area of any one picture.
+Both turns happen ~D out, so the needle turns through phi(D) = 2*arctan(g/2D) and the swept area
+A(D) ~ phi(D) -> 0 as D grows. Needle length stays exactly 1 in every frame.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/pal_join_anim.py
 """

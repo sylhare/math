@@ -1,25 +1,14 @@
-"""Figure: induction on scales, the dimension "ratchet" (beat 7e of ../kakeya.md).
+"""Induction on scales, the dimension ratchet (kakeya.md beat 7e).
 
-The Wang-Zahl finish is an induction on scales: assume the dimension bound K(d) at one scale and
-bootstrap to K(d + alpha) for a FIXED gain alpha > 0, repeating until d reaches 3.  Whether the
-induction ratchets up or stalls is decided by which multiplicity inequality controls the per-step
-loss:
+Induction on scales: assume the dimension bound K(d), bootstrap to K(d + alpha) for a fixed gain
+alpha > 0, repeat until d reaches 3. The per-step multiplicity inequality decides the outcome:
+  * lossy ("Chinese whispers"): mu <~ mu_fat * mu_fine over-counts the fat tube, so the estimate
+    stalls below 3.
+  * graininess: grains disjoint in a fat tube give mu <~ mu_coarse * mu_fine with mu_coarse <<
+    mu_fat (mu_coarse = multiplicity of U_{T c T_rho} T), so each step gains alpha and the estimate
+    ratchets 2.5 -> 3.
 
-  * "Chinese whispers" lossy induction (Tao's analogy).  The naive per-step bound
-        mu  <~  mu_fat * mu_fine
-    is wasteful: mu_fat over-counts a fat tube as if solid, so each step leaks and the accumulated
-    loss compounds.  The estimate stalls well below 3.
-
-  * Graininess controls the loss.  Because the grains inside one fat tube are DISJOINT, the true
-    multiplicity of the union of thin tubes in a fat tube is smaller, so we may replace mu_fat by
-        mu  <~  mu_coarse * mu_fine ,   mu_coarse = multiplicity of  U_{T c T_rho} T ,
-    with mu_coarse << mu_fat.  Now every step GAINS alpha instead of losing, and the estimate
-    ratchets from ~2.5 up to exactly 3.
-
-This panel is a SCHEMATIC of the two behaviours, not a numeric reproduction of the proof's
-constants.  The gain alpha, the start (2.5), and the cap (3) are exact; the lossy curve's leak is
-illustrative.
-
+Schematic: alpha, start 2.5 and cap 3 are exact; the lossy leak is illustrative.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/induction_on_scales.py
 """
 import numpy as np
@@ -87,7 +76,7 @@ def main():
                     arrowprops=dict(arrowstyle="->", color=COLORS["accent"], lw=1.1))
     ax.text(n_steps - 0.5, good[-1] - 0.045, "+alpha each step", color=COLORS["accent"], fontsize=9, ha="right")
 
-    # lossy induction: stalls below 3 (blue = fat tube, the wasteful count)
+    # lossy induction: stalls below 3 (blue = fat tube)
     ax.step(steps, bad, where="post", color=COLORS["outer"], lw=2.0, label="lossy: mu ~ mu_fat * mu_fine")
     ax.plot(steps, bad, "s", color=COLORS["outer"], ms=4)
     ax.text(n_steps, bad[-1] - 0.05, f"stalls at {bad[-1]:.2f}", color=COLORS["outer"], fontsize=9, ha="right")

@@ -1,15 +1,7 @@
-"""Animation: the Bochner-Riesz multiplier profile as alpha sweeps 0 -> 1 (kakeya.md section 5c-ii).
+"""Bochner-Riesz multiplier profile as alpha sweeps 0 -> 1 (kakeya.md 5c-ii).
 
-The radial slice of the Bochner-Riesz multiplier at R = 1 is the profile
-
-    m^alpha(x) = (1 - x^2)_+^alpha .
-
-alpha = 0 is Fefferman's failing ball multiplier: a hard edge (the indicator of [-1, 1], vertical
-jumps at x = +-1).  As alpha grows to 1 the edge rounds into a smooth taper that reaches the axis
-with a gentle slope.  This animation sweeps alpha from 0 to 1 and back, showing the corner smoothing.
-
-Geometric honesty: at every alpha the endpoints are pinned (m(0) = 1, m(+-1) = 0) and the drawn
-curve equals (1 - x^2)^alpha on [-1, 1] to machine precision (checked each frame).
+Radial slice at R = 1: m^alpha(x) = (1 - x^2)_+^alpha. alpha = 0 is the hard-edge indicator of
+[-1, 1]; growing alpha to 1 rounds the corner. Endpoints pinned m(0) = 1, m(+-1) = 0.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/bochner_riesz_anim.py
 """
@@ -28,8 +20,7 @@ def profile(x: np.ndarray, alpha: float, radius: float = 1.0) -> np.ndarray:
 
 
 def alpha_schedule() -> np.ndarray:
-    """alpha sweeps 0 -> 1 with a hold at each end (a gentle there-and-back is not needed; hold
-    then sweep reads as 'the edge rounding')."""
+    """alpha sweeps 0 -> 1 with a hold at each end."""
     up = np.linspace(0.0, 1.0, FRAMES - 2 * HOLD)
     return np.concatenate([np.zeros(HOLD), up, np.ones(HOLD)])
 
@@ -51,8 +42,7 @@ def main():
         max_dev = max(max_dev, float(np.max(np.abs(got - want))))
     m0 = [float(profile(np.array([0.0]), a)[0]) for a in alphas]
     max_m0_err = max(abs(v - 1.0) for v in m0)
-    # m(+-1): for alpha>0 the taper reaches the axis (=0); at alpha=0 it is the hard edge
-    # (the indicator is 1 up to the jump, so 0^0 = 1 there -- that IS the discontinuity).
+    # m(+-1) = 0 for alpha > 0; at alpha = 0, 0^0 = 1 (the hard-edge discontinuity)
     m1_pos = [float(profile(np.array([1.0]), a)[0]) for a in alphas if a > 0]
     max_m1_err = max(abs(v) for v in m1_pos)
     m1_edge = float(profile(np.array([1.0]), 0.0)[0])

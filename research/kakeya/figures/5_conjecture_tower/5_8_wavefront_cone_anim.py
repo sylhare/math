@@ -1,15 +1,8 @@
-"""Animation: expanding wavefront and the space-time light cone (kakeya.md section 5c-iii).
+"""Expanding wavefront and the space-time light cone (kakeya.md 5c-iii).
 
-A point source of the wave u(x, t) = e^{it sqrt(-Delta)} f sends its energy out along the LIGHT
-CONE |x| = t.  Two panels advance together as time t increases:
-
-  (a) 2D space: a circular wavefront of radius = t expanding from the origin (unit speed); past
-      wavefronts stay faint so the family of slices is visible.
-  (b) 3D space-time: the cone {(x, t) : |x| = t} builds up as rings stack at each time reached.
-      Because radius = t, the cone makes a 45-degree half-angle with the t-axis (dr/dt = 1).
-
-Geometric honesty: the wavefront radius equals t in every frame (unit propagation speed), checked;
-the cone half-angle is exactly 45 degrees.
+Point source of u(x, t) = e^{it sqrt(-Delta)} f spreads along the light cone |x| = t.
+  (a) 2D: circular wavefront radius = t (unit speed), past slices faint.
+  (b) 3D space-time: cone {(x, t) : |x| = t}, 45-degree half-angle (dr/dt = 1).
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/wavefront_cone_anim.py
 """
