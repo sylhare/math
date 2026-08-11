@@ -82,22 +82,41 @@ def main():
     trees_final = [shp_rotate(tree, a, origin=APEX) for a in TARGETS]
     besic = unary_union(trees_final)
 
-    # --- frame plan: current rotation angle of each of the three copies, and which are visible ---
+    # View must be centred on the APEX (the rotation pivot) and large enough to hold a tree at ANY
+    # angle: every tree point stays within R_max of the apex, so a square of half-width R_max around
+    # the apex contains all three copies in every frame (no clipping as they turn).
+    _apex = np.array(APEX)
+    _verts = np.vstack([np.array(t.exterior.coords)[:3] for t in tris])
+    r_max = float(np.max(np.linalg.norm(_verts - _apex, axis=1)))
+    _pad = 0.10 * r_max
+    xl = (APEX[0] - r_max - _pad, APEX[0] + r_max + _pad)
+    yl = (APEX[1] - r_max - _pad, APEX[1] + r_max + _pad)
+
+    # --- frame plan: (angles, n_visible, n_landed) ---------------------------------------------
+    # n_landed = how many copies have reached their target and LOCKED their directions.  The gauge
+    # counts only landed copies, so it steps 60 -> 120 -> 180 monotonically (the sweeping copy's fan
+    # is shown separately as a moving "pending" wedge, not added to the count until it lands).
     HOLD = 5
     SWEEP = 26
-    frames = []  # (angles tuple, n_visible)
-    frames += [((0.0, 0.0, 0.0), 1)] * HOLD
+    frames = []
+    frames += [((0.0, 0.0, 0.0), 1, 1)] * HOLD
     for j in range(1, SWEEP + 1):
-        frames.append(((0.0, 120.0 * j / SWEEP, 0.0), 2))
-    frames += [((0.0, 120.0, 0.0), 2)] * 3
+        frames.append(((0.0, 120.0 * j / SWEEP, 0.0), 2, 1))
+    frames += [((0.0, 120.0, 0.0), 2, 2)] * (HOLD + 2)
     for j in range(1, SWEEP + 1):
-        frames.append(((0.0, 120.0, 240.0 * j / SWEEP), 3))
-    frames += [((0.0, 120.0, 240.0), 3)] * (HOLD + 4)
+        frames.append(((0.0, 120.0, 240.0 * j / SWEEP), 3, 2))
+    frames += [((0.0, 120.0, 240.0), 3, 3)] * (HOLD + 4)
 
-    # coverage per frame, from the actual rotated triangles (rigorous)
-    cover_per_frame = []
-    for angles, nvis in frames:
-        cover_per_frame.append(covered_bins(tris, angles[:nvis]))
+    # each copy contributes ONE 60-deg band; drawn in that copy's colour so the half-circle shows
+    # three coloured slices (copy 0 -> [60,120], copy 1 -> [0,60], copy 2 -> [120,180]).
+    band_per_tree = [covered_bins(tris, [a]) for a in TARGETS]
+
+    # per frame: locked coverage (landed copies at their targets, monotone) and the pending fan (the
+    # copy currently rotating into place), both from the actual rotated triangles (rigorous)
+    locked_per_frame, pending_per_frame = [], []
+    for angles, nvis, nland in frames:
+        locked_per_frame.append(covered_bins(tris, TARGETS[:nland]))
+        pending_per_frame.append(covered_bins(tris, [angles[nland]]) if nvis > nland else None)
 
     # --- INVARIANT: final coverage is exactly 0..180 ---
     final_cover = covered_bins(tris, TARGETS)
@@ -125,33 +144,54 @@ def main():
     tree_colors = [COLORS["region"], COLORS["needle"], COLORS["accent"]]
 
     def update(i):
-        angles, nvis = frames[i]
-        cover = cover_per_frame[i]
+        angles, nvis, nland = frames[i]
+        locked = locked_per_frame[i]
+        pending = pending_per_frame[i]
 
         axL = ax[0]
         axL.clear(); axL.set_aspect("equal"); axL.axis("off")
-        axL.set_xlim(-1.15, 1.15); axL.set_ylim(-0.95, 1.35)
+        axL.set_xlim(*xl); axL.set_ylim(*yl)  # centred on the apex; holds every rotation, no clipping
         for k in range(nvis):
             rt = shp_rotate(tree, angles[k], origin=APEX)
             _fill(axL, rt, tree_colors[k], 0.62)
         axL.plot(*APEX, marker="o", color=COLORS["guide"], ms=4)
         axL.set_title("three Perron trees into place", fontsize=13)
-        axL.text(0.5, -0.9, f"copies placed: {nvis}/3", transform=axL.transData,
+        axL.text(0.5, 0.02, f"copies placed: {nvis}/3", transform=axL.transAxes,
                  ha="center", fontsize=10, color=COLORS["guide"])
 
         axR = ax[1]
         axR.clear(); axR.set_aspect("equal"); axR.axis("off")
         axR.set_xlim(-1.25, 1.25); axR.set_ylim(-0.35, 1.25)
-        # protractor arc [0,180]; covered bins drawn as bold wedge-rays
+        # protractor [0,180]; covered directions drawn as clean filled wedges (contiguous runs),
+        # not 180 separate rays (which merge into a featureless blob).
         th = np.linspace(0, np.pi, 181)
-        axR.plot(np.cos(th), np.sin(th), color=COLORS["muted"], lw=1)
-        axR.plot([-1, 1], [0, 0], color=COLORS["muted"], lw=1)
-        for d in range(180):
-            if cover[d]:
-                a = np.deg2rad(d + 0.5)
-                axR.plot([0, np.cos(a)], [0, np.sin(a)], color=COLORS["accent"], lw=1.4, alpha=0.85)
+
+        def _wedges(mask, color, alpha):
+            d = 0
+            while d < 180:
+                if mask[d]:
+                    s = d
+                    while d < 180 and mask[d]:
+                        d += 1
+                    aa = np.deg2rad(np.arange(s, d + 1))
+                    axR.fill(np.concatenate([[0.0], np.cos(aa), [0.0]]),
+                             np.concatenate([[0.0], np.sin(aa), [0.0]]),
+                             color=color, alpha=alpha, edgecolor="none")
+                else:
+                    d += 1
+
+        # each landed copy fills its own 60-deg slice in that copy's colour (three coloured slices
+        # tiling the half circle); the copy still rotating shows its current fan as a faint pending
+        # wedge in its colour, NOT counted until it lands.
+        for k in range(nland):
+            _wedges(band_per_tree[k], tree_colors[k], 0.6)
+        if pending is not None:
+            _wedges(pending & ~locked, tree_colors[nland], 0.28)
+        axR.plot(np.cos(th), np.sin(th), color=COLORS["guide"], lw=1.2)  # arc outline on top
+        axR.plot([-1, 1], [0, 0], color=COLORS["guide"], lw=1.2)
         axR.set_title("directions covered", fontsize=13)
-        axR.text(0, -0.28, f"{int(cover.sum())} / 180 deg", ha="center", fontsize=11, color=COLORS["guide"])
+        axR.text(0, -0.28, f"{int(locked.sum())} / 180 deg  (locked: {nland}/3 copies)",
+                 ha="center", fontsize=11, color=COLORS["guide"])
         return []
 
     anim = FuncAnimation(fig, update, frames=len(frames), interval=70, blit=False)

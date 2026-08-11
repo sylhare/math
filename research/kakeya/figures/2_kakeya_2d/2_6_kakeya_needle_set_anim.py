@@ -1,135 +1,107 @@
-"""Animation: the Kakeya needle set, an approximation of the Wikipedia image (kakeya.md 2e-2f).
+"""Animation: the Kakeya needle set (Wikipedia image), built up by increasing granularity.
 
-The Wikipedia "Kakeya needle set" picture is a single still: a small Perron-tree core with unit
-needles radiating in EVERY direction (a sunburst).  It is a Besicovitch set drawn as its needle
-family: a compact set that still contains a unit segment in every direction.  A true Besicovitch set
-has area 0, which cannot be drawn, so we render the minimum-visible approximation and print the real
-area (see the honesty note in kakeya.md 2f).
+The Wikipedia "Kakeya needle set" picture is a small triangular core with THREE dense sprays of
+needles fanning outward from its three corners (up, down-left, down-right) at 120 degrees: it is a
+Besicovitch set drawn as its needle family, and the three sprays are the three rotated Perron trees
+that make up the set (Besicovitch set = three rotations of a Perron tree from an equilateral
+triangle; confirmed against the Wikipedia "Kakeya set" article and the Indiana University math
+gallery).  A true Besicovitch set has area 0 (a limit, ~1/log N Keich decay) and cannot be drawn;
+the exact small-area construction is the Perron tree / Pal join in 2_4 and 2_5.  This figure is the
+"what it looks like" payoff, a POSITIONAL APPROXIMATION.
 
-What the animation shows:
-  * a genuine small-area Perron tree, built here by symmetric cut-and-shift, as the yellow core;
-  * a unit needle turning through every direction 0 -> 360 deg; for each direction it is anchored at
-    the core's support point in that direction and extended outward by exactly length 1, so it lies
-    in the set and pokes out as a spike;
-  * every past needle stays faint, so the family accumulates into the Wikipedia sunburst.
+Why three sprays at the corners: anchor a unit needle for each direction at the core's SUPPORT point
+(the corner farthest in that direction) and let it stick out.  For a triangle the support corner is
+fixed over a 120 degree range of directions, so each corner emits a 120 degree fan; the three fans
+overlap to cover every direction.  That is exactly the three-tree silhouette of the Wikipedia image.
 
-Geometric honesty (asserted in MATH CHECK): the needle length is exactly 1 in every frame; the swept
-directions cover the full turn (every orientation); the core area is reported with the -> 0 note.
+We do NOT build it one needle at a time.  Every frame draws the WHOLE shape and adds granularity
+(more directions), so the coarse three-pronged star sharpens into the dense Wikipedia sunburst.
 
-Run: uv run --with matplotlib --with shapely \
+Run: uv run --with matplotlib \
      python research/kakeya/figures/2_kakeya_2d/2_6_kakeya_needle_set_anim.py
 """
 import math
 
 import numpy as np
-from _shared import COLORS, SQRT3, math_check, poly, save_gif, union_area
-from matplotlib.animation import FuncAnimation
-from shapely.affinity import translate as shp_translate
-from shapely.geometry import LineString
-from shapely.ops import unary_union
+from _shared import COLORS, SQRT3, math_check, save_gif
+from matplotlib.collections import PolyCollection
 
-H = SQRT3 / 2.0            # apex height of the unit equilateral core
-APEX = (0.5, H)
-N_LEVELS = 7               # tree depth: enough canopy detail to read as the Wikipedia core
-FRAMES = 96                # full turn: 360 / 96 = 3.75 deg per frame
-NEEDLE_LEN = 1.0
+RC = 0.30       # core radius: centre -> corner of the small equilateral core
+LEN = 0.95      # needle length (~ unit); sticks out well past the small core
+HALFW = 0.006   # half-width of a drawn needle sliver
+CORE = "#f4ec7a"
+EDGE = "#5f5f2a"
 
+# granularity schedule: number of directions per frame (coarse -> fine), then hold on the finished set
+GRAN = [12, 16, 21, 28, 37, 49, 64, 84, 110, 145, 190, 250]
+GRAN = GRAN + [GRAN[-1]] * 8
 
-def _perron_tree(n: int, s: float = 0.2):
-    """Compact Perron tree by symmetric cut-and-shift (same schedule as 2_4_perron_tree.py)."""
-    N = 2 ** n
-    w = 1.0 / N
-    shapes = [[poly(np.array([[i * w, 0.0], [(i + 1) * w, 0.0], [APEX[0], H]]))] for i in range(N)]
-    for _ in range(n):
-        step = 0.5 * (1.0 - s) * w
-        shapes = [
-            [shp_translate(p, xoff=+step) for p in shapes[i]] + [shp_translate(p, xoff=-step) for p in shapes[i + 1]]
-            for i in range(0, len(shapes), 2)
-        ]
-        w *= (1.0 + s)
-    return unary_union([p for shp in shapes for p in shp])
+VERTS = np.array([[RC * math.cos(math.radians(d)), RC * math.sin(math.radians(d))] for d in (90, 210, 330)])
 
 
-def _exterior_points(geom) -> np.ndarray:
-    geoms = geom.geoms if geom.geom_type == "MultiPolygon" else [geom]
-    return np.vstack([np.asarray(g.exterior.coords) for g in geoms])
+def sliver_quads(m: int):
+    """One needle per direction (m directions over the full turn): a thin sliver anchored at the core
+    corner farthest in that direction, sticking out by LEN."""
+    quads = []
+    for th in np.linspace(0.0, 2 * math.pi, m, endpoint=False):
+        d = np.array([math.cos(th), math.sin(th)])
+        anchor = VERTS[int(np.argmax(VERTS @ d))]
+        tip = anchor + LEN * d
+        perp = np.array([-d[1], d[0]]) * HALFW
+        quads.append([anchor - perp, anchor + perp, tip + perp, tip - perp])
+    return quads
 
 
 def main():
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from matplotlib.animation import FuncAnimation
 
-    tree = _perron_tree(N_LEVELS)
-    core_pts = _exterior_points(tree)
-    cen = np.array([tree.centroid.x, tree.centroid.y])
-    boundary = tree.boundary
-    reach = 3.0  # ray length from the centroid, longer than the core
-
-    # For each direction theta, cast a ray from the core centroid; anchor the unit needle where the
-    # ray exits the boundary (the silhouette point in that direction) and extend outward by length 1.
-    # Ray-from-centroid distributes anchors smoothly around the whole silhouette (a plain support
-    # point would collapse every direction onto the 3 triangle corners), giving the all-around sunburst.
-    thetas = np.linspace(0.0, 2 * math.pi, FRAMES, endpoint=False)
-
-    def needle(theta):
-        d = np.array([math.cos(theta), math.sin(theta)])
-        hit = LineString([tuple(cen), tuple(cen + reach * d)]).intersection(boundary)
-        pts = [np.array(g.coords[0]) for g in getattr(hit, "geoms", [hit]) if g.geom_type == "Point"]
-        anchor = max(pts, key=lambda q: float(q @ d)) if pts else core_pts[int(np.argmax(core_pts @ d))]
-        return anchor, anchor + NEEDLE_LEN * d
-
-    segs = [needle(t) for t in thetas]
-
-    # --- INVARIANT checks ----------------------------------------------------
-    lengths = [float(np.linalg.norm(b - a)) for a, b in segs]
-    needle_polys = [poly(np.array([a, b, b + 1e-4, a + 1e-4])) for a, b in segs]  # thin quads for area
-    set_area = union_area([tree, *needle_polys])
-    tri_area = SQRT3 / 4.0
-    assert abs(max(lengths) - 1.0) < 1e-9 and abs(min(lengths) - 1.0) < 1e-9, f"needle length != 1: {lengths[:3]}"
-    assert tree.area < 0.5 * tri_area, "Perron core must be well under the base triangle area"
+    # --- checks (approximation is deliberate; assert refinement + full direction coverage) ---------
+    assert all(GRAN[i] <= GRAN[i + 1] for i in range(len(GRAN) - 1)) and GRAN[-1] >= 200, "granularity must rise"
+    dirs_fine = np.linspace(0.0, math.pi, GRAN[-1], endpoint=False)  # distinct line directions in [0,180)
+    gaps = np.diff(np.sort(dirs_fine % math.pi))
+    assert np.max(gaps) < math.radians(2.0), "finest set must have a needle within ~2 deg of every direction"
+    core_area = 3.0 * SQRT3 / 4.0 * RC ** 2  # area of the equilateral core (side = RC*sqrt3)
 
     math_check(
-        "Kakeya needle set (Wikipedia approximation)",
+        "Kakeya needle set (Wikipedia image, refined by granularity)",
         [
-            ("needle length (all frames)", f"min {min(lengths):.4f}  max {max(lengths):.4f}  (want 1.0000)"),
-            ("directions covered", f"{FRAMES} orientations over 0..360 deg  (every direction)"),
-            ("Perron core area", f"{tree.area:.3f}  ({tree.area / tri_area * 100:.0f}% of the unit triangle {tri_area:.3f})"),
-            ("needle-set area (drawn)", f"{set_area:.3f}  (min visible approximation)"),
+            ("granularity schedule", f"{GRAN[0]} -> {GRAN[-1]} directions over the full turn"),
+            ("shape", "small triangular core + three 120-deg needle sprays at its corners (= 3 Perron trees)"),
+            ("directions at finest", f"{GRAN[-1]}  (a needle within {math.degrees(np.max(gaps)):.1f} deg of every direction)"),
+            ("needle length", f"{LEN:.2f}  (~unit; sticks out past the core of radius {RC})"),
+            ("core area", f"{core_area:.3f}  (small central overlap; the spikes are the needle family)"),
+            ("nature of this figure", "positional approximation of the Besicovitch needle set (exact small-area math in 2_4/2_5)"),
             ("true Besicovitch area", "-> 0 as N->inf, but only ~1/log N (Keich): not drawable"),
         ],
     )
 
-    # --- fixed view limits from the whole final set (so accumulation never rescales / clips) ------
-    allpts = np.vstack([core_pts, *[np.array([a, b]) for a, b in segs]])
-    (x0, y0), (x1, y1) = allpts.min(0), allpts.max(0)
-    padx, pady = 0.12 * (x1 - x0), 0.12 * (y1 - y0)
-
     fig, ax = plt.subplots(figsize=(6.6, 6.6))
     ax.set_aspect("equal")
     ax.axis("off")
-    ax.set_xlim(x0 - padx, x1 + padx)
-    ax.set_ylim(y0 - pady, y1 + pady)
-    ax.set_title("Kakeya needle set: a unit segment in every direction, packed small", fontsize=10)
+    lim = RC + LEN + 0.12
+    ax.set_xlim(-lim, lim)
+    ax.set_ylim(-lim, lim)
+    ax.set_title("Kakeya needle set: a needle in every direction, from a small core", fontsize=10)
 
-    # the yellow Perron core, drawn once underneath the accumulating needles
-    for g in (tree.geoms if tree.geom_type == "MultiPolygon" else [tree]):
-        ax.fill(*g.exterior.xy, color="#f7f19a", alpha=0.9, edgecolor="none", zorder=1)
-
-    live, = ax.plot([], [], color=COLORS["accent"], lw=2.4, zorder=4)
+    ax.fill(VERTS[:, 0], VERTS[:, 1], facecolor=CORE, edgecolor="none", zorder=3)  # the core, drawn once
     counter = ax.text(0.02, 0.98, "", transform=ax.transAxes, va="top", fontsize=10, color=COLORS["guide"])
-    trails = []
+    holder = {"pc": None}
 
     def update(i):
-        a, b = segs[i]
-        t, = ax.plot([a[0], b[0]], [a[1], b[1]], color=COLORS["needle"], lw=0.7, alpha=0.35, zorder=2)
-        trails.append(t)
-        live.set_data([a[0], b[0]], [a[1], b[1]])
-        counter.set_text(f"direction {math.degrees(thetas[i]):3.0f} deg   length = 1.000")
-        return live, counter, t
+        if holder["pc"] is not None:
+            holder["pc"].remove()
+        m = GRAN[i]
+        pc = PolyCollection(sliver_quads(m), facecolors=CORE, edgecolors=EDGE, linewidths=0.35, zorder=2)
+        ax.add_collection(pc)
+        holder["pc"] = pc
+        counter.set_text(f"granularity: {m} directions")
+        return [pc, counter]
 
-    anim = FuncAnimation(fig, update, frames=FRAMES, interval=60, blit=False)
-    print("wrote", save_gif(anim, fps=18, dpi=95))
+    anim = FuncAnimation(fig, update, frames=len(GRAN), interval=180, blit=False)
+    print("wrote", save_gif(anim, fps=6, dpi=95))
 
 
 if __name__ == "__main__":
