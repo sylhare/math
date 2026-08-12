@@ -110,7 +110,7 @@ Instead of pivoting about the midpoint, let the needle stay **tangent** to a cur
 move. The envelope is a **three-cusped hypocycloid (deltoid)**: the curve traced by a point on a
 circle of radius `b` rolling inside a circle of radius `3b`.
 
-Parametric form (for the animation), with the rolling-circle radius `b`:
+Parametric form, with rolling-circle radius `b`:
 
 $$
 x(t) = 2b\cos t + b\cos 2t, \qquad y(t) = 2b\sin t - b\sin 2t, \qquad t \in [0, 2\pi).
@@ -145,9 +145,9 @@ A_{\triangle} &= \tfrac{\sqrt3}{4}\, s^2
 \end{aligned}
 $$
 
-This is the honest "convexity is the enemy" beat: `0.577 < 0.785` (disc) but `> 0.393` (deltoid is
-non-convex already, so it beats the convex bound). The real lesson: **drop convexity** and area can
-collapse. This motivates cutting the shape apart and overlapping the pieces.
+Convexity is the enemy: `0.577 < 0.785` (disc) but `> 0.393` (the deltoid is non-convex already, so
+it beats the convex bound). Dropping convexity lets the area collapse, which motivates cutting the
+shape apart and overlapping the pieces.
 
 ### 2d. The one trick that makes area shrink: shear + overlap (Pal join / Perron sprouting)
 
@@ -162,8 +162,8 @@ The shear-and-overlap move that drives the area down lives here. Two moves:
   `ε > 0`, there is a set `J` with `area(J) < ε` inside which the needle can be moved continuously
   from `G1` to `G2`. Idea: slide the needle far out along its own direction (almost free area,
   a long thin sliver), rotate by a tiny angle way out where the pivot is cheap, translate, and come
-  back. This is the connective tissue that turns a pile of segments into something a needle can
-  continuously *travel* through, upgrading a Besicovitch set into a Kakeya **needle** set.
+  back. This lets a needle *travel* continuously between segments, upgrading a Besicovitch set into a
+  Kakeya **needle** set.
 
 ![Pal join: the needle detours far out along its own direction, turns where pivoting is cheap, then returns; the swept area shrinks with the detour distance. Static and [animation](figures/2_kakeya_2d/2_2_pal_join_anim.gif).](figures/2_kakeya_2d/2_2_pal_join.png)
 
@@ -201,6 +201,8 @@ symmetric six-pointed star. Then take the construction to the limit `k → ∞`.
 > There exists a Kakeya (Besicovitch) set `K ⊆ R^2` with `|K| = 0` (Lebesgue measure zero).
 
 ![Three Perron trees rotated 0/120/240 deg about the shared apex tile all 180 deg of directions. Static and [animation](figures/2_kakeya_2d/2_5_besicovitch_assembly_anim.gif).](figures/2_kakeya_2d/2_5_besicovitch_assembly.png)
+
+![Documented pipeline: subdivide the base into 2^n triangles (shared apex), overlap bases (sprout) into one Perron tree, then three trees rotated 120 deg about the centroid = a Besicovitch set.](figures/2_kakeya_2d/2_4_perron_wiki_construction.png)
 
 For the *needle* (continuous-rotation) version, Pal joins glue the pieces; the area can be made
 arbitrarily small but **not** zero (a Kakeya needle set cannot have measure zero, a general fact).
@@ -244,7 +246,7 @@ $$
 \qquad\text{equivalently}\qquad N(\delta) \sim \delta^{-d}.
 $$
 
-Sanity checks to animate with `δ = 1/10`:
+Check with `δ = 1/10`:
 
 $$
 \begin{aligned}
@@ -269,8 +271,7 @@ the exact sense in which a zero-area set is still `n`-dimensional.
 ### 3b. Hausdorff dimension (many scales at once), with a fractal example
 
 Box-counting uses **one** box size everywhere. Hausdorff lets the cover use boxes of **different**
-sizes, big where the set is sparse and small where it is dense, which is the honest way to measure an
-irregular set. For `s ≥ 0`,
+sizes, big where the set is sparse and small where it is dense. For `s ≥ 0`,
 
 $$
 \mathcal{H}^s_\delta(E) = \inf\Big\{ \sum_i (\operatorname{diam} U_i)^s :
@@ -290,7 +291,28 @@ statement is stronger than the Minkowski one.
 
 ![Minkowski uses one box size delta (count N(delta)); Hausdorff allows any sizes <= delta; H^s jumps from +inf to 0 at s = dim_H, and dim_H <= dim_box.](figures/3_dimension/3_3_hausdorff_minkowski.png)
 
-**Fractal example for the animation** (self-similar sets have an easy dimension). If a set is made of
+The jump is not an idealization: on a concrete self-similar set it is a closed-form fact. The Cantor
+middle-thirds set is `2` copies at scale `1/3`, and its natural depth-`m` cover is `2^m` intervals of
+length `3^{-m}`, so the Hausdorff sum of that cover is exactly
+
+$$
+\begin{aligned}
+\sum_i (\operatorname{diam} U_i)^s &= 2^m\,(3^{-m})^s
+   && \text{natural level-}m\text{ cover of the Cantor set} \\
+ &= \big(2\cdot 3^{-s}\big)^m
+   && \text{one number per exponent } s \text{ and depth } m .
+\end{aligned}
+$$
+
+The base `2·3^{-s}` is `> 1` below `s = \log 2/\log 3`, `< 1` above it, and exactly `1` at that
+threshold. So sweeping `s` swings the sum from huge to tiny, and deepening the cover (`m → ∞`) sends
+`(2·3^{-s})^m` to `+∞` for `s < dim_H` and to `0` for `s > dim_H`, sharpening into the step at
+`s = \log 2/\log 3 ≈ 0.6309`. That threshold is the Hausdorff dimension, read off as the one exponent
+the sum refuses to send to `0` or `∞`.
+
+![On the Cantor set the Hausdorff sum of the natural depth-m cover is exactly (2 * 3^-s)^m; sweeping s swings it from huge to tiny and deepening m sharpens the swing into the +inf -> 0 jump, pinned to 1 at s = dim_H = log2/log3.](figures/3_dimension/3_4_hausdorff_sweep_anim.gif)
+
+**Fractal example** (self-similar sets have an easy dimension). If a set is made of
 `N` copies of itself each scaled by factor `1/r`, then `dim = log N / log r`:
 
 $$
@@ -307,6 +329,17 @@ turns out to have in higher dimensions. For these self-similar examples `dim_H =
 safe place to show both agreeing before Kakeya shows a case where the distinction bites.
 
 ![Self-similar fractals by iteration depth: Sierpinski (dim log3/log2 ~ 1.585) and Koch (dim log4/log3 ~ 1.262). Static and [animation](figures/3_dimension/3_2_fractal_iterate_anim.gif).](figures/3_dimension/3_2_dimension_fractal.png)
+
+On these self-similar sets the two dimensions agree, but in general they need not, and the gap is
+exactly what makes a Hausdorff statement stronger than a Minkowski one. The countable set
+`E = {0} ∪ {1/n : n ≥ 1}` is the cleanest split. Its points pile up at `0`, so a uniform `δ`-grid must
+spend about `δ^{-1/2}` boxes resolving the pile-up (`dim_box = 1/2`), while a single interval can
+swallow the whole tail `[0, 1/M]` for the Hausdorff cover and drive the sum to `0` (`dim_H = 0`). Same
+set, two rulers, `dim_H = 0 < 1/2 = dim_box`. The Cantor set gains nothing from adaptivity and the two
+coincide, which is why "always `dim_H ≤ dim_box`" can be a strict inequality: proving the Hausdorff
+version of Kakeya is genuinely more than proving the Minkowski version.
+
+![dim_H <= dim_box, two outcomes: the dust {0} U {1/n} forces the uniform box-count to waste cells on the pile-up at 0 (slope 1/2) while one interval swallows the tail for Hausdorff (dim 0), so dim_H < dim_box; the self-similar Cantor set gains nothing from adaptivity and the two agree at log2/log3.](figures/3_dimension/3_5_dimh_le_dimbox_anim.gif)
 
 ---
 
@@ -333,6 +366,27 @@ set below full dimension. That bound on how much a Kakeya set can be compressed 
 modern framing (Section 7).
 
 ![A fan of 1 x delta rectangles at delta-separated angles; two at angle theta overlap ~ delta^2/sin theta, so the union stays spread out. Static and [animation](figures/4_kakeya_dimension/4_1_davies_fan_anim.gif).](figures/4_kakeya_dimension/4_1_davies_rectangles.png)
+
+The overlap bound says the union cannot be compressed; box-counting it says what that buys, directly.
+Take the honest Perron cut-and-shift pile from Section 2f and read it with two rulers at once as the
+resolution `δ` shrinks: the shapely-measured area `|K_n|` slides toward `0` (the `1/\log N` decay),
+while the count of `δ`-boxes the pile meets keeps growing like a solid region,
+
+$$
+\begin{aligned}
+N(\delta) &\sim \delta^{-d}
+   && \text{box count of the fattened pile} \\
+\frac{\log N(\delta)}{\log(1/\delta)} &\ \longrightarrow\ 2
+   && \text{slope tracks the filled square, not the needle} .
+\end{aligned}
+$$
+
+On the log-log plot the pile's curve stays parallel to the slope-`2` (filled square) line and peels
+off the slope-`1` (single needle) line. The slope climbs toward `2` only `loglog`-slowly, so at these
+finite resolutions it reads about `1.66` and is still rising: area and dimension pull in opposite
+directions, which is what `area 0, dimension 2` means.
+
+![One fattened Perron pile read by two rulers: as delta shrinks the measured area slides toward 0 while the box count keeps the slope-2 growth of a solid region, so the log-log curve stays parallel to the dimension-2 line and peels off the dimension-1 needle.](figures/4_kakeya_dimension/4_2_area_dimension_boxcount_anim.gif)
 
 The result: **area 0, dimension 2.** The set is invisible to area but fills the plane in the sense of
 dimension.
@@ -467,7 +521,7 @@ needle problem governs the Fourier transform and the wave equation.
 > **3D Kakeya conjecture (now a theorem, Wang-Zahl 2025).** Every Kakeya set in `R^3` has Minkowski
 > and Hausdorff dimension 3.
 
-Discretized picture (the one to animate). Fatten every segment into a **`δ`-tube**: a cylinder of
+Discretized picture. Fatten every segment into a **`δ`-tube**: a cylinder of
 length 1 and radius `δ` (dimensions `δ × δ × 1`). Because directions are `δ`-separated on the sphere
 `S^2`, there are about `δ^{-2}` tubes. The conjecture, in the maximal/measure form, says the union is
 essentially as large as it can be:
@@ -482,12 +536,38 @@ $$
 "Dimension 3" means: **halving the tube thickness `δ` removes at most a sliver of the union's
 volume** (the volume does not drop like a positive power of `δ`). Equivalently `|N_δ K| ≥ c_ε δ^ε`.
 
+That sentence has a numeric shape. Halving `δ` multiplies the tube count by `4` and divides each
+tube's volume by `4`, so the total tube content is pinned across scales:
+
+$$
+\begin{aligned}
+\#\mathbb{T}\cdot|T| &\sim \delta^{-2}\cdot \delta^{2} = 1
+   && \text{content is scale-invariant} \\
+|N_\delta K| &\sim \delta^{\,3 - d}
+   && \text{how much of that content the union keeps, at dimension } d .
+\end{aligned}
+$$
+
+Dimension `d = 3` is the case `3 - d = 0`: the union's volume-meter stays lit as `δ → 0`. A
+dimension-`5/2` set would have `3 - d = 1/2` and shed about `29\%` of its volume at every halving,
+draining to `0`. So "dimension 3" is exactly "refining the tubes cannot drain the union."
+
+![Refining the tubes cannot drain the union: halving delta multiplies the tube count by four and divides each tube volume by four, pinning the content at one, and dimension 3 (3 - d = 0) keeps the union volume lit while a dimension-5/2 set would lose 29 percent per halving.](figures/6_3d_conjecture/6_2_refine_union_anim.gif)
+
 Why 3D is genuinely harder than 2D (Hickman): in the plane, two lines in different directions
 almost always **cross**. In space, two tubes in different directions generically **miss** each other
 (two generic lines in `R^3` do not intersect). So the 2D argument "different directions force
 crossings force spread-out area" has no direct analogue. The content of the 3D conjecture is exactly:
 *a family of tubes in different directions cannot overlap too much*, and you must control **all**
 configurations at once, not one nice arrangement.
+
+Swept out, that failure is vivid: turn one tube through every direction past a fixed probe tube and
+the shortest gap between their axes stays open, pinching to zero only at the isolated instants when the
+two directions align. A cloud of randomly placed pairs is overwhelmingly skew. This is why the plane's
+crossing argument evaporates, and why the 3D proof reaches for the Wolff axiom below instead of
+crossings.
+
+![Sweeping one tube through every direction past a fixed probe, the shortest gap between their axes stays open and closes only at isolated crossing angles; a cloud of random pairs is overwhelmingly skew.](figures/6_3d_conjecture/6_3_skew_generic_anim.gif)
 
 Two axioms/definitions the proof leans on (Hickman):
 
@@ -586,8 +666,7 @@ induction feed on itself.
 
 ### 7d. Compression, quantified
 
-"Compression" is the honest name for the whole phenomenon (Zahl's survey framing, the
-**Besicovitch compression phenomenon**):
+"Compression" names the phenomenon (Zahl's survey, the **Besicovitch compression phenomenon**):
 
 > For every `η > 0` there is a `δ > 0` and a set of rectangles of dimensions `1 × δ` pointing in
 > `δ`-separated directions whose areas **sum to at least 1**, yet whose **union has measure `< η`**.
