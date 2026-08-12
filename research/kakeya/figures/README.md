@@ -34,6 +34,13 @@ Statics output `<name>.png` next to the file; animations output `<name>.gif` via
 `_shared.save_gif`. Every run prints a `MATH CHECK` block. (Attempts are self-contained and do not
 need `PYTHONPATH`.)
 
+Regenerate every figure (or just some) with the driver, which sets `PYTHONPATH` itself:
+
+```
+bash research/kakeya/figures/regenerate.sh                     # all figures
+bash research/kakeya/figures/regenerate.sh <part>/<name>.py    # only the given script(s)
+```
+
 ## Rules (so many agents can each own one figure without colliding)
 
 1. **One figure = one file** named `P_N_topic`. Its only output is `P_N_topic.png` / `.gif`.
@@ -77,15 +84,23 @@ Static `[S]` and animation `[A]` per concept. Each: math (formula) | reference i
   directions preserved. | hickman_fig2a/2b
 - `2_4_perron_tree` [S] + `2_4_perron_sprout_anim` [A] - 60 deg apex fan; 3 rotations -> 180 deg;
   cut-and-shift reduces area; true area->0 ~1/log N (Keich), min visible form. | fig3, wiki_perron_tree
+- `2_4_perron_wiki_construction` [S] - documented pipeline: subdivide base into 2^n (shared apex) ->
+  overlap bases (sprout) -> three trees rotated 120 deg (Besicovitch set). | wiki_perron_tree.svg
   - `2_4_perron_attempt1_topdown_subtree_shift`, `2_4_perron_attempt2_bottomup_asymmetric`,
     `2_4_perron_attempt3_bottomup_symmetric` (+ `2_4_perron_attempts_README.md`) - preserved dead
     ends; each writes its own render PNG. See the attempts README for what each taught us.
-- `2_5_besicovitch_assembly` [S] + `2_5_besicovitch_assembly_anim` [A] - all-direction set from 3
-  rotated Perron trees; `|K|=0` is a limit, min visible approx with area readout. | wiki_needle_set.gif
-- `2_6_kakeya_needle_set_anim` [A] - **approximation of the Wikipedia needle-set image**: a unit
-  needle turning through every direction, each anchored to emanate from a small Perron-tree core, so
-  the family accumulates into the sunburst. Length == 1 every frame; area readout with the ->0 note. |
+- `2_5_1_besicovitch_assembly` [S] + `2_5_1_besicovitch_assembly_anim` [A] - all-direction set from 3
+  rotated Perron trees; coverage verified over all 180 one-degree bins; `|K|=0` is a limit, min visible
+  approx with area readout. | wiki_needle_set.gif
+- `2_5_2_kakeya_construction_anim` [A] - the whole construction in one animation: triangle -> subdivide
+  base into 2^6 -> sprout (live area %) -> union three trees rotated 120 deg; direction coverage 0..180
+  asserted. Primary construction figure (supersedes the assembly-only anim). | wiki_needle_set.gif
+- `2_6_kakeya_needle_set_anim` [A] - Wikipedia needle-set image: solid triangle + corner Perron-tree
+  branches + edge fringe, drawn as the filled union silhouette, built up by granularity. |
   wiki_kakeya_needle_set.gif
+- `2_7_kakeya_area_shrink_anim` [A] - shrinking the area by Perron cut-and-shift (depth n=0->9),
+  measured area 100% -> ~22% of the triangle while every direction is kept; -> 0 only ~1/log N. |
+  (companion to 2_6)
 
 ### 3_dimension
 
@@ -93,11 +108,23 @@ Static `[S]` and animation `[A]` per concept. Each: math (formula) | reference i
   `d=log N/log(1/delta)`; delta shrinking, covering boxes + count + log-log point. | (grid overlay)
 - `3_2_dimension_fractal` [S] + `3_2_fractal_iterate_anim` [A] - Hausdorff `dim=log N/log r`: Cantor
   log2/log3, Sierpinski log3/log2=1.585, Koch log4/log3=1.2619; built by iteration depth. | (redraw)
+- `3_3_hausdorff_minkowski` [S] - Minkowski (one box size delta) vs Hausdorff (any sizes <= delta) on
+  a Koch curve, and the `H^s` jump from +inf to 0 at `s = dim_H` (`dim_H <= dim_box`). | (redraw)
+- `3_4_hausdorff_sweep_anim` [A] - the `H^s` jump made concrete on the Cantor set: sum of the natural
+  depth-m cover is exactly `(2 3^-s)^m`; sweep `s` (huge->tiny) then deepen `m` (sharpen to the step),
+  pinned to 1 at `s = dim_H = log2/log3`. Closed form, nothing measured. | (animated 3_3)
+- `3_5_dimh_le_dimbox_anim` [A] - a case where the two dimensions genuinely differ: dust `{0} U {1/n}`
+  has `dim_box = 1/2` (uniform grid wastes cells on the pile-up at 0) but `dim_H = 0` (one interval
+  swallows the tail); Cantor set: adaptivity buys nothing, both `log2/log3`. | (redraw)
 
 ### 4_kakeya_dimension
 
 - `4_1_davies_rectangles` [S] + `4_1_davies_fan_anim` [A] - two `1 x delta` rectangles at angle theta
   overlap `~delta^2/sin theta`; small overlaps force a spread-out union: area 0 but dimension 2. | (redraw)
+- `4_2_area_dimension_boxcount_anim` [A] - the direct "area 0, dimension 2": one honest Perron pile
+  (the 2_7 sprout) read by two rulers as delta shrinks - measured area slides toward 0 while the
+  log-log box-count slope stays parallel to slope 2 and peels off slope 1 (climbs `loglog`-slowly,
+  ~1.66 at these scales). | (companion to 2_7, 4_1)
 
 ### 5_conjecture_tower
 
@@ -124,10 +151,19 @@ Static `[S]` and animation `[A]` per concept. Each: math (formula) | reference i
 
 - `6_1_tubes_3d` [S] + `6_1_tubes_3d_turntable_anim` [A] - `delta x delta x 1` tubes, count `~delta^-2`,
   delta-separated directions on S^2; generic tubes are skew and MISS in R^3. | guth_fig1
+- `6_2_refine_union_anim` [A] - what Minkowski dim 3 MEANS: halving delta gives `x4` tubes at `/4`
+  volume so content `#T |T| ~ 1` is pinned; `|N_delta K| ~ delta^(3-d)`, so dim 3 (`3-d=0`) keeps the
+  union volume lit while dim 5/2 sheds ~29% per halving. | (extends 6_1)
+- `6_3_skew_generic_anim` [A] - why 3D is harder: sweep one tube through every direction past a fixed
+  probe, the axis gap stays open and pinches to 0 only at isolated crossing angles; a Monte-Carlo
+  cloud of pairs is overwhelmingly skew (no crossing argument, hence the Wolff axiom). | (extends 6_1)
 
 ### 7_solving_3d
 
 - `7_1_wolff_axiom` [S] - Wolff axiom `#{T in R} <= delta^-2 |R|`; the `(n+2)/2 = 5/2` bound in R^3. | (redraw)
+- `7_1_1_wolff_axiom_anim` [A] - the axiom as a capacity law: a slab thins, the cap `delta^-2 |R|` and
+  the tube count both drop (count stays under the cap), then a forbidden frame over-stuffs the thin slab
+  (9 tubes vs cap 3) = the all-tubes-in-one-slab cheat the axiom rules out. | (extends 7_1)
 - `7_2_sticky_vs_nonsticky` [S] + `7_2_sticky_morph_anim` [A] - sticky: each rho-tube holds
   `~(rho/delta)^2` thin tubes; non-sticky scattered; morph between them. | (redraw)
 - `7_3_grains_3d` [S] + `7_3_grains_3d_turntable_anim` [A] - grain = `delta x c x c` prism, one tube
@@ -136,3 +172,7 @@ Static `[S]` and animation `[A]` per concept. Each: math (formula) | reference i
   K(d+alpha)`, climb 2.5 -> 3; graininess controls the lossy-induction loss. | (redraw)
 - `7_5_dimension_timeline` [S] + `7_5_dimension_timeline_anim` [A] - R^3 lower-bound history: Wolff 5/2
   (1995), Katz-Laba-Tao >5/2 (2000), Katz-Zahl 5/2+eps (2017), Wang-Zahl 3 (2025). | (timeline)
+- `7_6_compression_anim` [A] - Besicovitch compression made numeric (section 7d): the sprout(n) pile
+  only translates its `2^n` pieces, so summed piece area (content) is pinned at 1 while the union
+  (footprint) falls `~1/log N`; compression = content/footprint climbs `1.3x -> 4x`, real but bounded.
+  | (companion to 2_7)

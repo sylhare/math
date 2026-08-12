@@ -36,6 +36,9 @@ Every theorem, construction, and formula below is sourced from the scientific li
 - **Larry Guth**, *"The Kakeya conjecture, after Wang and Zahl"*, arXiv:2604.03416 (grain = "grains in
   a piece of wood"; slabs `1 x N^sigma x N^sigma`); and Guth, *"Degree reduction and graininess for
   Kakeya-type sets in R^3"*, arXiv:1402.0518 (origin of graininess via the polynomial method).
+- **Zeev Dvir**, *"On the size of Kakeya sets in finite fields"*, J. Amer. Math. Soc. 22 (2009): the
+  finite-field Kakeya theorem via the polynomial method (a low-degree polynomial vanishing on a
+  Besicovitch set must be identically zero), the technique Guth later carried into `R^n`.
 - **K. J. Falconer**, *The Geometry of Fractal Sets* (CUP, 1985), pp. 96-99: rigorous Perron-tree
   construction and area estimate; and **Falconer**, *Fractal Geometry*, for the Minkowski/Hausdorff
   dimension definitions and the self-similar dimension formula.
@@ -200,7 +203,7 @@ symmetric six-pointed star. Then take the construction to the limit `k → ∞`.
 
 > There exists a Kakeya (Besicovitch) set `K ⊆ R^2` with `|K| = 0` (Lebesgue measure zero).
 
-![Three Perron trees rotated 0/120/240 deg about the shared apex tile all 180 deg of directions. Static and [animation](figures/2_kakeya_2d/2_5_besicovitch_assembly_anim.gif).](figures/2_kakeya_2d/2_5_besicovitch_assembly.png)
+![Three Perron trees rotated 0/120/240 deg about the shared apex tile all 180 deg of directions, verified over every one-degree bin. The [construction animation](figures/2_kakeya_2d/2_5_2_kakeya_construction_anim.gif) runs the whole pipeline: equilateral triangle, subdivide the base, sprout to overlap, then union the three rotated copies.](figures/2_kakeya_2d/2_5_1_besicovitch_assembly.png)
 
 ![Documented pipeline: subdivide the base into 2^n triangles (shared apex), overlap bases (sprout) into one Perron tree, then three trees rotated 120 deg about the centroid = a Besicovitch set.](figures/2_kakeya_2d/2_4_perron_wiki_construction.png)
 
@@ -310,7 +313,7 @@ threshold. So sweeping `s` swings the sum from huge to tiny, and deepening the c
 `s = \log 2/\log 3 ≈ 0.6309`. That threshold is the Hausdorff dimension, read off as the one exponent
 the sum refuses to send to `0` or `∞`.
 
-![On the Cantor set the Hausdorff sum of the natural depth-m cover is exactly (2 * 3^-s)^m; sweeping s swings it from huge to tiny and deepening m sharpens the swing into the +inf -> 0 jump, pinned to 1 at s = dim_H = log2/log3.](figures/3_dimension/3_4_hausdorff_sweep_anim.gif)
+![The H^s jump made watchable: a gauge tracks the cover sum on the Cantor dust (left) while the depth-m curves stack up (right), and only the exponent s = dim_H = log2/log3 keeps the sum from running off to infinity or zero.](figures/3_dimension/3_4_hausdorff_sweep_anim.gif)
 
 **Fractal example** (self-similar sets have an easy dimension). If a set is made of
 `N` copies of itself each scaled by factor `1/r`, then `dim = log N / log r`:
@@ -339,7 +342,7 @@ set, two rulers, `dim_H = 0 < 1/2 = dim_box`. The Cantor set gains nothing from 
 coincide, which is why "always `dim_H ≤ dim_box`" can be a strict inequality: proving the Hausdorff
 version of Kakeya is genuinely more than proving the Minkowski version.
 
-![dim_H <= dim_box, two outcomes: the dust {0} U {1/n} forces the uniform box-count to waste cells on the pile-up at 0 (slope 1/2) while one interval swallows the tail for Hausdorff (dim 0), so dim_H < dim_box; the self-similar Cantor set gains nothing from adaptivity and the two agree at log2/log3.](figures/3_dimension/3_5_dimh_le_dimbox_anim.gif)
+![Two side-by-side box-count sweeps: the dust {0} U {1/n} (left) settles at slope 1/2 under the uniform grid but collapses to 0 once the cover adapts, while the Cantor set (right) lands both rulers together at log2/log3.](figures/3_dimension/3_5_dimh_le_dimbox_anim.gif)
 
 ---
 
@@ -386,10 +389,17 @@ off the slope-`1` (single needle) line. The slope climbs toward `2` only `loglog
 finite resolutions it reads about `1.66` and is still rising: area and dimension pull in opposite
 directions, which is what `area 0, dimension 2` means.
 
-![One fattened Perron pile read by two rulers: as delta shrinks the measured area slides toward 0 while the box count keeps the slope-2 growth of a solid region, so the log-log curve stays parallel to the dimension-2 line and peels off the dimension-1 needle.](figures/4_kakeya_dimension/4_2_area_dimension_boxcount_anim.gif)
+![One Perron pile with two live readouts as delta shrinks: the shapely-measured area ticking down (left) and the log-log box count (right) holding a slope that hugs the filled-square line and pulls off the single-needle line.](figures/4_kakeya_dimension/4_2_area_dimension_boxcount_anim.gif)
 
 The result: **area 0, dimension 2.** The set is invisible to area but fills the plane in the sense of
 dimension.
+
+Settling the plane raises two questions, and they organize the rest of the article. First, does the
+same hold in every dimension: that is the Kakeya conjecture, taken up for `n = 3` in Sections 6 and 7.
+Second, why would a fact about needles matter outside geometry: because this small geometric statement
+is the floor of a tower of Fourier-analytic conjectures, which is what turned a 1917 puzzle into a
+load-bearing problem in modern analysis. Section 5 builds that tower before the higher-dimensional
+geometry resumes.
 
 ---
 
@@ -552,7 +562,7 @@ Dimension `d = 3` is the case `3 - d = 0`: the union's volume-meter stays lit as
 dimension-`5/2` set would have `3 - d = 1/2` and shed about `29\%` of its volume at every halving,
 draining to `0`. So "dimension 3" is exactly "refining the tubes cannot drain the union."
 
-![Refining the tubes cannot drain the union: halving delta multiplies the tube count by four and divides each tube volume by four, pinning the content at one, and dimension 3 (3 - d = 0) keeps the union volume lit while a dimension-5/2 set would lose 29 percent per halving.](figures/6_3d_conjecture/6_2_refine_union_anim.gif)
+![The tube bundle refined across four halvings of delta, read by two meters: the content #T times |T| held flat at one (top), and the union volume that stays lit for the dimension-3 marker but visibly drains for the dimension-5/2 one (bottom).](figures/6_3d_conjecture/6_2_refine_union_anim.gif)
 
 Why 3D is genuinely harder than 2D (Hickman): in the plane, two lines in different directions
 almost always **cross**. In space, two tubes in different directions generically **miss** each other
@@ -567,7 +577,7 @@ two directions align. A cloud of randomly placed pairs is overwhelmingly skew. T
 crossing argument evaporates, and why the 3D proof reaches for the Wolff axiom below instead of
 crossings.
 
-![Sweeping one tube through every direction past a fixed probe, the shortest gap between their axes stays open and closes only at isolated crossing angles; a cloud of random pairs is overwhelmingly skew.](figures/6_3d_conjecture/6_3_skew_generic_anim.gif)
+![One tube swept through every direction past a fixed probe with its axis gap plotted (left) and a cloud of random tube pairs (right): the gap stays open on about 95 percent of directions and roughly 90 percent of random pairs are skew, so the crossing that drove the 2D proof is the exception in space.](figures/6_3d_conjecture/6_3_skew_generic_anim.gif)
 
 Two axioms/definitions the proof leans on (Hickman):
 
@@ -579,6 +589,18 @@ Two axioms/definitions the proof leans on (Hickman):
 
 ![A prism and the tubes it may contain: the Wolff axiom caps this at delta^-2 |R|, giving the (n+2)/2 = 5/2 bound in R^3.](figures/7_solving_3d/7_1_wolff_axiom.png)
 
+Read as a capacity law it is vivid: thinning the prism shrinks `|R|`, so the cap `δ^{-2}|R|` drops and
+the slab can legally hold fewer tubes. Packing all `δ^{-2}` tubes into one thin slab, the degenerate
+cheat, is exactly the configuration a count above `δ^{-2}|R|` forbids.
+
+![A slab thinning beside a meter comparing the cap delta^-2 |R| to the tube count: the count tracks under the cap as the slab thins, and the final over-stuffed thin slab (9 tubes against a cap of 3) is the forbidden all-tubes-in-one-slab case.](figures/7_solving_3d/7_1_1_wolff_axiom_anim.gif)
+
+This is how the axiom moves the problem forward. With no crossings to lean on, the Wolff axiom trades
+the question "which tube meets which" for a single local cap: no prism holds more tubes than its
+volume allows. That condition is checkable one prism at a time, needs no global arrangement, and by
+itself keeps the tubes from concentrating. From it together with direction-separation, Wolff (1995)
+extracted the first bound past the trivial ones, dimension `≥ 5/2`.
+
 Dimension lower-bound history in `R^3`: Wolff `≥ (n+2)/2 = 5/2` (1995); Katz-Laba-Tao Minkowski
 `> 5/2` (2000); Katz-Zahl Hausdorff `≥ 5/2 + ε` (2017); Wang-Zahl `= 3` (2025).
 
@@ -588,9 +610,11 @@ Dimension lower-bound history in `R^3`: Wolff `≥ (n+2)/2 = 5/2` (1995); Katz-L
 
 ## 7. Solving 3D: tubes, sticky vs non-sticky, grains, compression
 
-The Wang-Zahl argument at explainer resolution (Tao's blog, Hickman Section 5). Two ideas do the
-work: **reduce to sticky sets**, then handle the geometry with **grains**, glued by **induction on
-scales**.
+The Wolff axiom stalls at `5/2`, a full half-dimension short of `3`: capping the crudest concentration
+(all tubes in one slab) is not the same as ruling out the finer ways tubes can still overlap. Closing
+that gap is the Wang-Zahl argument, here at explainer resolution (Tao's blog, Hickman Section 5). Two
+ideas do the work: **reduce to sticky sets**, then handle the geometry with **grains**, glued by
+**induction on scales**.
 
 ### 7a. Representing a Kakeya set as tubes, and the two regimes
 
@@ -635,6 +659,15 @@ that is why 2022 did not immediately give 2025.
 
 ### 7c. Larry Guth's graininess (the non-sticky handle)
 
+The tool that finds the grains has a clear origin, and it is worth naming because it is a case of one
+model unlocking another. The Kakeya conjecture has a **finite-field version**: replace `R^n` by the
+vector space `F_q^n` over a finite field and a Besicovitch set by one containing a line in every
+direction. Dvir (2009) settled that version outright with the **polynomial method**: a low-degree
+polynomial vanishing on a small Besicovitch set would have to vanish identically, so the set cannot be
+small. The finite-field proof does not carry over to `R^n` (the Euclidean difficulty, overlaps across
+every scale, has no finite-field analogue), but the polynomial method it introduced does, and Guth
+carried it into Euclidean space.
+
 Guth (2014, polynomial method) showed any near-counterexample must be **grainy**. Precisely (Guth's
 formulation): for tubes of length `N` and radius 1 whose union has volume `N^{3-σ}`, with a
 three-directions-at-every-point condition, at scale `N^σ` the tubes cluster into **rectangular slabs
@@ -676,6 +709,14 @@ conjecture is precisely the statement that this compression **cannot go too far*
 small but its *dimension* stays maximal. The graininess bound "no point lies in too many grains" is
 the quantitative ceiling on compression: it caps how much the tubes can overlap, hence how far the
 set can be compressed.
+
+The Perron pile from Section 2 already exhibits this numerically. Its `2^n` pieces are only
+translated, so their areas always sum to the original triangle (content stays pinned at `1`) while the
+measured union falls like `1/\log N`. Content over footprint is the compression: it climbs, but only
+`log N`-slowly (about `1.3x` at `n = 1` to `4x` at `n = 8`), so compression is real yet bounded, which
+is the ceiling the conjecture asserts.
+
+![Left: the Perron pile with content, footprint, and compression readouts; right: the pinned content line and the falling footprint line, the shaded gap between them widening with depth.](figures/7_solving_3d/7_6_compression_anim.gif)
 
 ### 7e. Induction on scales, and why graininess controls the loss
 
