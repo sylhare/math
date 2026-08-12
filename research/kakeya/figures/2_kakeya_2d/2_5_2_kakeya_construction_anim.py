@@ -2,12 +2,14 @@
 
 Steps: equilateral triangle -> divide the base into 2^n triangles (shared apex) -> slide consecutive
 pairs so their bases overlap (bottom-up sprouting; area shrinks, directions kept) -> union three trees
-rotated 120 deg about the centroid.
+rotated 120 deg about the centroid. The base triangle spans a 60 deg fan; the three rotations tile
+the full 0..180 deg (validated over all 180 one-degree direction bins), so the union contains a unit
+segment in every direction.
 
-Run: uv run --with matplotlib --with shapely python research/kakeya/figures/2_kakeya_2d/2_8_kakeya_construction_anim.py
+Run: uv run --with matplotlib --with shapely python research/kakeya/figures/2_kakeya_2d/2_5_2_kakeya_construction_anim.py
 """
 import numpy as np
-from _shared import COLORS, SQRT3, math_check, save_gif
+from _shared import COLORS, SQRT3, math_check, save_gif, triangle_fan_degrees
 from shapely.affinity import rotate as shp_rotate
 from shapely.affinity import translate as shp_translate
 from shapely.geometry import Polygon
@@ -57,13 +59,22 @@ def main():
     c = tree.centroid
     besic = unary_union([shp_rotate(tree, a, origin=(c.x, c.y)) for a in (0, 120, 240)])
 
+    # --- INVARIANT: the 60 deg base fan, rotated 0/120/240 deg, covers every direction in [0,180) ---
+    lo, hi = triangle_fan_degrees(np.array([[-0.5, 0.0], [0.5, 0.0], list(APEX)]))
+    covered = np.zeros(180, dtype=bool)
+    for rot in (0.0, 120.0, 240.0):
+        for d in range(int(np.floor(lo + rot)), int(np.ceil(hi + rot)) + 1):
+            covered[d % 180] = True
+    assert covered.all(), f"three rotations must cover all 180 deg (covered {int(covered.sum())}/180)"
+
     math_check(
         "Kakeya set construction",
         [
             ("subdivide", f"2^{N} = {2 ** N} triangles, base split, shared apex"),
             ("sprout", f"overlap bases, alpha={ALPHA}; one tree area {tree.area / tri_area * 100:.0f}% of triangle"),
             ("rotate", f"3 copies 120 deg about centroid; Besicovitch area {besic.area:.3f}"),
-            ("directions", "each tree = 60 deg fan; 3 rotations -> all 180 deg"),
+            ("one tree fan", f"{lo:.0f}..{hi:.0f} deg  (60 deg wide)"),
+            ("directions covered", f"{int(covered.sum())}/180 deg  (a unit segment in every direction)"),
         ],
     )
 
