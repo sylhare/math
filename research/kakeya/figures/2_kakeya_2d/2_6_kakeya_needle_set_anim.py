@@ -113,7 +113,7 @@ def main():
             a.remove()
         ke, kc = frames[i]
         shape = unary_union([core_tri, *_subset(edge_fine, ke * 3), *_subset(corner_fine, kc * 3)])
-        holder["arts"] = _fill(ax, shape, CORE, EDGE, 0.7, z=2)
+        holder["arts"] = _fill(ax, shape, CORE, "none", 0.0, z=2)
         counter.set_text(f"granularity: {ke} edge + {kc} corner needles per side")
         return holder["arts"] + [counter]
 

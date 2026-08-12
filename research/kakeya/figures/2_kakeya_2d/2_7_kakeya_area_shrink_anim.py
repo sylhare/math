@@ -138,7 +138,7 @@ def main():
         n = frames[i]
         fade = 0.5 * (1.0 - n / DEPTHS[-1]) + 0.06        # fringe fades as the core sprouts
         arts = _fill(ax, fringe_all, CORE, "none", 0.0, alpha=fade, z=1)
-        arts += _fill(ax, unary_union(sprout_at[n]), CORE, EDGE, 0.5, z=3)
+        arts += _fill(ax, unary_union(sprout_at[n]), CORE, "none", 0.0, z=3)
         holder["arts"] = arts
         counter.set_text(f"cut-and-shift depth n = {n} ({2 ** n} pieces)      "
                          f"area = {area_at[n] / tri_area * 100:.0f}% of the triangle  (-> 0 slowly; never 0)")
