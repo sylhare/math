@@ -78,8 +78,18 @@ Static `[S]` and animation `[A]` per concept. Each: math (formula) | reference i
 
 - `2_1_needle_shapes` [S] - disc `A=pi/4`; deltoid `x=2b cos t+b cos2t, y=2b sin t-b sin2t`, b=1/4,
   chord `4b=1`, `A=2 pi b^2=pi/8`; equilateral (base 1) `A=sqrt3/4`. | fig1a/1b/1c
+- `2_1_2_deltoid_rolling_anim` [A] - deltoid drawn by a radius-b circle rolling inside a radius-3b
+  circle; marked rim point traces it, tangent chord 4b=1, area 2 pi b^2 = pi/8. | accromath kakeya-cercles1
+- `2_1_3_convex_answers_anim` [A] - one fixed unit needle turning in circle (pi/4) -> Reuleaux width 1
+  ((pi-sqrt3)/2) -> equilateral height 1 (1/sqrt3); accumulates positions, area drops. | accromath kakeya1/2/3
+- `2_2_0_rotate_vs_translate_anim` [A] - the core asymmetry (Accromath): rotating a needle by theta
+  sweeps a sector of area `theta/2`, sliding it along its own axis sweeps area 0 (across would cost
+  `1 x s`). Position is nearly free, only rotation costs area; the lead-in to the Pal detour. | accromath
 - `2_2_pal_join` [S] + `2_2_pal_join_anim` [A] - Pal-join: connect two parallel unit needles with
   area < eps via a far detour; swept area decreasing with detour distance. | (wiki_needle_set.gif)
+- `2_2_3_pal_parallel_join_anim` [A] - moving a needle between two parallel lines: naive parallelogram
+  `L*d` vs the far detour (slide free + two small sectors `2*(1/2 L^2 alpha)`); area shrinks with the
+  detour. | accromath kakeya14/15/16
 - `2_3_cut_and_shift` [S] - one bisect+overlap step; shift **arrows**; area(after) < area(before),
   directions preserved. | hickman_fig2a/2b
 - `2_4_perron_tree` [S] + `2_4_perron_sprout_anim` [A] - 60 deg apex fan; 3 rotations -> 180 deg;

@@ -24,3 +24,16 @@
 - Quanta video, *A Once-in-a-Century Proof: The Kakeya Conjecture*: https://www.youtube.com/watch?v=5J3tYU_-IZI
 - Quanta article, *'Once-in-a-Century' Proof Settles Math's Kakeya Conjecture*:
   https://www.quantamagazine.org/once-in-a-century-proof-settles-maths-kakeya-conjecture-20250314/
+- Quanta, *Hong Wang Wins 2026 Fields Medal (the third woman ever)*, for the 3D Kakeya proof; Wang's
+  "each wave lives on one of the long thin tubes" framing:
+  https://www.quantamagazine.org/hong-wang-wins-2026-fields-medal-the-third-woman-ever-20260723/
+- Accromath (UQAM), *L'aiguille de Kakeya* (2024, FR): clear step-by-step, source of the "translation
+  is free, only rotation costs area" framing (figures copied to `figures/reference/accromath/`):
+  https://accromath.uqam.ca/2024/10/laiguille-de-kakeya/
+- Universite Paris-Saclay, *Probleme de Kakeya: comment deplacer une aiguille en prenant le moins de
+  place* (FR): the "tas de baguettes de mikado" (pile of mikado sticks) analogy for measure-zero-but-
+  different, and "donne des informations sur la geometrie des vagues" (wave geometry):
+  https://news.universite-paris-saclay.fr/actualites/probleme-de-kakeya-ou-comment-deplacer-une-aiguille-en-prenant-le-moins-de-place
+- fr.wikipedia, *Probleme de l'aiguille de Kakeya* (FR): Dvir finite-field method, Kahane's Cantor-set
+  Besicovitch construction: https://fr.wikipedia.org/wiki/Probl%C3%A8me_de_l%27aiguille_de_Kakeya
+

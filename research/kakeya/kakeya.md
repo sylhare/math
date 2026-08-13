@@ -119,6 +119,8 @@ $$
 x(t) = 2b\cos t + b\cos 2t, \qquad y(t) = 2b\sin t - b\sin 2t, \qquad t \in [0, 2\pi).
 $$
 
+![A circle of radius b rolling inside a circle of radius 3b; a marked point on the rolling rim traces the deltoid, the tricuspid curve tangent to the needle in every direction.](figures/2_kakeya_2d/2_1_2_deltoid_rolling_anim.gif)
+
 The segment of any tangent line cut off inside the deltoid has **constant length `4b`**. For a unit
 needle set `4b = 1`, so `b = 1/4`. The enclosed area of a deltoid is `2\pi b^2`, hence
 
@@ -148,11 +150,24 @@ A_{\triangle} &= \tfrac{\sqrt3}{4}\, s^2
 \end{aligned}
 $$
 
+Among convex sets the needle can also turn in a **Reuleaux triangle** of width 1, pivoting about its
+three corners, area `(\pi-\sqrt3)/2 \approx 0.705`, between the disc and Pal's triangle. The same unit
+needle turns in all three convex answers, and the area drops from the disc to the triangle:
+
+![The same unit needle turning in the three convex answers: spinning about one point fills the disc (pi/4); pivoting about three corners fills the Reuleaux triangle ((pi-sqrt3)/2); the equilateral triangle of height 1 is smaller still (1/sqrt3).](figures/2_kakeya_2d/2_1_3_convex_answers_anim.gif)
+
 Convexity is the enemy: `0.577 < 0.785` (disc) but `> 0.393` (the deltoid is non-convex already, so
 it beats the convex bound). Dropping convexity lets the area collapse, which motivates cutting the
 shape apart and overlapping the pieces.
 
 ### 2d. The one trick that makes area shrink: shear + overlap (Pal join / Perron sprouting)
+
+Everything that shrinks the area rests on one asymmetry between the two ways a needle can move. Sliding
+a needle along its own length sweeps no new area (it stays on the same line), while rotating it by an
+angle `θ` sweeps a circular sector of area `θ/2`. Position is nearly free; only direction costs area, so
+every trick below spends rotation as sparingly as it can.
+
+![Left: a needle pivoting about an endpoint fills a sector whose area grows as theta/2; right: the same needle sliding along its own axis sweeps zero area, while sliding it across by the same distance would cost a 1 by s strip.](figures/2_kakeya_2d/2_2_0_rotate_vs_translate_anim.gif)
 
 The shear-and-overlap move that drives the area down lives here. Two moves:
 
@@ -167,6 +182,8 @@ The shear-and-overlap move that drives the area down lives here. Two moves:
   a long thin sliver), rotate by a tiny angle way out where the pivot is cheap, translate, and come
   back. This lets a needle *travel* continuously between segments, upgrading a Besicovitch set into a
   Kakeya **needle** set.
+
+![Moving a needle between two parallel lines: the naive parallelogram costs area L times d, but sliding along the axis (free) and turning through a small angle far out costs only the two little sectors, which shrink as the detour lengthens.](figures/2_kakeya_2d/2_2_3_pal_parallel_join_anim.gif)
 
 ![Pal join: the needle detours far out along its own direction, turns where pivoting is cheap, then returns; the swept area shrinks with the detour distance. Static and [animation](figures/2_kakeya_2d/2_2_pal_join_anim.gif).](figures/2_kakeya_2d/2_2_pal_join.png)
 
@@ -237,8 +254,11 @@ collapsing all the way to zero on screen.
 ## 3. Dimension: the right way to say "still big"
 
 The zero-area result forces the question: a Besicovitch set has no area,
-yet it feels large (it has segments pointing everywhere). Area is the wrong ruler. We need
-**dimension**, and it should be introduced in two stages.
+yet it feels large (it has segments pointing everywhere). Area is the wrong ruler. A concrete picture
+(Paris-Saclay): the set is a pile of mikado sticks dropped not at random but arranged so cleverly that
+one points in every direction while the pile takes almost no room. Area sees only "almost no room" and
+reports zero; it cannot tell that clever pile from an empty table. We need **dimension**, and it should
+be introduced in two stages.
 
 ### 3a. Minkowski (box-counting) dimension first
 
@@ -451,7 +471,8 @@ $$
 ![Dual rectangles: a thin r x s frequency box corresponds to a long 1/r x 1/s physical box through the origin. Static and [animation](figures/5_conjecture_tower/5_4_uncertainty_anim.gif).](figures/5_conjecture_tower/5_4_uncertainty_principle.png)
 
 This reciprocity is the bridge to Kakeya: a thin, curved sliver of frequency becomes a long, thin
-tube in physical space, and tubes in many directions are exactly a Besicovitch configuration.
+tube in physical space (in Wang's phrase, each wave lives on one of the long thin tubes), and tubes in
+many directions are exactly a Besicovitch configuration.
 
 ### 5c. Why anyone outside geometry cares: Fefferman, 1971
 
@@ -753,7 +774,8 @@ $$
 
 It does not by itself prove restriction / Bochner-Riesz / local smoothing, but it removes the
 geometric floor's uncertainty and gives the techniques (sticky reduction, grains, induction on
-scales) that people now hope to carry up the tower.
+scales) that people now hope to carry up the tower. Hong Wang received the 2026 Fields Medal for this
+work with Zahl.
 
 ---
 
