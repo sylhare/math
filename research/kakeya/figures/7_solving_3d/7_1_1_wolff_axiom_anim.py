@@ -71,7 +71,7 @@ def cap(lz):
 
 def main():
     # stages: (Lz, tube count, legal?)  -- legal packs count = cap; the cheat over-stuffs the thin slab
-    stages = [dict(lz=lz, count=int(round(cap(lz))), legal=True) for lz in LZ_LEGAL]
+    stages = [dict(lz=lz, count=round(cap(lz)), legal=True) for lz in LZ_LEGAL]
     stages.append(dict(lz=CHEAT_LZ, count=CHEAT_COUNT, legal=False))
 
     # --- assertions: legal counts respect the cap and fall with |R|; the cheat violates it ---
