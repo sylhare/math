@@ -167,7 +167,7 @@ a needle along its own length sweeps no new area (it stays on the same line), wh
 angle `θ` sweeps a circular sector of area `θ/2`. Position is nearly free; only direction costs area, so
 every trick below spends rotation as sparingly as it can.
 
-![Left: a needle pivoting about an endpoint fills a sector whose area grows as theta/2; right: the same needle sliding along its own axis sweeps zero area, while sliding it across by the same distance would cost a 1 by s strip.](figures/2_kakeya_2d/2_2_0_rotate_vs_translate_anim.gif)
+![The needle first rotates about an endpoint, filling a sector of area theta/2; then it slides along its own axis and the swept area does not change. Rotation is what costs area; sliding a needle along its own length is free.](figures/2_kakeya_2d/2_2_0_rotate_vs_translate_anim.gif)
 
 The shear-and-overlap move that drives the area down lives here. Two moves:
 
@@ -207,6 +207,8 @@ every direction of the original fan (a 60-degree fan for one triangle).
 
 ![The sprouting tree: overlapping the sheared subtriangles shrinks the footprint; the 60-degree needle fan is preserved. Static and [animation](figures/2_kakeya_2d/2_4_perron_sprout_anim.gif).](figures/2_kakeya_2d/2_4_perron_tree.png)
 
+![Building the tree step by step: the needle sweeps the triangle's 60-degree fan, the base is subdivided into 2^6 sub-triangles, then they sprout to overlap; the footprint falls to 44% while the fan of directions stays 60 degrees.](figures/2_kakeya_2d/2_4_perron_steps_anim.gif)
+
 The 60-degree span is an artifact of using one triangle's fan, not a real limit: three rotated copies
 (0, 60, 120 degrees) cover all 180 degrees of directions. The reason to press on is that the
 sprouting already shows the area is not bounded below by any positive number.
@@ -223,6 +225,13 @@ symmetric six-pointed star. Then take the construction to the limit `k → ∞`.
 ![Three Perron trees rotated 0/120/240 deg about the shared apex tile all 180 deg of directions, verified over every one-degree bin. The [construction animation](figures/2_kakeya_2d/2_5_2_kakeya_construction_anim.gif) runs the whole pipeline: equilateral triangle, subdivide the base, sprout to overlap, then union the three rotated copies.](figures/2_kakeya_2d/2_5_1_besicovitch_assembly.png)
 
 ![Documented pipeline: subdivide the base into 2^n triangles (shared apex), overlap bases (sprout) into one Perron tree, then three trees rotated 120 deg about the centroid = a Besicovitch set.](figures/2_kakeya_2d/2_4_perron_wiki_construction.png)
+
+Side by side, the non-convex answers, the concave counterpart of the convex chain in 2c: the deltoid
+turns a needle tangent to its three cusps, the Perron tree shrinks a triangle's footprint while keeping
+its 60-degree fan, and three trees assemble into the six-pointed Besicovitch star that points a needle
+in every direction.
+
+![Three non-convex Kakeya shapes with the same unit needle turning in each (dashed = the underlying triangle the fan lives in): the deltoid (area pi/8), the Perron tree (footprint 44% of the triangle, same fan), and the six-pointed Besicovitch star (all directions, area to 0 in the limit).](figures/2_kakeya_2d/2_1_4_nonconvex_answers_anim.gif)
 
 For the *needle* (continuous-rotation) version, Pal joins glue the pieces; the area can be made
 arbitrarily small but **not** zero (a Kakeya needle set cannot have measure zero, a general fact).

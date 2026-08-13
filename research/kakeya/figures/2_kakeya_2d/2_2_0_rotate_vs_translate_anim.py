@@ -1,16 +1,12 @@
-"""Animation: only rotation costs area, sliding a needle along its own length is free (kakeya.md 2d).
+"""Animation: only rotation costs area; sliding a needle along its length is free (kakeya.md 2d).
 
-The insight every area-shrinking trick rests on (Accromath, UQAM):
-"les glissements lineaires de l'aiguille utilisent des regions d'aires nulles. Ce ne sont que les
-rotations de l'aiguille qui necessitent des regions d'aires non nulles."
+The insight every area-shrinking trick rests on (Accromath, UQAM): "les glissements lineaires de
+l'aiguille utilisent des regions d'aires nulles. Ce ne sont que les rotations de l'aiguille qui
+necessitent des regions d'aires non nulles."
 
-  LEFT  ROTATE: a unit needle pivoting about an endpoint through angle theta sweeps a circular sector
-                of area theta/2 (grows with the angle turned).
-  RIGHT SLIDE : sliding the needle ALONG its own axis sweeps only the line it lies on, area 0; sliding
-                it ACROSS (perpendicular) by the same distance s would cost a 1 x s rectangle, area s.
-
-So position is nearly free (translate along the needle) but direction is expensive (rotation). The
-Pal detour (2_2) exploits exactly this: go far out cheaply, then the rotation you still need is tiny.
+One needle, one panel, two moves in sequence:
+  1. ROTATE about an endpoint through theta: it sweeps a circular sector of area theta/2 (grows).
+  2. SLIDE the needle along its own axis: it stays on the line it already swept, so NO new area.
 
 Run: PYTHONPATH=research/kakeya/figures uv run --with matplotlib --with shapely --with pillow \
      python research/kakeya/figures/2_kakeya_2d/2_2_0_rotate_vs_translate_anim.py
@@ -22,105 +18,92 @@ import numpy as np
 from _shared import COLORS, math_check, poly, save_gif
 
 THETA_MAX = math.pi / 3.0  # rotate through 60 deg
-S_MAX = 1.2  # slide distance
-N = 30  # animation steps
-HOLD = 5
-END_HOLD = 8
-NY = 0.5  # needle y on the right panel
+SLIDE_MAX = 0.9  # slide distance along the needle axis
+N_ROT, N_SLIDE = 22, 18
+HOLD, MID_HOLD, END_HOLD = 5, 5, 9
 
 
-def sector(theta, r=1.0, n=60):
-    """Circular sector polygon: pivot at origin, radius r, angles 0..theta (area r^2 theta / 2)."""
+def sector(theta, r=1.0, n=64):
+    """Sector polygon: pivot at origin, radius r, angles 0..theta (area r^2 theta / 2)."""
     if theta <= 1e-9:
         return None
     a = np.linspace(0.0, theta, n)
-    pts = [(0.0, 0.0), *[(r * math.cos(t), r * math.sin(t)) for t in a]]
-    return poly(np.array(pts))
+    return poly(np.array([(0.0, 0.0), *[(r * math.cos(t), r * math.sin(t)) for t in a]]))
 
 
 def main():
-    thetas = np.linspace(0.0, THETA_MAX, N)
-    slides = np.linspace(0.0, S_MAX, N)
-
-    # --- MATH: sector area = theta/2 (rotation cost) vs along-axis area 0, across-axis area s -------
-    sample = [N // 4, N // 2, 3 * N // 4, N - 1]
-    rows = []
-    max_err = 0.0
-    for k in sample:
-        th = thetas[k]
-        measured = sector(th).area
-        formula = th / 2.0
-        max_err = max(max_err, abs(measured - formula))
-        rows.append((f"theta = {math.degrees(th):4.0f} deg", f"sector {measured:.4f}  vs theta/2 {formula:.4f}"))
-    assert max_err < 1e-3, f"sector area must equal theta/2 (max err {max_err:.2e})"
+    # sector area == theta/2 (rotation cost); along-axis slide adds 0
+    for th in (math.pi / 6, math.pi / 4, THETA_MAX):
+        meas = sector(th).area
+        assert abs(meas - th / 2) < 1e-3, "sector area must be theta/2"
 
     math_check(
-        "rotate costs area (sector = theta/2), slide along axis is free (area 0)",
+        "rotate costs area (sector = theta/2); slide along axis is free (area 0)",
         [
-            *rows,
-            ("rotate, full 60 deg", f"area = theta/2 = {THETA_MAX / 2:.4f}  (pi/6)"),
-            ("slide ALONG axis, any s", "swept area = 0   (the needle stays on its own line)"),
-            ("slide ACROSS by s", f"swept area = 1 * s  (e.g. s = {S_MAX} -> {S_MAX:.2f})"),
+            ("rotate 30 deg", f"area theta/2 = {math.pi / 6 / 2:.4f}"),
+            ("rotate 60 deg", f"area theta/2 = {THETA_MAX / 2:.4f}  (pi/6)"),
+            ("slide along the axis", "swept area unchanged (needle stays on its own line)"),
             ("principle", "position is nearly free; only direction (rotation) costs area"),
         ],
     )
 
-    # ---- figure -------------------------------------------------------------------------
     import matplotlib
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
 
-    fig, (axL, axR) = plt.subplots(1, 2, figsize=(11.5, 5.0))
-    fig.suptitle("only rotation costs area; sliding along the needle is free", fontsize=13)
-    for a in (axL, axR):
-        a.set_aspect("equal")
-        a.axis("off")
+    u_final = np.array([math.cos(THETA_MAX), math.sin(THETA_MAX)])  # needle direction after rotating
+    fig, ax = plt.subplots(figsize=(5.6, 6.0))
+    ax.set_aspect("equal")
+    ax.axis("off")
 
-    frames = [0] * HOLD + list(range(N)) + [N - 1] * END_HOLD
+    # phases: 0 hold, 1 rotate (theta 0->max), 2 hold, 3 slide (s 0->max), 4 hold
+    frames = ([("rot", 0.0)] * HOLD
+              + [("rot", (i + 1) / N_ROT) for i in range(N_ROT)]
+              + [("rot", 1.0)] * MID_HOLD
+              + [("slide", (i + 1) / N_SLIDE) for i in range(N_SLIDE)]
+              + [("slide", 1.0)] * END_HOLD)
 
-    def update(fi):
-        k = frames[fi]
-        th, s = thetas[k], slides[k]
-
-        # LEFT: rotate about an endpoint -> sector of area theta/2
-        axL.cla()
-        axL.set_aspect("equal")
-        axL.axis("off")
-        axL.set_xlim(-0.2, 1.15)
-        axL.set_ylim(-0.15, 1.15)
-        sec = sector(th)
+    def draw_sector(theta):
+        sec = sector(theta)
         if sec is not None:
             sx, sy = sec.exterior.xy
-            axL.fill(sx, sy, facecolor=COLORS["region"], edgecolor="none", alpha=0.6, zorder=1)
-        for t in np.linspace(0.0, th, 9):  # the fan of needle positions
-            axL.plot([0, math.cos(t)], [0, math.sin(t)], color=COLORS["needle"], lw=0.8, alpha=0.35, zorder=2)
-        axL.plot([0, math.cos(th)], [0, math.sin(th)], color=COLORS["needle"], lw=3.0, zorder=3)  # current
-        axL.plot(0, 0, "o", color=COLORS["guide"], ms=6, zorder=4)
-        axL.set_title(f"ROTATE: swept area = theta/2 = {th / 2:.3f}\n(turned {math.degrees(th):.0f} deg)", fontsize=11)
+            ax.fill(sx, sy, facecolor=COLORS["accent"], edgecolor="none", alpha=0.35, zorder=1)
 
-        # RIGHT: slide along the axis (area 0); ghost of the perpendicular move (area s)
-        axR.cla()
-        axR.set_aspect("equal")
-        axR.axis("off")
-        axR.set_xlim(-0.25, 1.75)
-        axR.set_ylim(NY - 0.35, NY + S_MAX + 0.35)
-        # ghost: perpendicular move would sweep a 1 x s rectangle
-        if s > 1e-6:
-            axR.fill([0, 1, 1, 0], [NY, NY, NY + s, NY + s], facecolor=COLORS["muted"], edgecolor="none", alpha=0.25)
-            axR.text(0.5, NY + s + 0.12, f"across: area = 1 x s = {s:.2f}", ha="center", va="bottom",
-                     fontsize=9, color=COLORS["guide"])
-        # along-axis slide: the needle at [s, s+1] on its own line (swept set is the line, area 0)
-        axR.plot([0, S_MAX + 1], [NY, NY], color=COLORS["muted"], lw=0.8, alpha=0.5, zorder=1)  # its line
-        axR.plot([s, s + 1.0], [NY, NY], color=COLORS["needle"], lw=3.0, zorder=3)  # current needle
-        axR.annotate("", xy=(s + 1.0, NY), xytext=(s + 0.55, NY),
-                     arrowprops=dict(arrowstyle="->", color=COLORS["needle"], lw=1.5))
-        axR.set_title("SLIDE along the axis: swept area = 0\n(across would cost area = s)", fontsize=11)
+    def update(fi):
+        kind, f = frames[fi]
+        ax.cla()
+        ax.set_aspect("equal")
+        ax.axis("off")
+        ax.set_xlim(-0.25, 1.25)
+        ax.set_ylim(-0.2, 2.0)
+
+        if kind == "rot":
+            theta = THETA_MAX * f
+            draw_sector(theta)
+            for t in np.linspace(0.0, theta, 7):  # faint fan of positions
+                ax.plot([0, math.cos(t)], [0, math.sin(t)], color=COLORS["needle"], lw=0.7, alpha=0.3, zorder=2)
+            tip = np.array([math.cos(theta), math.sin(theta)])
+            ax.plot([0, tip[0]], [0, tip[1]], color=COLORS["needle"], lw=3.2, zorder=4)
+            ax.plot(0, 0, "o", color=COLORS["guide"], ms=6, zorder=5)
+            ax.set_title(f"ROTATE: swept area = theta/2 = {theta / 2:.3f}\n(turned {math.degrees(theta):.0f} deg)",
+                         fontsize=12)
+        else:  # slide the (already rotated) needle along its own axis
+            draw_sector(THETA_MAX)
+            s = SLIDE_MAX * f
+            a = s * u_final
+            b = (1.0 + s) * u_final
+            ax.annotate("", xy=tuple(b), xytext=tuple(b - 0.4 * u_final),
+                        arrowprops=dict(arrowstyle="->", color=COLORS["needle"], lw=1.6))
+            ax.plot([a[0], b[0]], [a[1], b[1]], color=COLORS["needle"], lw=3.2, zorder=4)
+            ax.plot(0, 0, "o", color=COLORS["guide"], ms=6, zorder=5)
+            ax.set_title(f"SLIDE along the needle: swept area stays {THETA_MAX / 2:.3f}\n"
+                         f"(moving along its own line adds nothing)", fontsize=12)
         return []
 
-    anim = FuncAnimation(fig, update, frames=len(frames), interval=140, blit=False)
-    print("wrote", save_gif(anim, fps=8, dpi=95))
+    anim = FuncAnimation(fig, update, frames=len(frames), interval=110, blit=False)
+    print("wrote", save_gif(anim, fps=9, dpi=100))
 
 
 if __name__ == "__main__":

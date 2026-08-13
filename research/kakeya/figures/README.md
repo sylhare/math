@@ -82,6 +82,9 @@ Static `[S]` and animation `[A]` per concept. Each: math (formula) | reference i
   circle; marked rim point traces it, tangent chord 4b=1, area 2 pi b^2 = pi/8. | accromath kakeya-cercles1
 - `2_1_3_convex_answers_anim` [A] - one fixed unit needle turning in circle (pi/4) -> Reuleaux width 1
   ((pi-sqrt3)/2) -> equilateral height 1 (1/sqrt3); accumulates positions, area drops. | accromath kakeya1/2/3
+- `2_1_4_nonconvex_answers_anim` [A] - concave counterpart: deltoid (pi/8, tangent needle) -> Perron
+  tree (44% of triangle) -> six-pointed Besicovitch star (all directions); dashed = the underlying
+  triangle the fan lives in. Optimal small-area star not faked. | accromath kakeya8/12/22
 - `2_2_0_rotate_vs_translate_anim` [A] - the core asymmetry (Accromath): rotating a needle by theta
   sweeps a sector of area `theta/2`, sliding it along its own axis sweeps area 0 (across would cost
   `1 x s`). Position is nearly free, only rotation costs area; the lead-in to the Pal detour. | accromath
@@ -94,6 +97,8 @@ Static `[S]` and animation `[A]` per concept. Each: math (formula) | reference i
   directions preserved. | hickman_fig2a/2b
 - `2_4_perron_tree` [S] + `2_4_perron_sprout_anim` [A] - 60 deg apex fan; 3 rotations -> 180 deg;
   cut-and-shift reduces area; true area->0 ~1/log N (Keich), min visible form. | fig3, wiki_perron_tree
+- `2_4_perron_steps_anim` [A] - the construction step by step (needle sweeps the 60 deg fan ->
+  subdivide the base into 2^6 -> sprout to overlap); AREA falls to 44%, fan stays 60 deg. | accromath kakeya19
 - `2_4_perron_wiki_construction` [S] - documented pipeline: subdivide base into 2^n (shared apex) ->
   overlap bases (sprout) -> three trees rotated 120 deg (Besicovitch set). | wiki_perron_tree.svg
   - `2_4_perron_attempt1_topdown_subtree_shift`, `2_4_perron_attempt2_bottomup_asymmetric`,
