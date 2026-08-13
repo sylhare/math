@@ -79,6 +79,25 @@ ignore = [
     "B011",    # assert False (valid pytest pattern for multi-condition assertions)
     "E731",    # lambda assignment (convenient in test fixtures)
 ]
+"research/lean_driven_notebooks/*.py" = [
+    # Lean-driven notebook experiment: transcribes Lean (Greek-heavy) into LaTeX and runs a
+    # marimo sandbox, so it needs the same relaxations as lean/** and notebooks/*.
+    "RUF001",  # ambiguous unicode in strings (Greek letters in Lean statements / LaTeX)
+    "RUF002",  # ambiguous unicode in docstrings (ℝ and Greek in worked examples)
+    "RUF003",  # ambiguous unicode in comments (Greek in worked examples)
+    "E402",    # imports after a sys.path insert (bridge wiring) and marimo inline imports
+    "F841",    # marimo cell pattern (_var assigned, displayed by the cell)
+    "B018",    # marimo displays the last expression
+]
+"research/**/*.py" = [
+    # Staging/experiment figure scripts. Real-error checks (F-codes, correctness) stay ON; only these
+    # four are relaxed, each for a concrete reason (everything else, incl. B905/RUF046/B007, is fixed):
+    "E701",    # `if x: y` / `a; b` - the compact one-line axis setup this folder is authored in;
+    "E702",    #   the only auto-fix is `ruff format`, a 1400-line rewrite of throwaway visual code.
+    "UP031",   # printf `%` in prints/titles - ruff rewrites it to .format(), not cleaner; mostly in
+               #   the frozen attempt/ files we deliberately do not churn.
+    "RUF059",  # unused unpack in demo tuples - a preview-only rule (does not fire under pinned ruff).
+]
 
 [tool.ruff.format]
 quote-style = "double"
