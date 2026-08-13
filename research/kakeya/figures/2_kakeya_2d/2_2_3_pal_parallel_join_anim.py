@@ -132,8 +132,10 @@ def main():
                 w1 = wedge(E, math.pi, math.pi - th1)
                 ax.fill(w1[:, 0], w1[:, 1], facecolor=COLORS["accent"], edgecolor="none", alpha=0.85, zorder=2)
             if phase >= 4:
-                th2 = ALPHA if phase > 4 else ALPHA * f
-                w2 = wedge(PIVOT2, math.pi, math.pi - th2)
+                # the needle sweeps from the diagonal (pi-alpha) down to flat (pi); the swept red
+                # must trail BEHIND it, growing from the diagonal edge toward the needle's angle.
+                th_needle = 0.0 if phase > 4 else ALPHA * (1 - f)
+                w2 = wedge(PIVOT2, math.pi - ALPHA, math.pi - th_needle)
                 ax.fill(w2[:, 0], w2[:, 1], facecolor=COLORS["accent"], edgecolor="none", alpha=0.85, zorder=2)
             area_now = detour_area if phase >= 4 else (sector_area if phase >= 2 else 0.0)
             ax.set_title(f"detour: slide (free) + two small turns, area = {area_now:.2f}", fontsize=12)

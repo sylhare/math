@@ -113,8 +113,8 @@ def main():
     # ---- figure ------------------------------------------------------------------------
     import matplotlib
     matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
     import matplotlib.patches as mpatches
+    import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(1, 2, figsize=(13.0, 5.7))
     fig.suptitle("H^s sum = (2 * 3^-s)^m,   jump at s = dim_H", fontsize=13)
