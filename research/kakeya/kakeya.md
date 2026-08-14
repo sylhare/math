@@ -49,6 +49,11 @@ Every theorem, construction, and formula below is sourced from the scientific li
   Classical Analysis*): statement of the local smoothing conjecture.
 - **Charles Fefferman**, *"The multiplier problem for the ball"*, Ann. of Math. 94 (1971): the ball
   multiplier counterexample built from Besicovitch geometry.
+- **International Mathematical Union**, *Fields Medals 2026*,
+  `https://www.mathunion.org/imu-awards/fields-medal/fields-medals-2026`: Hong Wang awarded the
+  Fields Medal on 23 July 2026 for contributions to harmonic analysis and geometric measure theory,
+  including the proof of the three-dimensional Kakeya conjecture. See also N. Wolchover,
+  *"Hong Wang Wins 2026 Fields Medal, the Third Woman Ever"*, Quanta Magazine (23 July 2026).
 - **Wikipedia**, *Kakeya set* `https://en.wikipedia.org/wiki/Kakeya_conjecture` (convenience index for
   the classical constructions and the dimension-lower-bound timeline; primary sources above).
 
@@ -110,7 +115,10 @@ covered over and over; the needle does not need a solid disc.
 ### 2b. The deltoid (turn it, do not just spin it)
 
 Instead of pivoting about the midpoint, let the needle stay **tangent** to a curve while both ends
-move. The envelope is a **three-cusped hypocycloid (deltoid)**: the curve traced by a point on a
+move. What this buys: the needle now *slides along its own direction* as it turns, so positions
+already swept are not swept again, and that saving is exactly what halves the area below (slide
+versus rotate is the asymmetry the whole area story rests on; Section 2d makes it precise). The
+envelope is a **three-cusped hypocycloid (deltoid)**: the curve traced by a point on a
 circle of radius `b` rolling inside a circle of radius `3b`.
 
 Parametric form, with rolling-circle radius `b`:
@@ -162,7 +170,8 @@ shape apart and overlapping the pieces.
 
 ### 2d. The one trick that makes area shrink: shear + overlap (Pal join / Perron sprouting)
 
-Everything that shrinks the area rests on one asymmetry between the two ways a needle can move. Sliding
+Everything that shrinks the area rests on one asymmetry between the two ways a needle can move
+(the deltoid above already exploited it quietly; from here on it is pushed to the extreme). Sliding
 a needle along its own length sweeps no new area (it stays on the same line), while rotating it by an
 angle `θ` sweeps a circular sector of area `θ/2`. Position is nearly free; only direction costs area, so
 every trick below spends rotation as sparingly as it can.
@@ -222,7 +231,7 @@ symmetric six-pointed star. Then take the construction to the limit `k → ∞`.
 
 > There exists a Kakeya (Besicovitch) set `K ⊆ R^2` with `|K| = 0` (Lebesgue measure zero).
 
-![Three Perron trees rotated 0/120/240 deg about the shared apex tile all 180 deg of directions, verified over every one-degree bin. The [construction animation](figures/2_kakeya_2d/2_5_2_kakeya_construction_anim.gif) runs the whole pipeline: equilateral triangle, subdivide the base, sprout to overlap, then union the three rotated copies.](figures/2_kakeya_2d/2_5_1_besicovitch_assembly.png)
+![Three Perron trees rotated 0/120/240 deg about the shared apex tile all 180 deg of directions, verified over every one-degree bin; the [assembly animation](figures/2_kakeya_2d/2_5_1_besicovitch_assembly_anim.gif) drops the rotated copies in one by one. The [construction animation](figures/2_kakeya_2d/2_5_2_kakeya_construction_anim.gif) runs the whole pipeline: equilateral triangle, subdivide the base, sprout to overlap, then union the three rotated copies.](figures/2_kakeya_2d/2_5_1_besicovitch_assembly.png)
 
 ![Building the six-pointed star, step by step: one Perron tree carries a 60-degree fan, and rotated copies dropped in every 60 degrees spread that fan around the circle (three copies already cover all 180 directions, six close up the symmetric star). A needle then sweeps every direction inside the finished star; a gauge tracks the directions covered.](figures/2_kakeya_2d/2_5_5_besicovitch_star_build_anim.gif)
 
@@ -237,9 +246,14 @@ in every direction.
 
 For the *needle* (continuous-rotation) version, Pal joins glue the pieces; the area can be made
 arbitrarily small but **not** zero (a Kakeya needle set cannot have measure zero, a general fact).
+The intuition: continuous turning means that at every instant the needle covers a genuine little
+sector of nearby directions, and sewing those sectors together forces a positive amount of swept
+area at every scale, no matter how cleverly the detours are arranged (heuristic; the rigorous
+statement is a theorem).
 Van Alphen (1942) fit arbitrarily small needle sets inside a disc of radius `2 + ε`; Cunningham
 (1971) improved this to a simply-connected needle set of arbitrarily small area inside the **unit
-disc** (radius 1). The distinction: **measure zero for "contains a segment in every direction"; only
+disc** (radius 1), the smallest disc that can hold a unit segment at all. The distinction:
+**measure zero for "contains a segment in every direction"; only
 arbitrarily-small-but-positive for "a needle you can actually turn."**
 
 ![How Pal joins do the gluing: the tree holds a needle in every direction but in separate branches. To carry the needle from one branch to the next, slide it out along its own axis (free), make the small turn far out where a tiny angle suffices, then slide back into the next branch. Chaining the joins across every branch rotates the needle continuously through the fan; only the little turn slivers add area, so the tree plus the fringe is a needle set of small positive area.](figures/2_kakeya_2d/2_5_4_pal_tree_needle_set_anim.gif)
@@ -335,8 +349,8 @@ $$
 \begin{aligned}
 \sum_i (\operatorname{diam} U_i)^s &= 2^m\,(3^{-m})^s
    && \text{natural level-}m\text{ cover of the Cantor set} \\
- &= \big(2\cdot 3^{-s}\big)^m
-   && \text{one number per exponent } s \text{ and depth } m .
+   &= \big(2\cdot 3^{-s}\big)^m
+   && \text{a geometric series in } m \text{ with base } 2\cdot 3^{-s} .
 \end{aligned}
 $$
 
@@ -454,7 +468,15 @@ $$
 \qquad \text{for all } \varepsilon > 0.
 $$
 
-![delta-tubes through a common point and the maximal-average heatmap over a tube family: the object the maximal-function bound controls.](figures/5_conjecture_tower/5_1_kakeya_maximal.png)
+In words: for each direction `ω`, average `|f|` over the *best* `δ`-tube pointing along `ω` (the one
+where the average is largest); that best-per-direction average is `f*_δ(ω)`. The conjecture says
+this greedy tube-averaging barely amplifies anything: only a `δ^{−ε}` loss, slower than any power.
+The link to dimension is contrapositive. If a Kakeya set could be compressed below full dimension,
+an `f` concentrated on it would have large tube averages in *every* direction at once, making
+`f*_δ` big on the whole sphere and breaking the bound. So the analytic conjecture is exactly the
+statement that Besicovitch compression cannot beat full dimension.
+
+![delta-tubes through a common point and the maximal-average heatmap over a tube family; the [animation](figures/5_conjecture_tower/5_1_kakeya_maximal_anim.gif) sweeps one probe tube through every direction and builds the per-direction average curve, whose peak is the maximal function.](figures/5_conjecture_tower/5_1_kakeya_maximal.png)
 
 ### 5b. Fourier building blocks
 
@@ -491,7 +513,10 @@ many directions are exactly a Besicovitch configuration.
 
 Charles Fefferman used a Besicovitch/Perron construction to **disprove** the natural higher-dimensional
 "ball multiplier" guess: for `n ≥ 2` and `p ≠ 2`, the partial Fourier integral over a ball,
-`S_R^{ball} f`, does **not** converge to `f` in `L^p(R^n)` as `R → ∞`. The engine of the
+`S_R^{ball} f`, does **not** converge to `f` in `L^p(R^n)` as `R → ∞`. Where do the needles come
+from? The boundary of the frequency ball is *curved*, and by the uncertainty principle of Section 5b
+a thin curved sliver of frequency dualizes to a long thin tube in physical space, one tube per
+tangent direction of the sphere. The engine of the
 counterexample is exactly Kakeya geometry: thin frequency slabs tangent to the sphere pile up in
 physical space the way needles pile up in a Besicovitch set, so a geometry puzzle controls the
 convergence of Fourier series in higher dimensions.
