@@ -142,7 +142,7 @@ A_{\text{deltoid}} &= 2\pi b^2                    && \text{area of a deltoid, ro
 $$
 
 So the deltoid is exactly **half** the disc's area. Good: the needle really
-turns inside it. Gap: is the deltoid the *minimum*? Kakeya guessed yes. It is not.
+turns inside it. Gap: is the deltoid the *minimum*? It is not.
 
 ### 2c. Pal: the smallest *convex* set
 
@@ -165,8 +165,11 @@ needle turns in all three convex answers, and the area drops from the disc to th
 ![The same unit needle turning in the three convex answers: spinning about one point fills the disc (pi/4); pivoting about three corners fills the Reuleaux triangle ((pi-sqrt3)/2); the equilateral triangle of height 1 is smaller still (1/sqrt3).](figures/2_kakeya_2d/2_1_3_convex_answers_anim.gif)
 
 Convexity is the enemy: `0.577 < 0.785` (disc) but `> 0.393` (the deltoid is non-convex already, so
-it beats the convex bound). Dropping convexity lets the area collapse, which motivates cutting the
-shape apart and overlapping the pieces.
+it beats the convex bound). This looks like a step backwards, and that is exactly why it matters.
+The triangle is not a better final answer; it is a better *part*. A convex shape must be kept whole,
+but a triangle can be cut into pieces and the pieces rearranged, and rearranging is where the area
+is won. Dropping convexity lets the area collapse, which motivates cutting the shape apart and
+overlapping the pieces.
 
 ### 2d. The one trick that makes area shrink: shear + overlap (Pal join / Perron sprouting)
 
@@ -274,11 +277,16 @@ collapsing all the way to zero on screen.
 ## 3. Dimension: the right way to say "still big"
 
 The zero-area result forces the question: a Besicovitch set has no area,
-yet it feels large (it has segments pointing everywhere). Area is the wrong ruler. A concrete picture
+yet it feels large (it has segments pointing everywhere). The trap to avoid: "measure zero" does
+**not** mean small in every sense. The rational numbers have measure zero and are everywhere
+dense; the Cantor set has measure zero and is uncountable. Area is one ruler, and it reports zero
+for all of these, but zero area only means "no thickness," not "no points." A concrete picture
 (Paris-Saclay): the set is a pile of mikado sticks dropped not at random but arranged so cleverly that
 one points in every direction while the pile takes almost no room. Area sees only "almost no room" and
 reports zero; it cannot tell that clever pile from an empty table. We need **dimension**, and it should
 be introduced in two stages.
+
+![Measure zero means no thickness, not no points: the rationals, the Cantor set, and a Besicovitch set all have cover length shrinking to zero (left), yet each is still large in another sense, dense, uncountable, and all-directions respectively (right).](figures/3_dimension/3_0_measure_zero_not_small.png)
 
 ### 3a. Minkowski (box-counting) dimension first
 
@@ -432,7 +440,11 @@ directions, which is what `area 0, dimension 2` means.
 ![One Perron pile with two live readouts as delta shrinks: the shapely-measured area ticking down (left) and the log-log box count (right) holding a slope that hugs the filled-square line and pulls off the single-needle line.](figures/4_kakeya_dimension/4_2_area_dimension_boxcount_anim.gif)
 
 The result: **area 0, dimension 2.** The set is invisible to area but fills the plane in the sense of
-dimension.
+dimension. This is not a contradiction but two different questions getting two different answers.
+"How much paint to cover it?" asks area, and the answer is none: the pile has no thickness. "How
+many boxes to find it?" asks dimension, and the answer is all of them: at any resolution the pile
+meets essentially every box a solid square would. Zero area and full dimension are the same clever
+pile seen by two rulers, one blind to it and one not.
 
 Settling the plane raises two questions, and they organize the rest of the article. First, does the
 same hold in every dimension: that is the Kakeya conjecture, taken up for `n = 3` in Sections 6 and 7.
@@ -596,6 +608,14 @@ In one line: Kakeya is the geometric floor of this tower. Points (a segment's wo
 (fattened segments) is the same bookkeeping as waves concentrated along light rays, which is why a
 needle problem governs the Fourier transform and the wave equation.
 
+Why should a geometry fact control an analysis fact at all? The reflex "Fourier analysis is
+calculus, where does geometry enter" has a concrete answer: the uncertainty principle turns every
+frequency question into a question about how tubes in many directions pack in space, and packing
+tubes is exactly Kakeya. The implication order also has a direction worth pausing on. Kakeya is the
+*weakest* statement, so it is the easiest to prove and the first to check; but that is also why it
+is necessary: every stronger conjecture assumes it. A counterexample to Kakeya would refute the
+whole tower at once, which is why the 1917 puzzle became load-bearing.
+
 ---
 
 ## 6. The 3D conjecture and what Minkowski dimension 3 means for tubes
@@ -614,6 +634,13 @@ $$
 \Big| \bigcup_{T \in \mathbb{T}} T \Big| \ \gtrsim_\varepsilon\ \delta^{\varepsilon}\quad\text{(morally } \sim 1),
 \qquad \#\mathbb{T} \sim \delta^{-2},\ |T| = \delta^2 .
 $$
+
+The naive hope is that different directions mean small overlap, so the union's volume should be
+about the number of tubes times one tube's volume, `δ^{-2}·δ^2 ~ 1`. The whole difficulty is that
+this hope is exactly what can fail: Besicovitch's construction is precisely a way to make tubes in
+different directions overlap so much that the union collapses far below the naive count. The
+conjecture says the collapse can cost the *volume* everything but cannot cost the *dimension*
+anything.
 
 ![A bundle of delta x delta x 1 tubes in delta-separated directions on S^2 (count ~ delta^-2); two in different directions are skew and miss. Static and [animation](figures/6_3d_conjecture/6_1_tubes_3d_turntable_anim.gif).](figures/6_3d_conjecture/6_1_tubes_3d.png)
 
@@ -718,7 +745,10 @@ fat tubes? Two extreme behaviors:
 
 Why start with sticky (the "more information = easier" beat): stickiness is a lot of extra
 structure, so the induction hypothesis can be applied cleanly at both the fat scale `ρ` and inside
-each fat tube, and the two multiplicity bounds multiply consistently. Assuming stickiness the
+each fat tube, and the two multiplicity bounds multiply consistently. This is not cheating.
+Proving the sticky case first is a reconnaissance: it shows the conjecture is true in the regime
+where you can compute, and it tells you exactly which enemy is left, the scattered configurations
+that refuse to look like combs. Assuming stickiness the
 conjecture is *intuitively* the tractable case, and Wang-Zahl proved the **sticky Kakeya conjecture in
 `R^3`** first (2022), which was strong evidence the full thing was in reach.
 
@@ -745,7 +775,10 @@ small. The finite-field proof does not carry over to `R^n` (the Euclidean diffic
 every scale, has no finite-field analogue), but the polynomial method it introduced does, and Guth
 carried it into Euclidean space.
 
-Guth (2014, polynomial method) showed any near-counterexample must be **grainy**. Precisely (Guth's
+Guth (2014, polynomial method) showed any near-counterexample must be **grainy**. Why a new object
+at all? Because counting tubes directly is hopeless: two tubes can cross, miss, or run nearly
+parallel at every scale, and there is no usable bound on how a *pair* of thin tubes overlaps. The
+escape is to stop counting tubes and count *clumps* of tubes instead. Precisely (Guth's
 formulation): for tubes of length `N` and radius 1 whose union has volume `N^{3-σ}`, with a
 three-directions-at-every-point condition, at scale `N^σ` the tubes cluster into **rectangular slabs
 ("grains") of dimensions `1 × N^σ × N^σ`**. In the `δ`-normalized picture used by Wang-Zahl, a grain
@@ -837,7 +870,8 @@ $$
 \boxed{\ \text{Wang-Zahl (2025): every Kakeya set in } R^3 \text{ has Hausdorff and Minkowski dimension } 3.\ }
 $$
 
-It does not by itself prove restriction / Bochner-Riesz / local smoothing, but it removes the
+It does not by itself prove restriction / Bochner-Riesz / local smoothing (the implication only
+runs downward: the tower needs Kakeya, but Kakeya does not give back the tower), but it removes the
 geometric floor's uncertainty and gives the techniques (sticky reduction, grains, induction on
 scales) that people now hope to carry up the tower. Hong Wang received the 2026 Fields Medal for this
 work with Zahl.

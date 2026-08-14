@@ -82,9 +82,10 @@ Static `[S]` and animation `[A]` per concept. Each: math (formula) | reference i
   circle; marked rim point traces it, tangent chord 4b=1, area 2 pi b^2 = pi/8. | accromath kakeya-cercles1
 - `2_1_3_convex_answers_anim` [A] - one fixed unit needle turning in circle (pi/4) -> Reuleaux width 1
   ((pi-sqrt3)/2) -> equilateral height 1 (1/sqrt3); accumulates positions, area drops. | accromath kakeya1/2/3
-- `2_1_4_nonconvex_answers_anim` [A] - concave counterpart: deltoid (pi/8, tangent needle) -> Perron
-  tree (44% of triangle) -> six-pointed Besicovitch star (all directions); dashed = the underlying
-  triangle the fan lives in. Optimal small-area star not faked. | accromath kakeya8/12/22
+- `2_1_4_nonconvex_answers_anim` [A] - the star family (concave counterpart of 2_1_3): deltoid (3
+  cusps, pi/8), 5-pointed and 11-pointed stars. Each VERIFIED a Kakeya set (min chord >= 1, a real
+  length-1 needle in every direction). Straight-edged stars > deltoid; curved optimum not faked.
+  | accromath kakeya8/12/13
 - `2_2_0_rotate_vs_translate_anim` [A] - the core asymmetry (Accromath): rotating a needle by theta
   sweeps a sector of area `theta/2`, sliding it along its own axis sweeps area 0 (across would cost
   `1 x s`). Position is nearly free, only rotation costs area; the lead-in to the Pal detour. | accromath
@@ -110,6 +111,19 @@ Static `[S]` and animation `[A]` per concept. Each: math (formula) | reference i
 - `2_5_2_kakeya_construction_anim` [A] - the whole construction in one animation: triangle -> subdivide
   base into 2^6 -> sprout (live area %) -> union three trees rotated 120 deg; direction coverage 0..180
   asserted. Primary construction figure (supersedes the assembly-only anim). | wiki_needle_set.gif
+- `2_5_3_full_construction_anim` [A] - kakeya19 as motion: 60 deg fan -> CUT base into 2^5 sub-triangles
+  -> SHEAR (even pieces slide right, odd left) to overlap, the triangle combs into the Perron tree
+  (footprint ~37%) -> a closing pass sweeps the fan of piece-spines still inside the tree (~58 deg).
+  The shear is the small back-and-forth; the tree keeps every direction. | accromath kakeya19
+- `2_5_4_pal_tree_needle_set_anim` [A] - Pal joins turn the Besicovitch tree into a NEEDLE set: (1) one
+  join in detail (slide out along the axis, small turn far out, slide back into another branch), then
+  (2) chained across all 16 branches so the needle rotates continuously through the fan, the detour
+  slivers accumulating below the tree. Every needle a real unit chord; only the turns cost area. |
+  kakeya.md 2d-2e
+- `2_5_5_besicovitch_star_build_anim` [A] - build the six-pointed star: one Perron tree (needle sweeps
+  its 60 deg fan) -> drop rotated copies every 60 deg (3 already cover 180/180 directions, 6 close the
+  symmetric star) -> full sweep of a needle through every direction 0..180. Direction gauge throughout.
+  | kakeya.md 2e
 - `2_6_kakeya_needle_set_anim` [A] - Wikipedia needle-set image: solid triangle + corner Perron-tree
   branches + edge fringe, drawn as the filled union silhouette, built up by granularity. |
   wiki_kakeya_needle_set.gif
@@ -119,6 +133,8 @@ Static `[S]` and animation `[A]` per concept. Each: math (formula) | reference i
 
 ### 3_dimension
 
+- `3_0_measure_zero_not_small` [S] - measure zero is not small: rationals (dense), Cantor
+  (uncountable), Besicovitch (all directions) all have cover length -> 0 yet stay large. | Section 3
 - `3_1_dimension_boxcount` [S] + `3_1_boxcount_anim` [A] - Minkowski `N(delta)~delta^-d`,
   `d=log N/log(1/delta)`; delta shrinking, covering boxes + count + log-log point. | (grid overlay)
 - `3_2_dimension_fractal` [S] + `3_2_fractal_iterate_anim` [A] - Hausdorff `dim=log N/log r`: Cantor
@@ -143,8 +159,10 @@ Static `[S]` and animation `[A]` per concept. Each: math (formula) | reference i
 
 ### 5_conjecture_tower
 
-- `5_1_kakeya_maximal` [S] - Kakeya maximal function; conjecture
-  `||f*_delta||_{L^n(S^{n-1})} <= C_eps delta^-eps ||f||_{L^n}`; delta-tubes through a common point. | (redraw)
+- `5_1_kakeya_maximal` [S] + `5_1_kakeya_maximal_anim` [A] - Kakeya maximal function; conjecture
+  `||f*_delta||_{L^n(S^{n-1})} <= C_eps delta^-eps ||f||_{L^n}`; delta-tubes through a common point.
+  The animation sweeps one probe tube through every direction and builds the per-direction average
+  curve; the running max is `M f(x0)`. | (redraw)
 - `5_2_fourier_transform` [S] + `5_2_fourier_partial_sums_anim` [A] - `f_hat(xi)=int f e^{-2 pi i x xi}`;
   reconstruct a square wave from N harmonics (Gibbs). | (redraw)
 - `5_3_plane_wave` [S] + `5_3_plane_wave_anim` [A] - level sets of `cos(2 pi x . xi)`; wavelength
