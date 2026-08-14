@@ -224,6 +224,8 @@ symmetric six-pointed star. Then take the construction to the limit `k → ∞`.
 
 ![Three Perron trees rotated 0/120/240 deg about the shared apex tile all 180 deg of directions, verified over every one-degree bin. The [construction animation](figures/2_kakeya_2d/2_5_2_kakeya_construction_anim.gif) runs the whole pipeline: equilateral triangle, subdivide the base, sprout to overlap, then union the three rotated copies.](figures/2_kakeya_2d/2_5_1_besicovitch_assembly.png)
 
+![Building the six-pointed star, step by step: one Perron tree carries a 60-degree fan, and rotated copies dropped in every 60 degrees spread that fan around the circle (three copies already cover all 180 directions, six close up the symmetric star). A needle then sweeps every direction inside the finished star; a gauge tracks the directions covered.](figures/2_kakeya_2d/2_5_5_besicovitch_star_build_anim.gif)
+
 ![Documented pipeline: subdivide the base into 2^n triangles (shared apex), overlap bases (sprout) into one Perron tree, then three trees rotated 120 deg about the centroid = a Besicovitch set.](figures/2_kakeya_2d/2_4_perron_wiki_construction.png)
 
 Side by side, the non-convex answers, the concave counterpart of the convex chain in 2c: the deltoid
@@ -231,7 +233,7 @@ turns a needle tangent to its three cusps, the Perron tree shrinks a triangle's 
 its 60-degree fan, and three trees assemble into the six-pointed Besicovitch star that points a needle
 in every direction.
 
-![Three non-convex Kakeya shapes with the same unit needle turning in each (dashed = the underlying triangle the fan lives in): the deltoid (area pi/8), the Perron tree (footprint 44% of the triangle, same fan), and the six-pointed Besicovitch star (all directions, area to 0 in the limit).](figures/2_kakeya_2d/2_1_4_nonconvex_answers_anim.gif)
+![Three non-convex Kakeya shapes with a unit needle placed honestly in each: for every direction it is a real unit chord of the shape, so it both rotates and translates the way a needle really moves through a Kakeya set, never pivoting about one point. The deltoid (area pi/8) holds the needle tangent; the Perron tree (footprint 44% of the triangle) holds it along each branch of the same 60-degree fan; the six-pointed Besicovitch star (three trees) holds one in every direction, area to 0 in the limit.](figures/2_kakeya_2d/2_1_4_nonconvex_answers_anim.gif)
 
 For the *needle* (continuous-rotation) version, Pal joins glue the pieces; the area can be made
 arbitrarily small but **not** zero (a Kakeya needle set cannot have measure zero, a general fact).
@@ -239,6 +241,8 @@ Van Alphen (1942) fit arbitrarily small needle sets inside a disc of radius `2 +
 (1971) improved this to a simply-connected needle set of arbitrarily small area inside the **unit
 disc** (radius 1). The distinction: **measure zero for "contains a segment in every direction"; only
 arbitrarily-small-but-positive for "a needle you can actually turn."**
+
+![How Pal joins do the gluing: the tree holds a needle in every direction but in separate branches. To carry the needle from one branch to the next, slide it out along its own axis (free), make the small turn far out where a tiny angle suffices, then slide back into the next branch. Chaining the joins across every branch rotates the needle continuously through the fan; only the little turn slivers add area, so the tree plus the fringe is a needle set of small positive area.](figures/2_kakeya_2d/2_5_4_pal_tree_needle_set_anim.gif)
 
 ![The Kakeya needle set: a unit segment in every direction, drawn as a filled silhouette, a solid triangle with Perron-tree branches at the corners.](figures/2_kakeya_2d/2_6_kakeya_needle_set_anim.gif)
 

@@ -126,7 +126,9 @@ def main():
         ax.set_ylim(-0.18, 1.18)
 
         if kind == "fan":
-            ax.fill(tri_xy[:, 0], tri_xy[:, 1], facecolor=COLORS["region"], edgecolor=COLORS["outer"], lw=1.2, alpha=0.55)
+            ax.fill(
+                tri_xy[:, 0], tri_xy[:, 1], facecolor=COLORS["region"], edgecolor=COLORS["outer"], lw=1.2, alpha=0.55
+            )
             for g in np.linspace(0.0, val, 6):
                 a, b = fan_needle(g)
                 ax.plot([a[0], b[0]], [a[1], b[1]], color=COLORS["needle"], lw=0.7, alpha=0.3)
@@ -135,14 +137,18 @@ def main():
             ax.set_title("1. the triangle and its 60-degree fan", fontsize=12)
 
         elif kind == "cut":
-            ax.fill(tri_xy[:, 0], tri_xy[:, 1], facecolor=COLORS["region"], edgecolor=COLORS["outer"], lw=1.2, alpha=0.55)
+            ax.fill(
+                tri_xy[:, 0], tri_xy[:, 1], facecolor=COLORS["region"], edgecolor=COLORS["outer"], lw=1.2, alpha=0.55
+            )
             for x in xs_div:
                 ax.plot([x, APEX[0]], [0.0, APEX[1]], color=COLORS["guide"], lw=0.6, alpha=0.35 + 0.55 * val)
             ax.set_title(f"2. cut the base into 2^{NLEV} = {2**NLEV} pieces", fontsize=12)
 
         elif kind == "slide":
             draw_pieces(sprout_pieces(alphas[val]))
-            ax.set_title(f"3. slide to overlap (shear back and forth): {area_frac[val] * 100:.0f}% of the triangle", fontsize=11)
+            ax.set_title(
+                f"3. slide to overlap (shear back and forth): {area_frac[val] * 100:.0f}% of the triangle", fontsize=11
+            )
 
         else:  # keep: the fan of directions is still present inside the finished tree
             draw_pieces(final_pieces)
