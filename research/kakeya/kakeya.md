@@ -192,16 +192,15 @@ The shear-and-overlap move that drives the area down lives here. Two moves:
   back. This lets a needle *travel* continuously between segments, upgrading a Besicovitch set into a
   Kakeya **needle** set.
 
-![Moving a needle between two parallel lines: the naive parallelogram costs area L times d, but sliding along the axis (free) and turning through a small angle far out costs only the two little sectors, which shrink as the detour lengthens.](figures/2_kakeya_2d/2_2_3_pal_parallel_join_anim.gif)
-
 ![Pal join: the needle detours far out along its own direction, turns where pivoting is cheap, then returns; the swept area shrinks with the detour distance. Static and [animation](figures/2_kakeya_2d/2_2_pal_join_anim.gif).](figures/2_kakeya_2d/2_2_pal_join.png)
 
 **Perron tree (the sprouting construction).** Start with a triangle of height 1 (which already
 contains segments spanning a fan of directions, like the Pal triangle). Split its base into `2^k`
 equal pieces, giving `2^k` thin subtriangles that together still cover the same fan of directions.
 Now translate each subtriangle horizontally so that consecutive ones **overlap** as much as
-possible while keeping their apex directions. The overlaps cut the total area. Iterating the
-pairwise sprouting/overlap over the `k` levels, the total area of the resulting "tree" satisfies a
+possible while keeping their apex directions. The overlaps cut the total area. Each of the `k`
+levels of subdivision adds only a fixed slice of fresh area, so iterating the
+pairwise sprouting/overlap over the `k` levels gives a total area of the resulting "tree" satisfying a
 bound of the form
 
 $$
@@ -212,11 +211,7 @@ $$
 so for any `ε > 0` a Perron tree with area `< ε` exists while still containing a unit segment in
 every direction of the original fan (a 60-degree fan for one triangle).
 
-![One bisect-and-shift step: two subtriangles slide to overlap, cutting area while every direction is kept.](figures/2_kakeya_2d/2_3_cut_and_shift.png)
-
-![The sprouting tree: overlapping the sheared subtriangles shrinks the footprint; the 60-degree needle fan is preserved. Static and [animation](figures/2_kakeya_2d/2_4_perron_sprout_anim.gif).](figures/2_kakeya_2d/2_4_perron_tree.png)
-
-![Building the tree step by step: the needle sweeps the triangle's 60-degree fan, the base is subdivided into 2^6 sub-triangles, then they sprout to overlap; the footprint falls to 44% while the fan of directions stays 60 degrees.](figures/2_kakeya_2d/2_4_perron_steps_anim.gif)
+![Building the tree step by step: the needle sweeps the triangle's 60-degree fan, the base is subdivided into 2^6 sub-triangles, then they sprout to overlap; the footprint falls to 44% while the fan of directions stays 60 degrees. The [sprouting animation](figures/2_kakeya_2d/2_4_perron_sprout_anim.gif) shows the cut-and-shift moves themselves, level by level.](figures/2_kakeya_2d/2_4_perron_steps_anim.gif)
 
 The 60-degree span is an artifact of using one triangle's fan, not a real limit: three rotated copies
 (0, 60, 120 degrees) cover all 180 degrees of directions. The reason to press on is that the
@@ -231,9 +226,7 @@ symmetric six-pointed star. Then take the construction to the limit `k → ∞`.
 
 > There exists a Kakeya (Besicovitch) set `K ⊆ R^2` with `|K| = 0` (Lebesgue measure zero).
 
-![Three Perron trees rotated 0/120/240 deg about the shared apex tile all 180 deg of directions, verified over every one-degree bin; the [assembly animation](figures/2_kakeya_2d/2_5_1_besicovitch_assembly_anim.gif) drops the rotated copies in one by one. The [construction animation](figures/2_kakeya_2d/2_5_2_kakeya_construction_anim.gif) runs the whole pipeline: equilateral triangle, subdivide the base, sprout to overlap, then union the three rotated copies.](figures/2_kakeya_2d/2_5_1_besicovitch_assembly.png)
-
-![Building the six-pointed star, step by step: one Perron tree carries a 60-degree fan, and rotated copies dropped in every 60 degrees spread that fan around the circle (three copies already cover all 180 directions, six close up the symmetric star). A needle then sweeps every direction inside the finished star; a gauge tracks the directions covered.](figures/2_kakeya_2d/2_5_5_besicovitch_star_build_anim.gif)
+![Building the six-pointed star, step by step: one Perron tree carries a 60-degree fan, and rotated copies dropped in every 60 degrees spread that fan around the circle (three copies already cover all 180 directions, six close up the symmetric star). A needle then sweeps every direction inside the finished star; a gauge tracks the directions covered. The [assembly animation](figures/2_kakeya_2d/2_5_1_besicovitch_assembly_anim.gif) drops the three rotated copies in one by one; the [construction animation](figures/2_kakeya_2d/2_5_2_kakeya_construction_anim.gif) runs the whole pipeline from equilateral triangle to union.](figures/2_kakeya_2d/2_5_5_besicovitch_star_build_anim.gif)
 
 ![Documented pipeline: subdivide the base into 2^n triangles (shared apex), overlap bases (sprout) into one Perron tree, then three trees rotated 120 deg about the centroid = a Besicovitch set.](figures/2_kakeya_2d/2_4_perron_wiki_construction.png)
 
@@ -480,8 +473,14 @@ statement that Besicovitch compression cannot beat full dimension.
 
 ### 5b. Fourier building blocks
 
-The tower is stated in Fourier terms, so fix the pieces it uses. Any function is a superposition of
-**plane waves** via the Fourier transform and its inverse:
+The tower is stated in Fourier terms, so fix the pieces it uses, each with a plain-words reading
+first. The Fourier transform is a **recipe book**: any signal is a stack of pure tones, `f̂(ξ)`
+records how much of each tone `ξ` the recipe calls for, and the inverse transform stacks the tones
+back into the signal. A **plane wave** is one pure tone spread over the whole plane: its wavefronts
+are flat, perpendicular to `ξ`, spaced by the wavelength `1/|ξ|`. The **uncertainty principle**
+is reciprocal zooming: squeeze a wave into a narrow frequency range and it must spread out in
+space, like a light beam that can be narrow or straight but not both. Formally, any function is a
+superposition of plane waves via the Fourier transform and its inverse:
 
 $$
 \widehat{f}(\xi) = \int_{R^n} f(x)\, e^{-2\pi i x\cdot\xi}\, dx,
@@ -511,7 +510,13 @@ many directions are exactly a Besicovitch configuration.
 
 ### 5c. Why anyone outside geometry cares: Fefferman, 1971
 
-Charles Fefferman used a Besicovitch/Perron construction to **disprove** the natural higher-dimensional
+Fefferman asked the most basic convergence question there is. To rebuild a signal from its Fourier
+recipe, you sum the tones one cutoff at a time; the natural higher-dimensional cutoff is a ball
+(keep every tone with `|ξ| ≤ R`, then let `R → ∞`). Does the partial sum settle down to the true
+signal, in the average (`L^p`) sense? For `p = 2` the energy bookkeeping says yes. His
+answer for every other `p` is **no**, and the reason is the needle puzzle.
+
+Formally, Fefferman used a Besicovitch/Perron construction to **disprove** the natural higher-dimensional
 "ball multiplier" guess: for `n ≥ 2` and `p ≠ 2`, the partial Fourier integral over a ball,
 `S_R^{ball} f`, does **not** converge to `f` in `L^p(R^n)` as `R → ∞`. Where do the needles come
 from? The boundary of the frequency ball is *curved*, and by the uncertainty principle of Section 5b
@@ -528,11 +533,14 @@ convergence of Fourier series in higher dimensions.
 A tower of conjectures with Kakeya at the **bottom** (weakest, implied by all the others).
 Implication order: **local smoothing ⟹ Bochner-Riesz ⟹ restriction ⟹ Kakeya.** Proving Kakeya is
 *necessary* for all of them (if Kakeya failed, the whole tower would fall), and the *techniques* that
-prove Kakeya are hoped to climb upward.
+prove Kakeya are hoped to climb upward. Each rung below gets a plain-words question before its
+formula.
 
 ![The implication tower local smoothing => Bochner-Riesz => restriction => Kakeya, Kakeya at the base (known n=2, open n>=3).](figures/5_conjecture_tower/5_9_conjecture_tower.png)
 
-**(i) Restriction conjecture** (Stein). With the extension operator on the sphere
+**(i) Restriction conjecture** (Stein). In plain words: take a function living only on a curved
+surface, say a ripple pattern on a sphere, and let it radiate as waves into the whole space. How
+quickly must the radiated wave die out? With the extension operator on the sphere
 `E g(x) = ∫_{S^{n-1}} g(ω) e^{2πi x·ω} dσ(ω)`,
 
 $$
@@ -547,7 +555,9 @@ behaves when restricted to a curved surface.
 
 ![Extension operator on the paraboloid/sphere: wave packets tangent to the surface; the L^q bound holds for q > 2n/(n-1).](figures/5_conjecture_tower/5_6_restriction_conjecture.png)
 
-**(ii) Bochner-Riesz conjecture.** Smooth the ball cutoff with an exponent `α ≥ 0`:
+**(ii) Bochner-Riesz conjecture.** In plain words: Fefferman showed the sharp ball cutoff rings
+like a badly tuned instrument; can you fix it by softening the cutoff, fading tones out gently near
+the boundary instead of chopping them? Smooth the ball cutoff with an exponent `α ≥ 0`:
 
 $$
 B_R^{\alpha} f(x) := \int_{B(0,R)} e^{2\pi i x\cdot\xi}\Big(1 - \tfrac{|\xi|^2}{R^2}\Big)^{\alpha}
@@ -562,7 +572,10 @@ Kakeya set would build a counterexample overwhelming the `α > 0` smoothing).
 
 ![Bochner-Riesz multiplier (1 - |xi|^2/R^2)_+^alpha: the ball cutoff (alpha=0) smoothed as alpha grows. Static and [animation](figures/5_conjecture_tower/5_7_bochner_riesz_anim.gif).](figures/5_conjecture_tower/5_7_bochner_riesz.png)
 
-**(iii) Local smoothing conjecture** (Sogge, 1991), top of the tower, about the wave equation via the
+**(iii) Local smoothing conjecture** (Sogge, 1991), top of the tower. In plain words: freeze a wave
+at one instant and it can spike badly; watch it over a short time interval instead and the spikes
+move around, so the *time average* is smoother than any frozen frame. The conjecture asks exactly
+how much smoothness this averaging buys. It is about the wave equation via the
 half-wave propagator `e^{it√(-Δ)}` (so `u(x,t) = e^{it√(-Δ)} f` solves the wave equation):
 
 $$
@@ -590,7 +603,9 @@ needle problem governs the Fourier transform and the wave equation.
 > **3D Kakeya conjecture (now a theorem, Wang-Zahl 2025).** Every Kakeya set in `R^3` has Minkowski
 > and Hausdorff dimension 3.
 
-Discretized picture. Fatten every segment into a **`δ`-tube**: a cylinder of
+The move that makes the problem concrete: in the plane the mikado sticks were infinitely thin, but
+for counting purposes give each stick a little thickness. Discretized picture. Fatten every segment
+into a **`δ`-tube**: a cylinder of
 length 1 and radius `δ` (dimensions `δ × δ × 1`). Because directions are `δ`-separated on the sphere
 `S^2`, there are about `δ^{-2}` tubes. The conjecture, in the maximal/measure form, says the union is
 essentially as large as it can be:
@@ -663,7 +678,7 @@ extracted the first bound past the trivial ones, dimension `≥ 5/2`.
 Dimension lower-bound history in `R^3`: Wolff `≥ (n+2)/2 = 5/2` (1995); Katz-Laba-Tao Minkowski
 `> 5/2` (2000); Katz-Zahl Hausdorff `≥ 5/2 + ε` (2017); Wang-Zahl `= 3` (2025).
 
-![The R^3 dimension lower bound over time: 5/2 (Wolff 1995) climbing to 3 (Wang-Zahl 2025). Static and [animation](figures/7_solving_3d/7_5_dimension_timeline_anim.gif).](figures/7_solving_3d/7_5_dimension_timeline.png)
+![The R^3 dimension lower bound over time: 5/2 (Wolff 1995) climbing to 3 (Wang-Zahl 2025).](figures/7_solving_3d/7_5_dimension_timeline.png)
 
 ---
 
@@ -677,7 +692,9 @@ ideas do the work: **reduce to sticky sets**, then handle the geometry with **gr
 
 ### 7a. Representing a Kakeya set as tubes, and the two regimes
 
-Take the `δ^{-2}` direction-separated `δ`-tubes. Look at them at an **intermediate scale** `δ ≤ ρ ≤ 1`
+The question driving this section: zoom out a little, so the thin tubes blur into fatter ones, and
+ask how the thin tubes sit inside the fat ones. Take the `δ^{-2}` direction-separated `δ`-tubes.
+Look at them at an **intermediate scale** `δ ≤ ρ ≤ 1`
 by fattening each `δ`-tube into a `ρ`-tube (`ρ × ρ × 1`). How do the thin tubes distribute among the
 fat tubes? Two extreme behaviors:
 
@@ -691,10 +708,11 @@ fat tubes? Two extreme behaviors:
 
   This is Hickman's `Def. 5.8`. Sticky sets are **statistically self-similar** across scales: the
   same picture repeats as you zoom, so they are rigid and highly structured. Operationally: *"if two
-  thin tubes point in nearly the same direction, they also sit near each other in space."*
+  thin tubes point in nearly the same direction, they also sit near each other in space"*, like a
+  comb, whose teeth stay together because they are parallel.
 
 - **Non-sticky.** Thin tubes scatter; tubes with nearly equal directions can wander far apart. No
-  clean self-similarity, the hard case.
+  clean self-similarity, the hard case: a pile of sticks tossed at random rather than a comb.
 
 ![Sticky vs non-sticky occupancy of a fat tube: sticky packs ~ (rho/delta)^2 thin tubes (self-similar across scales), non-sticky scatters. Static and [animation](figures/7_solving_3d/7_2_sticky_morph_anim.gif).](figures/7_solving_3d/7_2_sticky_vs_nonsticky.png)
 
@@ -739,7 +757,9 @@ $$
 
 i.e. **one tube thick, a few times wider, but much shorter than the tubes** that run through it
 lengthwise. The name is deliberate (Guth): think of the grain in a piece of wood, many tubes lying
-along the grain.
+along the grain. A wood analogy runs through this section: tubes are the fibers, a grain is a slab
+cut with the grain, and the structural facts below say the slabs tile each log but slabs from
+different logs cannot coincide too much.
 
 ![Grains: delta x c x c slabs, one tube thick, disjoint within a fat tube; no point lies in too many grains. Static and [animation](figures/7_solving_3d/7_3_grains_3d_turntable_anim.gif).](figures/7_solving_3d/7_3_grains_3d.png)
 
@@ -758,7 +778,10 @@ induction feed on itself.
 
 ### 7d. Compression, quantified
 
-"Compression" names the phenomenon (Zahl's survey, the **Besicovitch compression phenomenon**):
+"Compression" has a kitchen-image version: total tube-content is the amount of pasta you started
+with, the union is the size of the pot you managed to fit it into, and compression is packing more
+and more pasta into an arbitrarily small pot by overlapping the strands. Formally (Zahl's survey,
+the **Besicovitch compression phenomenon**):
 
 > For every `η > 0` there is a `δ > 0` and a set of rectangles of dimensions `1 × δ` pointing in
 > `δ`-separated directions whose areas **sum to at least 1**, yet whose **union has measure `< η`**.
@@ -780,10 +803,14 @@ is the ceiling the conjecture asserts.
 ### 7e. Induction on scales, and why graininess controls the loss
 
 The finish is **induction on scales**: assume the dimension bound `K(d)` at one scale and bootstrap to
-`K(d + α)` for a fixed gain `α > 0`; repeat until `d` reaches 3.
+`K(d + α)` for a fixed gain `α > 0`; repeat until `d` reaches 3. The bookkeeping device is the
+**multiplicity** `μ`: the number of tubes covering a typical point, that is, how badly the tubes
+pile on top of one another. Bounding the union's size from below is the same as bounding `μ` from
+above, so the whole game is controlling pile-up as you pass from one scale to the next.
 
-The historical trap (Tao's **Chinese-whispers** analogy): each induction step leaks a little, and
-over many scales the accumulated loss makes the conclusion worthless. Naively the per-step
+The historical trap (Tao's **Chinese-whispers** analogy, or a rumor passed down a line of people,
+each retelling losing a little): each induction step leaks a little, and over many scales the
+accumulated loss makes the conclusion worthless. Naively the per-step
 multiplicity bound is wasteful,
 
 $$
