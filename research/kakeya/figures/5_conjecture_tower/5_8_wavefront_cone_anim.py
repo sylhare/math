@@ -36,7 +36,7 @@ def main():
 
     times = time_schedule()
 
-    # --- validation across every frame: measured wavefront radius == t (unit speed) ------------
+    # Validation across every frame: measured wavefront radius == t (unit speed)
     max_radius_err = 0.0
     for t in times:
         c = circle(r=max(t, 1e-9), n=200)
@@ -59,7 +59,7 @@ def main():
 
     fig = plt.figure(figsize=(11, 5.4))
 
-    # (a) 2D space: expanding wavefront, past slices faint ---------------------------------
+    # (a) 2D space: expanding wavefront, past slices faint
     ax = fig.add_subplot(1, 2, 1)
     ax.set_aspect("equal"); ax.axis("off")
     lim = T_MAX * 1.15
@@ -69,7 +69,7 @@ def main():
     (live2d,) = ax.plot([], [], color=COLORS["outer"], lw=2.6, zorder=4)
     readout = ax.text(-lim * 0.95, lim * 0.86, "", fontsize=11, color=COLORS["outer"])
 
-    # (b) 3D space-time cone building up ---------------------------------------------------
+    # (b) 3D space-time cone building up
     ax3 = fig.add_subplot(1, 2, 2, projection="3d")
     ax3.set_xlabel("x_1"); ax3.set_ylabel("x_2"); ax3.set_zlabel("t")
     ax3.set_title("space-time light cone  |x| = t  (45 deg)")

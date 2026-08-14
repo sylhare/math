@@ -4,15 +4,15 @@ For every rectangular prism R in R^3 and a direction-separated family of delta-t
 
     #{ T in T : T subset of R }  <=  delta^-2 |R|      (each tube has volume delta^2, overlaps bounded).
 
-Read as a CAPACITY: a prism of volume |R| holds at most delta^-2 |R| tubes. Thinning the slab shrinks
+Read as a capacity: a prism of volume |R| holds at most delta^-2 |R| tubes. Thinning the slab shrinks
 |R|, so the cap drops and the slab can legally hold fewer tubes. The axiom rules out the degenerate
-cheat "pack all delta^-2 tubes into one thin slab": that count exceeds delta^-2 |R|.
+packing "all delta^-2 tubes into one thin slab": that count exceeds delta^-2 |R|.
 
 Left: a slab R (1 x 1 x Lz) thinning, holding a direction-separated bush of tubes up to its cap.
 Right: a meter, cap delta^-2 |R| vs the tube count, count staying under the cap; then a forbidden
 frame that over-stuffs the thin slab (count > cap, flagged).
 
-With delta = 1/3 (delta^-2 = 9) and |R| = Lz, the cap is 9*Lz, an integer at the chosen depths.
+With delta = 1/3 (delta^-2 = 9) and |R| = Lz, the cap is 9*Lz, integer at the chosen depths.
 Wolff's resulting R^3 dimension lower bound (1995): (n+2)/2 = 5/2.
 
 Run: PYTHONPATH=research/kakeya/figures uv run --with matplotlib --with shapely --with pillow \
@@ -24,7 +24,7 @@ from _shared import COLORS, math_check, save_gif
 
 DELTA = 1.0 / 3.0  # delta^-2 = 9
 LX = LY = 1.0
-# slab thicknesses so the cap 9*Lz is a clean integer 9,7,5,4,3; then the forbidden over-stuff
+# slab thicknesses so the cap 9*Lz is an integer 9,7,5,4,3; then the forbidden over-stuff
 LZ_LEGAL = [9 / 9, 7 / 9, 5 / 9, 4 / 9, 3 / 9]
 CHEAT_LZ = 3 / 9  # thinnest legal slab (cap 3) crammed with all 9 tubes -> violates
 CHEAT_COUNT = 9
@@ -32,7 +32,7 @@ HOLD = 5
 END_HOLD = 8
 
 
-# --- geometry (pure numpy) -------------------------------------------------------------
+# Geometry (pure numpy)
 def bush_tubes(n):
     """n direction-separated in-plane tubes through the origin: distinct directions in [0, pi)."""
     angles = np.linspace(0.0, np.pi, n, endpoint=False)
@@ -100,7 +100,7 @@ def main():
         ],
     )
 
-    # ---- figure -------------------------------------------------------------------------
+    # Figure
     import matplotlib
 
     matplotlib.use("Agg")

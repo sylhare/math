@@ -3,7 +3,7 @@
   disc      r = 1/2                         A = pi r^2      = pi/4   ~ 0.7854
   deltoid   x=2b cos t + b cos 2t, y=2b sin t - b sin 2t, b=1/4,
             tangent chord = 4b = 1          A = 2 pi b^2    = pi/8   ~ 0.3927  (= half the disc)
-  triangle  equilateral of HEIGHT 1         A = 1/sqrt3            ~ 0.5774  (Pal's convex minimum)
+  triangle  equilateral of height 1         A = 1/sqrt3            ~ 0.5774  (Pal's convex minimum)
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/needle_shapes.py
 """

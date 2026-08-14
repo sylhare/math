@@ -62,7 +62,7 @@ def main():
     n, s = 9, 0.2
     tree, tris = perron_tree(n, s)
 
-    # --- validation ---
+    # Validation
     lo, hi = triangle_fan_degrees(equilateral(1.0))
     pivot = (APEX_X, H)
     full = unary_union([shp_rotate(tree, a, origin=pivot) for a in (0, 120, 240)])
@@ -73,7 +73,7 @@ def main():
         "Perron tree / Besicovitch",
         [
             ("equilateral apex fan", f"{lo:.0f}..{hi:.0f} deg  (60 deg wide)"),
-            ("3 rotations cover", "0..180 deg  => all directions (60 deg is NOT a wall)"),
+            ("3 rotations cover", "0..180 deg  => all directions (60 deg is not a wall)"),
             ("base triangle area", f"{base_area:.4f}  (base=1 equilateral => sqrt3/4 = {SQRT3/4:.4f})"),
             ("tree area, this schedule", "  ".join(f"n={k}:{v:.3f}" for k, v in areas.items())),
             ("=> visible approximation", f"{tree.area:.3f} = {tree.area/base_area*100:.0f}% of triangle"),
@@ -81,7 +81,7 @@ def main():
         ],
     )
 
-    # --- preview ---
+    # Preview
     fig, ax = new_axes(3, figsize=(16, 5.4))
     _draw_region(ax[0], base, COLORS["region"], 0.6)
     _draw_needles(ax[0], [base], COLORS["needle"])

@@ -1,6 +1,6 @@
 """Turntable of Guth's grain slabs in a fat-tube box (kakeya.md section 7c).
 
-Rotating (azimuth 0 -> 360) view of parallel GRAIN slabs of size delta x c x c (delta << c << 1)
+Rotating (azimuth 0 -> 360) view of parallel grain slabs of size delta x c x c (delta << c << 1)
 tiling a wireframe fat-tube box [0,1] x [0,c] x [0,c]. Grains are one tube thick (delta-thin along
 the tube axis X), span the c x c cross-section, and are pairwise disjoint (share only zero-volume
 faces), so every point lies in at most one grain. Only the camera moves; the geometry is built once.
@@ -12,7 +12,7 @@ from _shared import COLORS, math_check, save_gif
 FRAMES = 72  # turntable: azimuth step 360 / 72 = 5 degrees
 
 
-# GEOMETRY (replicated locally from grains_3d.py; do not import it)
+# Geometry (replicated locally from grains_3d.py; do not import it)
 def grain_boxes(delta: float, c: float, x_starts) -> list[tuple]:
     """Axis-aligned grains delta x c x c inside a fat tube [0,1] x [0,c] x [0,c].
     Each grain is delta-thin along the tube axis X and spans the c x c cross-section."""
@@ -60,7 +60,7 @@ def main():
     from matplotlib.animation import FuncAnimation
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3d projection)
 
-    # --- STATIC GEOMETRY (built once; only the camera animates) --------------
+    # Static geometry (built once; only the camera animates)
     delta3d, c = 0.05, 0.30
     fat_tube = (0.0, 1.0, 0.0, c, 0.0, c)
     x_starts = [0.08, 0.26, 0.44, 0.62, 0.80]
@@ -71,7 +71,7 @@ def main():
     starts = sorted(x_starts)
     max_mult = 1 if all(starts[i] + delta3d <= starts[i + 1] + 1e-12 for i in range(len(starts) - 1)) else 2
 
-    # --- INVARIANT assertions ------------------------------------------------
+    # Invariant assertions
     assert delta3d < c < 1.0, f"need delta << c << 1, got {delta3d}, {c}"
     assert delta3d <= c / 4.0, f"delta should be well below c: {delta3d} vs {c}"
     assert max_overlap < 1e-9, f"grains must be pairwise-disjoint, max overlap {max_overlap}"
@@ -88,7 +88,7 @@ def main():
         ],
     )
 
-    # --- PREVIEW SCENE -------------------------------------------------------
+    # Preview scene
     fig = plt.figure(figsize=(6.6, 6.0))
     ax = fig.add_subplot(1, 1, 1, projection="3d")
     _draw_box_wire(ax, fat_tube, COLORS["guide"], lw=1.3)

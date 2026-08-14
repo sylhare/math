@@ -33,9 +33,7 @@ CUBE = 2.0          # random centers uniform in [-CUBE/2, CUBE/2]^3
 FLASH = 0.03        # dist below this flashes the swept tube red (near a crossing)
 
 
-# ---------------------------------------------------------------------------
-# GEOMETRY (pure numpy, portable; line_line_distance reused from 6_1)
-# ---------------------------------------------------------------------------
+# Geometry (pure numpy, portable; line_line_distance reused from 6_1)
 def fibonacci_sphere(n: int) -> np.ndarray:
     """n roughly-uniform points on the unit sphere S^2 (for sampling directions)."""
     i = np.arange(n) + 0.5
@@ -89,14 +87,14 @@ def tube_surface(center, direction, length, radius, n_theta=16):
 
 
 def main():
-    # --- fixed skew reference pair (same PROBE + tube as 6_1) -----------------
+    # Fixed skew reference pair (same PROBE + tube as 6_1)
     dir_a = np.array([1.0, 0.2, 0.3]); dir_a /= np.linalg.norm(dir_a)   # PROBE direction
     dir_b = np.array([0.2, 1.0, -0.3]); dir_b /= np.linalg.norm(dir_b)  # sweep start direction
     cen_a = np.array([-0.15, 0.0, 0.0])   # PROBE center
     cen_b = np.array([0.15, 0.0, 0.35])   # swept-tube center (fixed offset)
     miss_dist = line_line_distance(cen_a, dir_a, cen_b, dir_b)
 
-    # --- sweep d2 along a great circle e1 = dir_b, e2 orthonormal ------------
+    # Sweep d2 along a great circle e1 = dir_b, e2 orthonormal
     w = cen_b - cen_a
     k = np.cross(w, dir_a)                 # crossing normal: dist = 0 iff d2 . k = 0
     e1 = dir_b
@@ -118,7 +116,7 @@ def main():
     frac_open = float((dists > 1e-2).mean())          # away from crossings the gap stays open
     dip = float(dists.min())                          # pinches to ~0 at a crossing
 
-    # --- Monte-Carlo: random pairs are overwhelmingly skew -------------------
+    # Monte-Carlo: random pairs are overwhelmingly skew
     def mc_fraction(delta, seed=0):
         rng = np.random.default_rng(seed)
 
@@ -137,7 +135,7 @@ def main():
     _, frac_cross_half = mc_fraction(DELTA_MC / 2)
     miss_frac = 1.0 - frac_cross
 
-    # --- 2D control: two non-parallel lines through the origin always meet ----
+    # 2D control: two non-parallel lines through the origin always meet
     d2a = np.array([math.cos(math.radians(20)), math.sin(math.radians(20))])
     d2b = np.array([math.cos(math.radians(110)), math.sin(math.radians(110))])
     cross_dist_2d = line_line_distance(np.array([0.0, 0.0, 0.0]),
@@ -145,7 +143,7 @@ def main():
                                        np.array([0.0, 0.0, 0.0]),
                                        np.array([d2b[0], d2b[1], 0.0]))
 
-    # --- MATH CHECK: assert the drawn relations ------------------------------
+    # Assert the drawn relations
     assert miss_dist > 1e-2, "the fixed 6_1 pair must MISS (positive axis distance)"
     assert frac_open > 0.90, "the 3D gap must stay open away from the isolated crossings"
     assert dip < 1e-2, "the gap must pinch to ~0 at the codim-1 crossing directions"
@@ -169,7 +167,7 @@ def main():
         ],
     )
 
-    # ---- figure -------------------------------------------------------------
+    # Figure
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt

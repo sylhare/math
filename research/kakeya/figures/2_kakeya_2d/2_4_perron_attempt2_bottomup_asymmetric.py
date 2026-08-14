@@ -4,7 +4,7 @@ Split the base [0,1] into N = 2^n equal blocks; sliver E_i has that block as bas
 A = (1/2, h). The slivers tile the triangle T. Each carries unit segments in its own narrow fan
 (base-point -> A).
 
-Merge (bottom up): pair consecutive shapes; translate the RIGHT shape left so its base overlaps the
+Merge (bottom up): pair consecutive shapes; translate the right shape left so its base overlaps the
 left shape's on a fraction (1-s) of a block, keeping s*block of new base. Translation preserves each
 segment's direction, so the merge covers the union of both fans while area drops; repeat n times.
 Three copies rotated 0/60/120 deg cover all 180 deg.
@@ -92,7 +92,7 @@ full = unary_union([rotate(tree, a, origin=pivot) for a in (0, 60, 120)])
 cov180 = frac_directions_covered(full, 0, 180)
 print(f"full set (3 rotations): area={full.area:.4f}  all-direction coverage: {cov180:.2f}")
 
-# ---- render ----
+# Render
 fig, axes = plt.subplots(1, 3, figsize=(16, 5.2))
 for ax, (title, geoms, col) in zip(
     axes,

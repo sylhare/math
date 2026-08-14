@@ -31,7 +31,7 @@ def main():
     years = [e[0] for e in EVENTS]
     plotted = [e[1] for e in EVENTS]
 
-    # --- INVARIANT assertions ------------------------------------------------
+    # Invariant assertions
     assert [e[2] for e in EVENTS] == ["5/2", "> 5/2", "5/2 + eps", "3"]
     assert [e[3] for e in EVENTS] == [2.5, 2.5, 2.5, 3.0]  # exact lower bounds
     assert EVENTS[-1][1] == 3.0                            # final marker at dimension 3

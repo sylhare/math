@@ -7,12 +7,11 @@ while the needle still points in every direction:
   Perron tree (sprouted triangle)      area smaller   needle lies along each branch; footprint shrinks
   Besicovitch star (three trees)       area -> 0       the six-pointed star covers every direction
 
-The needle is placed HONESTLY, never pivoting about a single point: in each panel it is a real unit
-chord of the shape for its direction. In the deltoid it stays tangent (constant chord); in the tree and
-star it sits along the actual branch that carries that direction, so as the direction sweeps the needle
-both translates (its tip runs along the branch tips) and rotates, the way a needle really moves through
-a Kakeya set. The article's optimal small-area star (kakeya12/13) needs a delicate petal we do not fake;
-the honest turnable star is the Besicovitch one.
+In each panel the needle is a real unit chord of the shape for its direction, never pivoting about a
+single point. In the deltoid it stays tangent (constant chord); in the tree and star it sits along the
+branch that carries that direction, so as the direction sweeps the needle both translates (its tip runs
+along the branch tips) and rotates. The article's optimal small-area star (kakeya12/13) uses a petal
+construction not reproduced here; the turnable star drawn is the Besicovitch one.
 
 Run: PYTHONPATH=research/kakeya/figures uv run --with matplotlib --with shapely --with pillow \
      python research/kakeya/figures/2_kakeya_2d/2_1_4_nonconvex_answers_anim.py
@@ -30,7 +29,7 @@ from shapely.ops import unary_union
 STEPS = 40
 END_HOLD = 9
 
-# --- deltoid: tangent needle (constant chord 4b = 1) -----------------------------------
+# Deltoid: tangent needle (constant chord 4b = 1)
 B = 0.25
 DELT = poly(deltoid(B, 400))
 if not DELT.is_valid:
@@ -67,7 +66,7 @@ def deltoid_needles():
     return out
 
 
-# --- height-1 equilateral triangle: unit needles from the apex fit -----------------------
+# Height-1 equilateral triangle: unit needles from the apex fit
 APEX = np.array([0.0, 1.0])
 HB = 1.0 / math.sqrt(3.0)  # half base; corners (+-HB, 0), side = apex..corner = 2/sqrt3
 NLEV = 6
@@ -93,7 +92,7 @@ def sprout_pieces(alpha=0.6):
 
 def branch_needle(piece):
     """A unit needle lying along a sub-triangle's branch: from its (translated) apex, one unit toward
-    its base midpoint. It is a real chord of the piece (in the ORIGINAL orientation, apex up), so a real
+    its base midpoint. It is a real chord of the piece (in the original orientation, apex up), so a real
     chord of the tree, pointing in that branch's direction. Length exactly 1."""
     xy = np.array(piece.exterior.coords)[:-1]
     apex = xy[np.argmax(xy[:, 1])]

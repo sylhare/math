@@ -5,15 +5,15 @@ and translate to overlap, every direction kept) is grown deeper and, at the same
 finer grid. Couple depth and scale exactly as the theorem does: frame k uses depth n = k and grid
 cell delta_k = W / 2^k (W = pile bounding width, so 1/delta_k = 2^k).
 
-  * AREA  = shapely-measured union area of K_n            -> slides toward 0 (the 2_7 shrink)
+  * area   = shapely-measured union area of K_n           -> slides toward 0 (the 2_7 shrink)
   * N(delta) = grid cells the union meets                 -> keeps the slope-2 growth of a solid
-  * SLOPE = fitted log N(delta) / log(1/delta)            -> creeps up toward 2
+  * slope  = fitted log N(delta) / log(1/delta)           -> creeps up toward 2
 
 So the log-log curve stays parallel to the dimension-2 (filled square) line and peels away from the
 dimension-1 (single needle) line: area 0, dimension 2. The slope only rises loglog-slowly, so the
-sell is "parallel to slope 2, peeling from slope 1", not "slope hits 2 on screen".
+reading is "parallel to slope 2, peeling from slope 1", not "slope hits 2 on screen".
 
-Companion to 2_7 (the same honest sprout) and 4_1 (the delta^2/sin theta overlap engine).
+Companion to 2_7 (the same sprout) and 4_1 (the delta^2/sin theta overlap engine).
 
 Run: PYTHONPATH=research/kakeya/figures uv run --with matplotlib --with shapely --with pillow \
      python research/kakeya/figures/4_kakeya_dimension/4_2_area_dimension_boxcount_anim.py
@@ -41,7 +41,7 @@ VERTS = np.array([R * np.array([math.cos(math.radians(d)), math.sin(math.radians
 _EDIR = (VERTS[2] - VERTS[1]) / np.linalg.norm(VERTS[2] - VERTS[1])
 
 
-# --- geometry: the exact sprout(n) cut-and-shift from 2_7 -------------------------------
+# Geometry: the exact sprout(n) cut-and-shift from 2_7
 def sprout(n):
     """Perron cut-and-shift of the core triangle to depth n (overlap alpha 1.0 -> 0.5);
     returns the 2^n sub-triangle polygons whose union is the shrunk core."""
@@ -64,10 +64,10 @@ def sprout(n):
     return [p for grp in pieces for p in grp]
 
 
-# --- box counting: cells of side delta a geometry meets --------------------------------
+# Box counting: cells of side delta a geometry meets
 def box_count(geom, k):
     """Grid over the unit square with 2^k cells per side (delta = 1/2^k); return the hit
-    (i, j) cell indices the geometry actually intersects (prepared-geometry test)."""
+    (i, j) cell indices the geometry intersects (prepared-geometry test)."""
     n = 2**k
     delta = 1.0 / n
     minx, miny, maxx, maxy = geom.bounds
@@ -134,7 +134,7 @@ def main():
     fit_needle = float(np.polyfit(xs, log_needle, 1)[0])
     fit_square = float(np.polyfit(xs, log_square, 1)[0])
 
-    # --- assertions: everything drawn is measured and matches the theorem ----------------
+    # Assertions: everything drawn is measured and matches the theorem
     areas = [stages[j]["area_raw"] for j in range(len(stages))]
     diffs = np.diff(areas)
     assert (diffs < 0).all(), "measured union area must strictly decrease with depth n"
@@ -154,7 +154,7 @@ def main():
         f"the fitted slope must climb net toward 2, got {fitted[0]:.3f} -> {final_slope:.3f}"
     )
     # once the grid resolves the pile (>= 16 x 16, n >= 4) the cumulative slope is strictly non-decreasing;
-    # the 2x2 and 4x4 grids are too coarse to resolve a thin pile, so the first two fits wiggle (honest).
+    # the 2x2 and 4x4 grids are too coarse to resolve a thin pile, so the first two fits wiggle.
     resolved = [cum_slope[j] for j in range(len(stages)) if stages[j]["n"] >= 4]
     assert all(resolved[j] > resolved[j - 1] for j in range(1, len(resolved))), (
         f"resolved-grid cumulative slope must creep up toward 2: {resolved}"
@@ -183,7 +183,7 @@ def main():
         ],
     )
 
-    # ---- figure -------------------------------------------------------------------------
+    # Figure
     import matplotlib
 
     matplotlib.use("Agg")
@@ -206,7 +206,7 @@ def main():
         n, delta = s["n"], s["delta"]
         ncell = 2**n
 
-        # LEFT: the fattened pile, the delta grid, and the lit boxes it meets
+        # Left: the fattened pile, the delta grid, and the highlighted boxes it meets
         axL.cla()
         axL.set_aspect("equal")
         axL.set_xlim(-0.03, 1.03)
@@ -228,7 +228,7 @@ def main():
             gx, gy = g.exterior.xy
             axL.fill(gx, gy, facecolor=COLORS["region"], edgecolor="none", alpha=0.70, zorder=2)
 
-        # lit boxes (the N(delta) cells the union meets), tinted over the pile so the count is visible
+        # highlighted boxes (the N(delta) cells the union meets), tinted over the pile so the count is visible
         mask = np.zeros((ncell, ncell))
         for i, j in s["hits"]:
             mask[j, i] = 1.0
@@ -281,7 +281,7 @@ def main():
             f"sprout depth n = {n} ({2**n} pieces),  delta = W/{ncell},  N(delta) = {s['Nbox']} lit cells", fontsize=10
         )
 
-        # RIGHT: log N vs log(1/delta), points accumulating between slope-1 and slope-2 lines
+        # Right: log N vs log(1/delta), points accumulating between slope-1 and slope-2 lines
         axR.cla()
         axR.set_xlim(0, xmax)
         axR.set_ylim(0, ymax)

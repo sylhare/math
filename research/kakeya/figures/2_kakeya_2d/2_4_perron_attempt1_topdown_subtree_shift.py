@@ -74,7 +74,7 @@ def _seg(px, py, d, L):
     return LineString([(px, py), (px + L * d[0], py + L * d[1])])
 
 
-# --- area shrinks with depth (single 60 deg tree) -------------------------------------
+# Area shrinks with depth (single 60 deg tree)
 print("single equilateral tree (apex angle 60 deg), overlap=1.0")
 print(f"{'depth':>5} {'#tri':>6} {'union_area':>12}  area/orig")
 base_area = tri(0, 1, 0.5).area
@@ -83,7 +83,7 @@ for depth in range(0, 8):
     a = union_area(leaves)
     print(f"{depth:>5} {len(leaves):>6} {a:>12.5f}  {a / base_area:>7.3f}")
 
-# --- full 180 deg: rotate three 60 deg trees ------------------------------------------
+# Full 180 deg: rotate three 60 deg trees
 depth = 6
 leaves = sprout(0.0, 1.0, 0.5, depth, overlap=1.0)
 single = unary_union(leaves)
@@ -92,7 +92,7 @@ pivot = (0.5, 0.0)
 full = unary_union([rotate(single, ang, origin=pivot) for ang in (0, 60, 120)])
 print(f"\nfull all-directions set (3x rotated depth-{depth} trees): area = {full.area:.5f}")
 
-# --- render ---------------------------------------------------------------------------
+# Render
 fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
 # panel 1: naive union (depth 0) vs sprouted

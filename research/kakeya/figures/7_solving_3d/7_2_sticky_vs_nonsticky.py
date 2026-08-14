@@ -1,8 +1,8 @@
 """Sticky vs non-sticky tubes (kakeya.md section 7a, Hickman Def. 5.8).
 
 At an intermediate scale delta <= rho <= 1 there are rho^-2 fat rho-tubes and delta^-2 thin
-delta-tubes. STICKY: each fat tube holds #{ T : T subset of T_rho } ~ (rho/delta)^2 thin tubes of
-one direction. NON-STICKY: same-direction thin tubes scatter, so no fat tube reaches that occupancy.
+delta-tubes. Sticky: each fat tube holds #{ T : T subset of T_rho } ~ (rho/delta)^2 thin tubes of
+one direction. Non-sticky: same-direction thin tubes scatter, so no fat tube reaches that occupancy.
 rho = 1/4, delta = 1/16: (rho/delta)^2 = 16 thin per fat, rho^-2 = 16 fat, delta^-2 = 256 = 16 x 16.
 
 2D cross-section: thin delta-tube = red dot, fat rho-tube = blue rho x rho square; one
@@ -13,9 +13,7 @@ import numpy as np
 from _shared import COLORS, math_check, save_preview
 
 
-# ---------------------------------------------------------------------------
-# GEOMETRY (pure numpy, portable): cross-section positions of thin tubes
-# ---------------------------------------------------------------------------
+# Geometry (pure numpy, portable): cross-section positions of thin tubes
 def fat_centers(rho: float) -> np.ndarray:
     """Centres of the rho^-2 fat tubes on a regular grid tiling the unit square cross-section."""
     m = round(1.0 / rho)
@@ -96,7 +94,7 @@ def main():
         ],
     )
 
-    # --- PREVIEW -------------------------------------------------------------
+    # Preview
     fig, axes = plt.subplots(1, 2, figsize=(12.0, 6.2))
     centers = fat_centers(rho)
     hi = 5  # highlighted direction-family

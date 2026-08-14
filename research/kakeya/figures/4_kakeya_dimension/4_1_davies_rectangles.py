@@ -14,7 +14,7 @@ import numpy as np
 from _shared import COLORS, math_check, new_axes, poly, save_preview, union_area
 
 
-# --- geometry: pure-numpy rectangles ---------------------------------------------------
+# Geometry: pure-numpy rectangles
 def rectangle(length, width, angle_rad, cx=0.0, cy=0.0):
     """Corners (4x2) of a length x width rectangle centred at (cx,cy), long axis at angle_rad."""
     hl, hw = length / 2.0, width / 2.0

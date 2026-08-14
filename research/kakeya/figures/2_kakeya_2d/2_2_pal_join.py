@@ -1,7 +1,7 @@
 """Pal join (Pal worm) lemma (kakeya.md 2d).
 
-Given two PARALLEL unit needles G1, G2 and any eps > 0, there is a set J with area(J) < eps inside
-which the needle moves CONTINUOUSLY from G1 to G2 by a far detour: slide out along its own axis a
+Given two parallel unit needles G1, G2 and any eps > 0, there is a set J with area(J) < eps inside
+which the needle moves continuously from G1 to G2 by a far detour: slide out along its own axis a
 distance D (sweeps ~0 area), rotate a little far out, slide across, rotate back, slide home.
 
 Crossing the fixed lateral gap g from a pivot ~D away turns the needle through
@@ -24,7 +24,7 @@ from shapely.geometry import Polygon
 from shapely.ops import unary_union
 
 GAP = 0.3          # fixed lateral gap between the two parallel unit needles (lines y=0 and y=GAP)
-LEN = 1.0          # needle length (fixed; geometric honesty)
+LEN = 1.0          # needle length (fixed)
 
 
 def maneuver_needles(D: float, n: int = 400) -> list[np.ndarray]:
@@ -92,13 +92,13 @@ def main():
             ("gap g (fixed), needle length", f"g = {GAP}, L = {LEN}"),
             ("turn angle phi(D) = 2 arctan(g/2D)", "  ".join(f"D={D:g}:{math.degrees(predicted[D]):.1f} deg" for D in Ds)),
             ("predicted area ~ phi(D) (rad)", "  ".join(f"D={D:g}:{predicted[D]:.4f}" for D in Ds)),
-            ("MEASURED swept area (drawn)", "  ".join(f"D={D:g}:{measured[D]:.4f}" for D in Ds)),
+            ("measured swept area (drawn)", "  ".join(f"D={D:g}:{measured[D]:.4f}" for D in Ds)),
             ("monotone decreasing in D?", f"{decreasing}"),
             ("area -> 0 as D -> inf?", f"{measured[Ds[-1]] < measured[Ds[0]]}  (schematic; lemma: area < eps for every eps > 0)"),
         ],
     )
 
-    # --- preview: the maneuver for a mid D, plus the area-vs-D trend ---
+    # Preview: the maneuver for a mid D, plus the area-vs-D trend
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt

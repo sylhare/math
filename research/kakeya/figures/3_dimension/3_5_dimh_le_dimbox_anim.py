@@ -11,7 +11,7 @@ Phase 1 (Minkowski box-count): shrink a uniform delta-grid and count occupied ce
   * Cantor: N(3^-m) = 2^m exactly, slope = log2/log3 = 0.6309.
 
 Phase 2 (Hausdorff adaptive cover): allow covers of any sizes and minimise sum (diam)^s.
-  * {1/n}:  cover the whole tail [0, 1/M] by ONE interval (cost (1/M)^s) plus M-1 tiny
+  * {1/n}:  cover the whole tail [0, 1/M] by one interval (cost (1/M)^s) plus M-1 tiny
             intervals on the isolated points (cost -> 0 as their width eps -> 0); as M -> inf
             the cost -> 0 for every s > 0, so dim_H = 0.
   * Cantor: the natural cover of 2^m intervals already gives sum (2*3^-s)^m = 1 at s = dim,
@@ -43,7 +43,7 @@ END_HOLD = 8
 HBAR = 1.0  # bar height for the set strips
 
 
-# --- geometry / counting (pure numpy) --------------------------------------------------
+# Geometry / counting (pure numpy)
 def occupied_cells_1overn(delta: float) -> int:
     """Exact count of side-delta cells on [0,1] meeting E = {0} U {1/n}, n=1..NMAX."""
     n = np.arange(1, NMAX + 1)
@@ -73,7 +73,7 @@ def cantor_intervals(m: int) -> list[tuple[float, float]]:
 
 
 def main():
-    # ---- left set: uniform box counts (exact) ----
+    # Left set: uniform box counts (exact)
     left_deltas = [2.0 ** (-k) for k in LEFT_KS]
     left_N = [occupied_cells_1overn(d) for d in left_deltas]
     left_cells = [occupied_indices_1overn(d) for d in left_deltas]
@@ -81,7 +81,7 @@ def main():
     left_ly = [math.log(N) for N in left_N]
     left_slope = float(np.polyfit(left_lx, left_ly, 1)[0])
 
-    # ---- cantor set: uniform box counts (closed form) ----
+    # Cantor set: uniform box counts (closed form)
     right_deltas = [3.0 ** (-m) for m in RIGHT_MS]
     right_N = [2**m for m in RIGHT_MS]
     right_ivs = [cantor_intervals(m) for m in RIGHT_MS]
@@ -89,16 +89,14 @@ def main():
     right_ly = [math.log(N) for N in right_N]
     right_slope = float(np.polyfit(right_lx, right_ly, 1)[0])
 
-    # ---- adaptive Hausdorff cover costs ----
+    # Adaptive Hausdorff cover costs
     # left: eps -> 0 limit of (1/M)^s + (M-1) eps^s  is  (1/M)^s ; take M -> inf.
     left_cost = [(1.0 / M) ** S_LEFT for M in ADAPT_M]
     # right: natural cover sum (2 * 3^-s)^m at s = dim  == 1  for every level.
     right_cost = [(2.0 * 3.0 ** (-DIM_C)) ** m for m in RIGHT_MS]
 
-    # =====================================================================================
-    # VALIDATION  (assert the relations the figure draws)
-    # =====================================================================================
-    # (1) {1/n} box-count slope trends to 1/2 on EXACT counts, N strictly grows as delta shrinks.
+    # Validation (assert the relations the figure draws)
+    # (1) {1/n} box-count slope trends to 1/2 on exact counts, N strictly grows as delta shrinks.
     assert all(left_N[i] < left_N[i + 1] for i in range(len(left_N) - 1)), (
         "occupied-cell count must strictly increase as delta shrinks"
     )
@@ -145,9 +143,7 @@ def main():
         ],
     )
 
-    # =====================================================================================
-    # FIGURE
-    # =====================================================================================
+    # Figure
     import matplotlib
 
     matplotlib.use("Agg")

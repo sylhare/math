@@ -24,7 +24,7 @@ from shapely.geometry import Polygon
 from shapely.ops import unary_union
 
 GAP = 0.3          # fixed lateral gap between the two parallel unit needles (lines y=0 and y=GAP)
-LEN = 1.0          # needle length (fixed; geometric honesty)
+LEN = 1.0          # needle length (fixed)
 D = 3.0            # detour distance
 NPHASE = 20        # samples per phase -> ~100 needle positions, one frame each
 
@@ -68,7 +68,7 @@ def main():
     area_per_frame = [g.area for g in swept_per_frame]
     final_area = area_per_frame[-1]
 
-    # --- INVARIANT: needle length == 1 in every frame ---
+    # Invariant: needle length == 1 in every frame
     lengths = [float(np.linalg.norm(nd[1] - nd[0])) for nd in needles]
     len_ok = max(abs(length - LEN) for length in lengths) < 1e-9
 
@@ -79,7 +79,7 @@ def main():
             ("detour distance D", f"{D:g}"),
             ("turn angle phi = 2 arctan(g/2D)", f"{math.degrees(phi):.1f} deg = {phi:.4f} rad"),
             ("predicted area ~ phi(D)", f"{phi:.4f}"),
-            ("MEASURED final swept area", f"{final_area:.4f}  (small; -> 0 as D -> inf)"),
+            ("measured final swept area", f"{final_area:.4f}  (small; -> 0 as D -> inf)"),
             ("needle length min/max (all frames)", f"{min(lengths):.6f} / {max(lengths):.6f}  (want 1.000000)"),
             ("needle length == 1 every frame?", f"{len_ok}"),
             ("status", "schematic; lemma area < eps is rigorous (limit D -> inf, for every eps > 0)"),
@@ -87,7 +87,7 @@ def main():
     )
     assert len_ok, "needle length must be exactly 1 in every frame"
 
-    # --- animation ---
+    # Animation
     fig, ax = new_axes(1, figsize=(11, 3.4))
     allpts = np.array(needles).reshape(-1, 2)
     xpad, ypad = 0.15, 0.2

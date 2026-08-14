@@ -1,8 +1,8 @@
-"""Animation: the Besicovitch compression phenomenon made numeric (kakeya.md 7d).
+"""Animation: the Besicovitch compression phenomenon measured (kakeya.md 7d).
 
 The Perron cut-and-shift pile (the same sprout(n) as 2_7 / 4_2) keeps 2^n triangle pieces and only
-TRANSLATES them. Translation preserves area, so the SUM of the piece areas is pinned at the original
-triangle area A_0 for every depth, while the measured UNION area collapses like 1/log N. Their ratio
+translates them. Translation preserves area, so the sum of the piece areas is pinned at the original
+triangle area A_0 for every depth, while the measured union area falls like 1/log N. Their ratio
 is the compression factor:
 
     content    S_n = sum_i |P_i| = A_0          (flat; the "areas sum to >= 1" side)
@@ -35,7 +35,7 @@ VERTS = np.array([R * np.array([math.cos(math.radians(d)), math.sin(math.radians
 _EDIR = (VERTS[2] - VERTS[1]) / np.linalg.norm(VERTS[2] - VERTS[1])
 
 
-# --- geometry: the exact sprout(n) cut-and-shift from 2_7 / 4_2 ------------------------
+# Geometry: the exact sprout(n) cut-and-shift from 2_7 / 4_2
 def sprout(n):
     """Perron cut-and-shift of the core triangle to depth n; returns the 2^n translated
     sub-triangle pieces whose union is the shrunk core (each piece keeps its area)."""
@@ -82,7 +82,7 @@ def main():
     footprints = [s["footprint"] for s in stages]
     comps = [s["compression"] for s in stages]
 
-    # --- assertions: content is pinned, footprint falls, compression climbs ---------------
+    # Assertions: content is pinned, footprint falls, compression climbs
     assert max(abs(c - 1.0) for c in contents) < 1e-9, f"sum of piece areas must equal A_0 (content=1): {contents}"
     fdiffs = np.diff(footprints)
     assert (fdiffs < 0).all(), f"footprint (union/A_0) must strictly decrease: {footprints}"
@@ -100,11 +100,11 @@ def main():
             ("compression S_n / U_n (n=1..8)", "  ".join(f"{c:.2f}" for c in comps) + "   (climbs)"),
             ("footprint strictly down", f"max step {float(fdiffs.max()):.2e}  (< 0)"),
             ("compression strictly up", f"{comps[0]:.2f} -> {comps[-1]:.2f}  (> 1, and 1/logN-slow)"),
-            ("reading", "total content ~ 1 pressed into footprint < eta: compression cannot be un-done"),
+            ("reading", "total content ~ 1 pressed into a footprint < eta"),
         ],
     )
 
-    # ---- figure -------------------------------------------------------------------------
+    # Figure
     import matplotlib
 
     matplotlib.use("Agg")

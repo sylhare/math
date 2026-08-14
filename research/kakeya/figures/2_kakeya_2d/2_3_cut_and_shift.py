@@ -1,7 +1,7 @@
 """One cut-and-shift (Perron sprouting) step (kakeya.md 2d).
 
 Bisect a triangle's base into two subtriangles that together carry the whole apex fan, then
-TRANSLATE them to overlap. Translation preserves every segment's direction, so the fan is unchanged
+translate them to overlap. Translation preserves every segment's direction, so the fan is unchanged
 while the union footprint shrinks below the original triangle.
 
 Equilateral triangle of base 1, height h = sqrt3/2:
@@ -46,7 +46,7 @@ def _draw_tri(ax, tri, fill=False):
 
 
 def main():
-    # --- geometry ---
+    # Geometry
     b1, b2 = subtriangles(0.0)                 # before: disjoint bisection
     s1, s2 = subtriangles(SHIFT)               # after: shifted inward, crossing
 
@@ -72,7 +72,7 @@ def main():
         ],
     )
 
-    # --- preview ---
+    # Preview
     fig, ax = new_axes(2, figsize=(11, 5.4))
     # (a) cut
     _draw_tri(ax[0], b1)

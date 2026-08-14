@@ -1,8 +1,8 @@
-"""Kakeya needle set as a glowing starburst on a dark ground (method #5).
+"""Kakeya needle set as a starburst on a dark ground (method #5).
 
 Dense rays leave a bright core and reach outward, their length modulated by a three-fold
 lobe so they run long toward the corner directions (90/210/330 deg) and short along the
-edges. Each ray is stacked from wide+faint to thin+bright strokes to fake a bloom, so the
+edges. Each ray is stacked from wide+faint to thin+bright strokes to approximate a bloom, so the
 overlapping centres read as a solid rounded triangle. Single yellow, no edges, full turn.
 
 Run: uv run --with matplotlib --with shapely --with pillow python research/kakeya/figures/2_kakeya_2d/2_6_5_glow_rays_dark.py
@@ -17,7 +17,7 @@ DARK = "#0b0b12"
 CORNERS_DEG = (90.0, 210.0, 330.0)     # three-fold spike directions
 N_RAYS = 1000                          # rays over the full turn
 L_MIN, L_MAX = 0.50, 1.30              # edge-length vs corner-length of a ray
-CORE_R = 0.42                          # radius of the solid glowing core
+CORE_R = 0.42                          # radius of the solid core
 SEED = 5
 
 # bloom stack: (linewidth, alpha) from wide+faint to thin+bright
@@ -37,7 +37,7 @@ def build_rays(rng):
     jitter = 0.80 + 0.34 * rng.random(N_RAYS)             # per-ray length scatter
     r_out = (L_MIN + (L_MAX - L_MIN) * lobe) * jitter
     r_core = CORE_R * (0.55 + 0.72 * _lobe(theta))         # rounded-triangle core boundary
-    r_in = r_core * (0.35 + 0.35 * rng.random(N_RAYS))    # start inside the core so it glows
+    r_in = r_core * (0.35 + 0.35 * rng.random(N_RAYS))    # start inside the core for the bloom
     cx, cy = np.cos(theta), np.sin(theta)
     p0 = np.column_stack([r_in * cx, r_in * cy])
     p1 = np.column_stack([r_out * cx, r_out * cy])
@@ -78,7 +78,7 @@ def main():
     ax.set_xlim(-reach, reach)
     ax.set_ylim(-reach * 0.90, reach * 1.02)
 
-    # solid glowing core underneath the rays
+    # solid core underneath the rays
     ax.fill(core[:, 0], core[:, 1], facecolor=YELLOW, edgecolor="none", zorder=1)
 
     # stacked bloom passes: same segments, wide+faint first, thin+bright last

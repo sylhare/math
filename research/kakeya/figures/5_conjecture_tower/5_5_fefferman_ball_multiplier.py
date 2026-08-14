@@ -1,9 +1,9 @@
 """Fefferman's ball-multiplier geometry (kakeya.md 5b).
 
 Two dual pictures:
-  FREQUENCY: r x r^2 rectangles tangent to the unit circle |xi| = 1 (long side r along the tangent,
+  Frequency: r x r^2 rectangles tangent to the unit circle |xi| = 1 (long side r along the tangent,
              thickness r^2 radial; inner edge at distance 1 from the centre).
-  PHYSICAL:  dual (1/r) x (1/r^2) tubes through the origin, piling up there.
+  Physical:  dual (1/r) x (1/r^2) tubes through the origin, piling up there.
 
   frequency rectangle   r x r^2,     aspect r : r^2 = 1 : r
   physical tube         1/r^2 x 1/r, aspect 1/r^2 : 1/r = 1 : r
@@ -91,7 +91,7 @@ def main():
 
     fig, ax = new_axes(2, figsize=(12, 6))
 
-    # --- frequency side: unit circle + tangent r x r^2 slabs -----------------------------
+    # frequency side: unit circle + tangent r x r^2 slabs
     disc = circle(1.0, 400)
     ax[0].fill(disc[:, 0], disc[:, 1], color="#f4e37a", alpha=0.55, zorder=0)  # B(0,1), yellow
     ax[0].plot(np.append(disc[:, 0], disc[0, 0]), np.append(disc[:, 1], disc[0, 1]),
@@ -117,7 +117,7 @@ def main():
     ax[0].set_xlim(-1.55, 1.75)
     ax[0].set_ylim(-1.55, 1.55)
 
-    # --- physical side: dual 1/r x 1/r^2 tubes piling up at the origin -------------------
+    # physical side: dual 1/r x 1/r^2 tubes piling up at the origin
     for tube in phys_tubes:
         poly_xy = np.vstack([tube, tube[0]])
         ax[1].fill(poly_xy[:, 0], poly_xy[:, 1], color=COLORS["outer"], alpha=0.22, zorder=1)

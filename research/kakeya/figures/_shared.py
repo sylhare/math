@@ -10,7 +10,7 @@ import os
 
 import numpy as np
 
-# --- palette ---------------------------------------------------------------------------
+# Palette
 COLORS = {
     "needle": "#1f77b4",   # unit segments / the family
     "region": "#9ecae1",   # swept area, faint
@@ -22,9 +22,7 @@ COLORS = {
 SQRT3 = math.sqrt(3.0)
 
 
-# =====================================================================================
-# GEOMETRY (pure numpy, portable)
-# =====================================================================================
+# Geometry (pure numpy, portable)
 def equilateral(base: float = 1.0, x0: float = 0.0, y0: float = 0.0) -> np.ndarray:
     """Equilateral triangle vertices, base [x0, x0+base] on y=y0, apex above the middle (area sqrt3/4 for base 1)."""
     h = SQRT3 / 2.0 * base
@@ -58,9 +56,7 @@ def triangle_fan_degrees(tri: np.ndarray) -> tuple[float, float]:
     return (min(a1, a2), max(a1, a2))
 
 
-# =====================================================================================
-# VALIDATION (shapely + analytic)
-# =====================================================================================
+# Validation (shapely + analytic)
 def poly(points: np.ndarray):
     from shapely.geometry import Polygon
 
@@ -73,9 +69,7 @@ def union_area(polys) -> float:
     return unary_union(list(polys)).area
 
 
-# =====================================================================================
-# PREVIEW + REPORTING
-# =====================================================================================
+# Preview + reporting
 def new_axes(ncols: int = 1, figsize=None):
     import matplotlib
     matplotlib.use("Agg")

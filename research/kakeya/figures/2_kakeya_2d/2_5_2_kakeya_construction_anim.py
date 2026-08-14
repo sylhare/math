@@ -59,7 +59,7 @@ def main():
     c = tree.centroid
     besic = unary_union([shp_rotate(tree, a, origin=(c.x, c.y)) for a in (0, 120, 240)])
 
-    # --- INVARIANT: the 60 deg base fan, rotated 0/120/240 deg, covers every direction in [0,180) ---
+    # Invariant: the 60 deg base fan, rotated 0/120/240 deg, covers every direction in [0,180)
     lo, hi = triangle_fan_degrees(np.array([[-0.5, 0.0], [0.5, 0.0], list(APEX)]))
     covered = np.zeros(180, dtype=bool)
     for rot in (0.0, 120.0, 240.0):

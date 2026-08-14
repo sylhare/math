@@ -20,7 +20,7 @@ HOLD = 7
 END_HOLD = 8
 
 
-# --- geometry: pure-numpy fractal builders ---------------------------------------------
+# Geometry: pure-numpy fractal builders
 def sierpinski_triangles(depth):
     base = np.array([[0.0, 0.0], [1.0, 0.0], [0.5, SQRT3 / 2.0]])
     tris = [base]
@@ -81,7 +81,7 @@ def main():
         ],
     )
 
-    # ---- figure ----
+    # Figure
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt

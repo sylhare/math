@@ -13,9 +13,7 @@ import numpy as np
 from _shared import COLORS, math_check, save_preview
 
 
-# ---------------------------------------------------------------------------
-# GEOMETRY (pure numpy, portable)
-# ---------------------------------------------------------------------------
+# Geometry (pure numpy, portable)
 def fibonacci_sphere(n: int) -> np.ndarray:
     """n roughly-uniform points on the unit sphere S^2 (for sampling directions)."""
     i = np.arange(n) + 0.5
@@ -71,20 +69,20 @@ def main():
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    # --- MATH: count of delta-separated directions ~ delta^-2 ----------------
+    # Count of delta-separated directions ~ delta^-2
     samples = fibonacci_sphere(20000)
     counts = {}
     for d in (0.4, 0.2, 0.1):
         counts[d] = len(delta_separated(samples, d))
 
-    # --- MATH: two tubes in different directions MISS (skew) in R^3 ----------
+    # Two tubes in different directions miss (skew) in R^3
     dir_a = np.array([1.0, 0.2, 0.3]); dir_a /= np.linalg.norm(dir_a)
     dir_b = np.array([0.2, 1.0, -0.3]); dir_b /= np.linalg.norm(dir_b)
     cen_a = np.array([-0.15, 0.0, 0.0])
     cen_b = np.array([0.15, 0.0, 0.35])
     miss_dist = line_line_distance(cen_a, dir_a, cen_b, dir_b)
 
-    # --- MATH: same two DIRECTIONS in the plane always cross -----------------
+    # Same two directions in the plane always cross
     d2a = np.array([np.cos(np.deg2rad(20)), np.sin(np.deg2rad(20))])
     d2b = np.array([np.cos(np.deg2rad(110)), np.sin(np.deg2rad(110))])
     cross_dist = 0.0  # two non-parallel lines in R^2 meet: distance 0
@@ -102,7 +100,7 @@ def main():
         ],
     )
 
-    # --- PREVIEW -------------------------------------------------------------
+    # Preview
     delta_vis = 0.10  # display thickness for the thin tubes
     radius = delta_vis / 2.0
 
@@ -133,7 +131,7 @@ def main():
         c = rng.uniform(-0.18, 0.18, size=3)
         X, Y, Z = tube_surface(c, d, 1.0, radius)
         ax1.plot_surface(X, Y, Z, color=COLORS["outer"], alpha=0.28, linewidth=0)
-    # the two highlighted tubes that MISS
+    # the two highlighted tubes that miss
     for c, d in ((cen_a, dir_a), (cen_b, dir_b)):
         X, Y, Z = tube_surface(c, d, 1.0, radius * 1.1)
         ax1.plot_surface(X, Y, Z, color=COLORS["accent"], alpha=0.9, linewidth=0)

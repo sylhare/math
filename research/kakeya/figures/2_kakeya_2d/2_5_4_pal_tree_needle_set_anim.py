@@ -1,11 +1,11 @@
-"""Animation: Pal joins turn the Perron tree (a Besicovitch set) into a Kakeya NEEDLE set (kakeya.md 2d-2e).
+"""Animation: Pal joins turn the Perron tree (a Besicovitch set) into a Kakeya needle set (kakeya.md 2d-2e).
 
 The Perron tree contains a unit segment in every direction of its 60-degree fan, but those segments sit
 in separate branches: it is a Besicovitch set, not something a needle can be turned inside continuously.
 The Pal join repairs that. To carry the needle from one branch to the neighbouring one without sweeping
 much area: slide it out along its own axis (free, it stays on its line), make the small turn far out
 where a tiny angle suffices, then slide back into the next branch. The swept extra is only the little
-turn slivers; chaining the joins across every branch lets the needle rotate CONTINUOUSLY through the
+turn slivers; chaining the joins across every branch lets the needle rotate continuously through the
 whole fan, so the tree plus the thin slivers is a needle set (small positive area, not zero).
 
 Two parts in one clip:
@@ -27,7 +27,7 @@ from shapely.ops import unary_union
 
 APEX = np.array([0.0, 1.0])
 HB = 1.0 / math.sqrt(3.0)
-NLEV = 4  # 16 branches: separated enough that a single Pal join reads clearly
+NLEV = 4  # 16 branches: separated enough that a single Pal join is easy to see
 ALPHA = 0.6
 S_DETAIL = 0.75  # how far the needle slides out on the slow detour (bigger = more visible)
 S_FULL = 0.45  # slide-out on each quick detour in the chained sweep

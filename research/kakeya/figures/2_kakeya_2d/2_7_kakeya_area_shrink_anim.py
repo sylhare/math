@@ -1,7 +1,7 @@
 """Shrinking a Kakeya set's area by Perron cut-and-shift (kakeya.md 2f).
 
 Start from the needle set (solid triangle + faded needle fringe showing every direction), then
-subdivide the core into 2^n sub-triangles and TRANSLATE them to overlap (sprouting). Translation
+subdivide the core into 2^n sub-triangles and translate them to overlap (sprouting). Translation
 preserves each needle's direction, so every direction stays covered while the (shapely-measured)
 area drops. Sprout n = 0 -> 9; area falls 100% -> ~22%.
 

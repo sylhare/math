@@ -12,7 +12,7 @@ from _shared import COLORS, math_check, save_gif
 FRAMES = 72  # turntable: azimuth step 360 / 72 = 5 degrees
 
 
-# GEOMETRY (replicated locally from tubes_3d.py; do not import it)
+# Geometry (replicated locally from tubes_3d.py; do not import it)
 def fibonacci_sphere(n: int) -> np.ndarray:
     """n roughly-uniform points on the unit sphere S^2 (for sampling directions)."""
     i = np.arange(n) + 0.5
@@ -70,11 +70,11 @@ def main():
     from matplotlib.animation import FuncAnimation
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3d projection)
 
-    # --- MATH: count of delta-separated directions ~ delta^-2 ----------------
+    # Count of delta-separated directions ~ delta^-2
     samples = fibonacci_sphere(20000)
     counts = {d: len(delta_separated(samples, d)) for d in (0.4, 0.2, 0.1)}
 
-    # --- MATH: two tubes in different directions MISS (skew) in R^3 ----------
+    # Two tubes in different directions miss (skew) in R^3
     dir_a = np.array([1.0, 0.2, 0.3]); dir_a /= np.linalg.norm(dir_a)
     dir_b = np.array([0.2, 1.0, -0.3]); dir_b /= np.linalg.norm(dir_b)
     cen_a = np.array([-0.15, 0.0, 0.0])
@@ -100,7 +100,7 @@ def main():
         ],
     )
 
-    # --- STATIC GEOMETRY (built once; only the camera animates) --------------
+    # Static geometry (built once; only the camera animates)
     delta_vis = 0.10  # display thickness for the thin tubes
     radius = delta_vis / 2.0
 
@@ -115,7 +115,7 @@ def main():
         c = rng.uniform(-0.18, 0.18, size=3)
         X, Y, Z = tube_surface(c, d, 1.0, radius)
         ax.plot_surface(X, Y, Z, color=COLORS["outer"], alpha=0.28, linewidth=0)
-    # the two highlighted skew tubes that MISS
+    # the two highlighted skew tubes that miss
     for c, d in ((cen_a, dir_a), (cen_b, dir_b)):
         X, Y, Z = tube_surface(c, d, 1.0, radius * 1.1)
         ax.plot_surface(X, Y, Z, color=COLORS["accent"], alpha=0.9, linewidth=0)

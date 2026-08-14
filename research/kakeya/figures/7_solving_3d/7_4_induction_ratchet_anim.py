@@ -70,7 +70,7 @@ def main():
     bad = lossy(D_START, ALPHA, leak=0.28, n_steps=n_steps)
     incs = np.diff(good)
 
-    # --- INVARIANT assertions ------------------------------------------------
+    # Invariant assertions
     assert n_steps == 5, n_steps
     assert all(abs(inc - ALPHA) < 1e-9 for inc in incs), incs
     assert abs(good[-1] - 3.0) < 1e-12, good[-1]

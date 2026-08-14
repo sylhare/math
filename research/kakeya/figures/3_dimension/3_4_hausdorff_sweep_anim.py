@@ -7,11 +7,11 @@ intervals of length 3^-m, so the Hausdorff sum of that cover has a closed form:
     sum (diam U_i)^s  =  2^m * (3^-m)^s  =  (2 * 3^-s)^m .
 
 Because 2*3^-s > 1 for s < dim, = 1 at s = dim, and < 1 for s > dim, sweeping the
-exponent s swings the sum from huge to tiny, and deepening the cover m sharpens that
-swing into a clean jump from +inf to 0, pinned to 1 exactly at s = dim_H.
+exponent s takes the sum from large to small, and deepening the cover m sharpens that
+transition into a jump from +inf to 0, pinned to 1 exactly at s = dim_H.
 
-PHASE 1 (fixed depth m=4, sweep s): a marker traces the m=4 curve, the gauge reads
-the sum. PHASE 2 (fixed s, grow depth): the depth curves m=1..6 accumulate on the
+Phase 1 (fixed depth m=4, sweep s): a marker traces the m=4 curve, the gauge reads
+the sum. Phase 2 (fixed s, grow depth): the depth curves m=1..6 accumulate on the
 right, all crossing the same fixed point (dim_H, 1) and steepening toward a step.
 
 Run: uv run --with matplotlib --with shapely --with pillow python research/kakeya/figures/3_dimension/3_4_hausdorff_sweep_anim.py
@@ -63,7 +63,7 @@ def main():
     s_plot = np.linspace(S_LO, S_HI, 240)
     dust = cantor_intervals(DUST_LEVEL)
 
-    # ---- validation: everything from the closed form, nothing measured ----------------
+    # Validation: everything from the closed form, nothing measured
     # (1) fixed point: 2 * 3^-dim == 1
     fixed_pt = N_COPIES * RATIO ** (-DIM)
     assert abs(fixed_pt - 1.0) < 1e-12, "2*3^-dim must equal 1 (the fixed point)"
@@ -101,7 +101,7 @@ def main():
         ],
     )
 
-    # ---- frame plan: leading hold + phase 1 sweep + phase 2 depths + trailing hold -----
+    # Frame plan: leading hold + phase 1 sweep + phase 2 depths + trailing hold
     states = []
     for sv in s_sweep:
         states.append(("sweep", float(sv), PHASE1_M))
@@ -110,7 +110,7 @@ def main():
             states.append(("depth", PHASE2_S, m))
     frames = [0] * HOLD + list(range(len(states))) + [len(states) - 1] * END_HOLD
 
-    # ---- figure ------------------------------------------------------------------------
+    # Figure
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.patches as mpatches
@@ -147,7 +147,7 @@ def main():
         ax[0].text(0.5, 0.24, f"level-{DUST_LEVEL} dust shown; sum = (2*3^-s)^m",
                    ha="center", va="center", fontsize=8.5, color=COLORS["muted"])
 
-        # --- log-scaled gauge bar: sum = (2*3^-s)^m -------------------------------------
+        # Log-scaled gauge bar: sum = (2*3^-s)^m
         val = hausdorff_sum(s, m)
         lg = math.log10(val)
         h = max(-1.0, min(1.0, lg / LMAX)) * GH

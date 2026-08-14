@@ -64,7 +64,6 @@ def main():
     fig, ax = plt.subplots(figsize=(9.5, 6.2))
     steps = np.arange(n_steps + 1)
 
-    # target line = 3 (top)
     ax.axhline(D_TARGET, color=COLORS["accent"], ls="--", lw=1.2, alpha=0.7)
     ax.text(0.05, D_TARGET + 0.008, "dimension 3 (Wang-Zahl: full)", color=COLORS["accent"], fontsize=10)
 

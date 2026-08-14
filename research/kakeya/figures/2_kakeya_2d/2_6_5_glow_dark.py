@@ -1,4 +1,4 @@
-"""Kakeya needle set as a glowing starburst on a dark ground.
+"""Kakeya needle set as a starburst on a dark ground.
 
 240 rays leave a bright centre over the full 360 deg turn; each ray reaches
 r = R_MIN + (R_MAX - R_MIN) * (1 + cos(3*theta)) / 2, a three-fold lobe long toward the
@@ -18,7 +18,7 @@ CORNERS_DEG = (90.0, 210.0, 330.0)
 N_RAYS = 240
 R_MIN, R_MAX = 0.42, 1.25            # edge-length vs corner-length of a ray
 R_IN = 0.05                          # inner start radius (near the centre)
-CORE_R = 0.34                        # glowing rounded-triangle core
+CORE_R = 0.34                        # rounded-triangle core radius
 
 # bloom stack: (linewidth, alpha) from wide+faint to thin+bright
 BLOOM = [(6.0, 0.015), (3.4, 0.035), (1.9, 0.10), (1.0, 0.28), (0.5, 0.85)]
@@ -72,7 +72,7 @@ def main():
         ax.add_collection(lc)
 
     math_check(
-        "Kakeya needle set as a glowing starburst (dark)",
+        "Kakeya needle set as a starburst (dark)",
         [
             ("rays", f"{N_RAYS} over the full turn: a ray in every direction (all 360 deg)"),
             ("lobe", f"r = {R_MIN:.2f} + {R_MAX - R_MIN:.2f}*(1+cos 3theta)/2, peaks at {CORNERS_DEG} deg"),

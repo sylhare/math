@@ -86,7 +86,7 @@ def main():
     occ_n = occupancy(pos_n, bins_n, rho)
     occ_s = occupancy(pos_s, bins_s, rho)
 
-    # --- INVARIANT assertions ------------------------------------------------
+    # Invariant assertions
     assert n_thin == 256 and per_fat == 16 and n_fat == 16
     assert n_fat * per_fat == n_thin
     assert abs(occ_s - per_fat) < 1e-9, occ_s      # sticky end realizes (rho/delta)^2

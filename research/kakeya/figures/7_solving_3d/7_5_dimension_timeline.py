@@ -40,7 +40,6 @@ def main():
     fig, ax = plt.subplots(figsize=(10.5, 6.0))
     years = [e[0] for e in EVENTS]
 
-    # top line = 3
     ax.axhline(3.0, color=COLORS["accent"], ls="--", lw=1.3, alpha=0.75)
     ax.text(1994, 3.01, "dimension 3 = full (the Kakeya conjecture in R^3)",
             color=COLORS["accent"], fontsize=10, va="bottom")

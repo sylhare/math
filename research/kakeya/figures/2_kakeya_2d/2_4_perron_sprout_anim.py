@@ -2,7 +2,7 @@
 
 Start from the 2^n thin slivers tiling the base-1 equilateral triangle (they carry its whole 60 deg
 apex fan). Run the cut-and-shift merge one level at a time: neighbouring blocks slide together and
-OVERLAP. Every move is a pure horizontal translation, so each segment keeps its direction, the fan
+overlap. Every move is a pure horizontal translation, so each segment keeps its direction, the fan
 stays 60..120 deg, and the union footprint shrinks.
 
 This fixed-fraction merge reduces area to a plateau near ~47% of the triangle, not to zero; the true
@@ -86,7 +86,7 @@ def main():
     areas = [u.area for u in unions]
     spans = [fan_span(ts) for ts in tri_sets]
 
-    # --- INVARIANT checks ---
+    # Invariant checks
     # checkpoint per completed level: within a level the union can wiggle, but each merge shrinks it
     level_area = {L: unary_union([poly(t) for t in tris_at(base_tris, start_offsets[L + 1])]).area
                   for L in range(N_LEVELS)}
@@ -112,7 +112,7 @@ def main():
     assert non_increasing, "union area must be non-increasing across merge levels"
     assert fan_locked, "direction fan must stay 60..120 deg"
 
-    # --- animation ---
+    # Animation
     fig, ax = new_axes(1, figsize=(7.2, 5.2))
     allx = np.concatenate([np.array([t[:, 0] for t in ts]).ravel() for ts in tri_sets])
     ax.set_xlim(allx.min() - 0.08, allx.max() + 0.08)

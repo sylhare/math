@@ -19,7 +19,7 @@ N_DIR = 36             # directions across [0, pi)
 END_HOLD = 8
 
 
-# --- geometry: pure-numpy rectangle ----------------------------------------------------
+# Geometry: pure-numpy rectangle
 def rectangle(length, width, angle_rad, cx=0.0, cy=0.0):
     hl, hw = length / 2.0, width / 2.0
     corners = np.array([[-hl, -hw], [hl, -hw], [hl, hw], [-hl, hw]])
@@ -70,7 +70,7 @@ def main():
         ],
     )
 
-    # ---- figure ----
+    # Figure
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt

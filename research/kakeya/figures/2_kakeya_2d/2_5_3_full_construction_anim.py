@@ -1,7 +1,7 @@
 """Animation: the whole Perron construction as one continuous motion (kakeya.md 2d; Accromath kakeya19).
 
 kakeya19 stacks the construction as rows of still frames; here it is the motion those rows imply. The
-triangle carries a 60-degree fan; its base is cut into 2^k thin sub-triangles; then the pieces SLIDE,
+triangle carries a 60-degree fan; its base is cut into 2^k thin sub-triangles; then the pieces slide,
 even ones right, odd ones left, so consecutive triangles overlap. That small back-and-forth shear is
 the Pal shift: the wide triangle combs into strands and collapses into the spiky Perron tree, tips
 fanning at the top and bases stacking into a trunk, while every direction of the fan is kept. A closing
@@ -41,7 +41,7 @@ def base_pieces():
 
 
 def sprout_pieces(alpha):
-    """The 2^NLEV sub-triangles after sliding to overlap by fraction `alpha`, kept as SEPARATE polygons
+    """The 2^NLEV sub-triangles after sliding to overlap by fraction `alpha`, kept as separate polygons
     so the motion (and the darkening overlaps) is visible. alpha = 0 tiles the original triangle."""
     groups = [[p] for p in base_pieces()]
     w = 2 * HB / 2**NLEV
@@ -56,7 +56,7 @@ def sprout_pieces(alpha):
 
 
 def spine(piece):
-    """Apex-to-base-midpoint segment of a (translated) sub-triangle: an honest chord of the tree that
+    """Apex-to-base-midpoint segment of a (translated) sub-triangle: a genuine chord of the tree that
     points in that piece's fan direction."""
     xy = np.array(piece.exterior.coords)[:-1]
     apex = xy[np.argmax(xy[:, 1])]

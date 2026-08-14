@@ -5,7 +5,7 @@ tourner autour de plusieurs points, on ameliore notre resultat avec un triangle 
 maintenant, on fait tourner et bouger l'aiguille dans un triangle equilateral, alors le resultat
 devient plus interessant."
 
-Three panels, the SAME unit needle turning through every direction, accumulating its positions so the
+Three panels, the same unit needle turning through every direction, accumulating its positions so the
 region fills in; the area drops left to right:
 
   circle (spin about the centre)         area pi/4      = 0.785
@@ -24,7 +24,7 @@ from _shared import COLORS, circle, math_check, save_gif
 STEPS = 20  # frames per 60-degree pivot (and for the circle half-turn)
 END_HOLD = 8
 
-# --- circle: needle length 1 spun about its midpoint -> disc radius 1/2 -----------------
+# Circle: needle length 1 spun about its midpoint -> disc radius 1/2
 DISC_R = 0.5
 
 
@@ -36,7 +36,7 @@ def circle_needles():
     return out
 
 
-# --- Reuleaux triangle of width 1: pivot the width-segment about each vertex ------------
+# Reuleaux triangle of width 1: pivot the width-segment about each vertex
 RV = np.array([[math.cos(math.radians(d)), math.sin(math.radians(d))] for d in (90, 210, 330)]) / math.sqrt(3.0)
 
 
@@ -68,7 +68,7 @@ def reuleaux_needles():
     return out
 
 
-# --- equilateral triangle of height 1: pivot the height-segment about each vertex -------
+# Equilateral triangle of height 1: pivot the height-segment about each vertex
 TH_APEX = np.array([0.0, 1.0])
 TH_BL = np.array([-1.0 / math.sqrt(3.0), 0.0])
 TH_BR = np.array([1.0 / math.sqrt(3.0), 0.0])
@@ -94,7 +94,7 @@ def main():
     cN, rN, tN = circle_needles(), reuleaux_needles(), tri_needles()
     areas = (math.pi / 4, (math.pi - math.sqrt(3.0)) / 2, 1.0 / math.sqrt(3.0))
 
-    # honesty: every needle has length exactly 1
+    # Every needle has length exactly 1
     for name, lst in (("circle", cN), ("reuleaux", rN), ("triangle", tN)):
         mx = max(abs(np.linalg.norm(b - a) - 1.0) for a, b in lst)
         assert mx < 1e-9, f"{name}: every needle must have length 1 (err {mx:.1e})"

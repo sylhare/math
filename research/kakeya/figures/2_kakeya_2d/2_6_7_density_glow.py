@@ -2,7 +2,7 @@
 
 Samples points along the whole needle family (solid triangular core + three 120-degree corner
 fans + edge fringe), bins them into a 2D histogram, and imshows the accumulation with a warm
-dark->#f4e37a colormap so overlapping needles glow. Three-fold symmetric; a needle in every
+dark->#f4e37a colormap. Three-fold symmetric; a needle in every
 direction.
 
 Run: uv run --with matplotlib --with shapely --with pillow python research/kakeya/figures/2_kakeya_2d/2_6_7_density_glow.py
@@ -22,7 +22,7 @@ CORE = "#f4e37a"
 GRID = 1200
 STEP = 0.0010                       # spacing of samples along a needle
 CORE_LEVEL = 0.82                   # brightness of the solid core plateau (0..1)
-BLUR_SIGMA = 1.1                    # gaussian glow radius, in grid cells
+BLUR_SIGMA = 1.1                    # gaussian blur radius, in grid cells
 
 VERTS = np.array([R * np.array([math.cos(math.radians(d)), math.sin(math.radians(d))]) for d in CORNERS_DEG])
 
@@ -84,7 +84,7 @@ def _clockwise():
 
 
 def _blur(a, sigma):
-    """Separable gaussian blur with numpy only (glow)."""
+    """Separable gaussian blur with numpy only."""
     r = max(int(3 * sigma), 1)
     k = np.exp(-0.5 * (np.arange(-r, r + 1) / sigma) ** 2)
     k /= k.sum()
@@ -123,7 +123,7 @@ def main():
     hist, _, _ = np.histogram2d(px, py, bins=GRID, range=[[x0, x1], [y0, y1]])
     dens = np.sqrt(hist.T)                             # (row=y, col=x); sqrt lifts faint tips
     dens = np.clip(dens / np.percentile(dens[dens > 0], 99.3), 0.0, 1.0)
-    dens = np.maximum(dens, CORE_LEVEL * _core_mask(x0, x1, y0, y1))   # solid glowing core
+    dens = np.maximum(dens, CORE_LEVEL * _core_mask(x0, x1, y0, y1))   # solid core plateau
     dens = _blur(dens, BLUR_SIGMA)
     dens = np.clip(dens / dens.max(), 0.0, 1.0)
 

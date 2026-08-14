@@ -30,7 +30,7 @@ def main():
 
     times = [0.5, 1.0, 1.5]  # t1 < t2 < t3
 
-    # --- validation: each wavefront is the circle of radius exactly t ------------------
+    # Validation: each wavefront is the circle of radius exactly t
     radius_ok = True
     for t in times:
         c = circle(r=t, n=200)  # helper draws radius-r circle centred at origin
@@ -41,7 +41,7 @@ def main():
 
     fig = plt.figure(figsize=(12, 5.6))
 
-    # (a) 2D space: expanding wavefronts ------------------------------------------------
+    # (a) 2D space: expanding wavefronts
     ax = fig.add_subplot(1, 2, 1)
     ax.set_aspect("equal")
     ax.axis("off")
@@ -59,7 +59,7 @@ def main():
     ax.set_title("wavefronts: radius = t")
     ax.legend(loc="lower center", fontsize=8, frameon=False, ncol=1)
 
-    # (b) 3D space-time cone |x| = t ----------------------------------------------------
+    # (b) 3D space-time cone |x| = t
     ax3 = fig.add_subplot(1, 2, 2, projection="3d")
     T = 1.6
     tt = np.linspace(0.0, T, 40)

@@ -13,9 +13,9 @@ stays pinned near 1 (exponent 3 - d = 0) instead of dimming like a dimension 5/2
 (exponent 1/2, losing ~29% per halving toward a sheet).
 
 Left: a slowly turning bundle of delta x delta x 1 tubes; halving delta thins each tube (radius
-delta/2) and multiplies the count by four, yet the glowing union silhouette barely moves.
+delta/2) and multiplies the count by four, yet the union silhouette barely moves.
 Right: two stacked volume-meters vs the delta ladder. Meter A = the exact content (flat ~1).
-Meter B = the dimension-3 curve (stays lit) against a dimension-5/2 reference (dims).
+Meter B = the dimension-3 curve (flat) against a dimension-5/2 reference (dims).
 
 Reuses the S^2 packing and tube geometry from 6_1_tubes_3d.py.
 
@@ -29,7 +29,7 @@ import numpy as np
 from _shared import COLORS, math_check, save_gif
 from matplotlib.animation import FuncAnimation
 
-# --- reuse 6_1's honest S^2 packing + tube geometry (no side effects on import) --------
+# Reuse 6_1's S^2 packing + tube geometry (no side effects on import)
 _p = os.path.join(os.path.dirname(__file__), "6_1_tubes_3d.py")
 _spec = importlib.util.spec_from_file_location("tubes_6_1", _p)
 _m = importlib.util.module_from_spec(_spec)
@@ -50,7 +50,7 @@ def main():
     d0 = DELTAS[0]
     deltas = np.array(DELTAS)
 
-    # === MATH: the honest, measured invariants ========================================
+    # Math: the measured invariants
     # #directions = size of a chord-delta separated packing on S^2 (grows ~4x per halving).
     samples = fibonacci_sphere(N_SAMPLES)
     counts = np.array([len(delta_separated(samples, d)) for d in DELTAS], dtype=float)
@@ -65,9 +65,9 @@ def main():
     content_spread = content.max() / content.min()
 
     # Meter B: leftover-volume law |N_delta K| = delta^(3 - d), normalized to the coarsest delta.
-    # dim 3 (exponent 0): flat and LIT, with an allowed floor delta^eps (droops <= 2^-eps/step).
+    # dim 3 (exponent 0): flat, with an allowed floor delta^eps (droops <= 2^-eps/step).
     # dim 5/2 (exponent 1/2): steps down by 2^-1/2 = 0.7071 per halving (dims toward a sheet).
-    dim3_meter = np.ones_like(deltas)                      # delta^(3-3) = delta^0, stays lit
+    dim3_meter = np.ones_like(deltas)                      # delta^(3-3) = delta^0, flat
     dim3_floor = (deltas / d0) ** EPS                      # c_eps delta^eps: max sliver removed
     dim52_meter = (deltas / d0) ** 0.5                     # delta^(3-2.5) = delta^0.5
 
@@ -78,7 +78,7 @@ def main():
     fit_exp_dim3 = float(np.polyfit(np.log(deltas), np.log(deltas ** (3 - 3.0)), 1)[0])
     fit_exp_dim52 = float(np.polyfit(np.log(deltas), np.log(deltas ** (3 - 2.5)), 1)[0])
 
-    # --- ASSERTIONS: fail loudly if the drawn math is wrong ---------------------------
+    # Assertions on the drawn invariants
     assert ((growth > 3.2) & (growth < 4.5)).all(), \
         f"#directions must grow ~4x per halving, got {growth}"
     assert np.allclose(vol_ratio, 0.25, atol=1e-12), \
@@ -115,7 +115,7 @@ def main():
         ],
     )
 
-    # === FIGURE =======================================================================
+    # Figure
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt

@@ -82,7 +82,7 @@ def main():
     xl = (APEX[0] - r_max - _pad, APEX[0] + r_max + _pad)
     yl = (APEX[1] - r_max - _pad, APEX[1] + r_max + _pad)
 
-    # --- frame plan: (angles, n_landed) -- n_landed = copies that have reached their target ---------
+    # Frame plan: (angles, n_landed) -- n_landed = copies that have reached their target
     HOLD = 5
     SWEEP = 26
     frames = []
@@ -94,7 +94,7 @@ def main():
         frames.append(((0.0, 120.0, 240.0 * j / SWEEP), 2))     # 3rd copy rotating in
     frames += [((0.0, 120.0, 240.0), 3)] * (HOLD + 4)
 
-    # --- INVARIANT: final coverage is exactly 0..180 ---
+    # Invariant: final coverage is exactly 0..180
     final_cover = covered_bins(tris, TARGETS)
     full = bool(final_cover.all())
     idx = np.where(final_cover)[0]
@@ -115,7 +115,7 @@ def main():
     )
     assert full and idx.min() == 0 and idx.max() + 1 == 180, "final coverage must be exactly 0..180 deg"
 
-    # --- animation: one panel, the three coloured Perron trees rotating into place ---
+    # Animation: one panel, the three coloured Perron trees rotating into place
     fig, ax = new_axes(1, figsize=(6.6, 6.9))
     tree_colors = [COLORS["region"], COLORS["needle"], COLORS["accent"]]
 

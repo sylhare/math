@@ -5,8 +5,8 @@ l'aiguille utilisent des regions d'aires nulles. Ce ne sont que les rotations de
 necessitent des regions d'aires non nulles."
 
 One needle, one panel, two moves in sequence:
-  1. ROTATE about an endpoint through theta: it sweeps a circular sector of area theta/2 (grows).
-  2. SLIDE the needle along its own axis: it stays on the line it already swept, so NO new area.
+  1. Rotate about an endpoint through theta: it sweeps a circular sector of area theta/2 (grows).
+  2. Slide the needle along its own axis: it stays on the line it already swept, so no new area.
 
 Run: PYTHONPATH=research/kakeya/figures uv run --with matplotlib --with shapely --with pillow \
      python research/kakeya/figures/2_kakeya_2d/2_2_0_rotate_vs_translate_anim.py

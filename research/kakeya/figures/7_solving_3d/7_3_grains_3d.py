@@ -1,6 +1,6 @@
 """Guth's grains + Besicovitch compression (kakeya.md beats 7c-7d).
 
-Left (3D): a fat tube (wireframe box) whose thin tubes cluster into GRAINS, parallel slabs of
+Left (3D): a fat tube (wireframe box) whose thin tubes cluster into grains, parallel slabs of
 size delta x c x c (delta << c << 1), one tube thick, tiling the tube along its length. Within a
 fat tube the grains are disjoint (share only zero-volume faces), so every point lies in at most one
 grain.
@@ -23,9 +23,7 @@ H = SQRT3 / 2.0            # height of the unit-base equilateral triangle
 APEX_X = 0.5
 
 
-# =====================================================================================
-# GEOMETRY (pure numpy / shapely, portable)
-# =====================================================================================
+# Geometry (pure numpy / shapely, portable)
 def grain_boxes(delta: float, c: float, x_starts) -> list[tuple]:
     """Axis-aligned grains delta x c x c inside a fat tube [0,1] x [0,c] x [0,c].
     Each grain is delta-thin along the tube axis X and spans the c x c cross-section."""
@@ -84,9 +82,7 @@ def compression_rectangles(n: int, s: float = 0.2):
     return rects, delta, N
 
 
-# =====================================================================================
-# PREVIEW
-# =====================================================================================
+# Preview
 def _draw_box_wire(ax, box, color, lw=1.2, alpha=1.0):
     x0, x1, y0, y1, z0, z1 = box
     xs, ys, zs = (x0, x1), (y0, y1), (z0, z1)
@@ -119,7 +115,7 @@ def main():
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3d projection)
 
-    # ---- geometry ----
+    # Geometry
     delta3d, c = 0.05, 0.30
     fat_tube = (0.0, 1.0, 0.0, c, 0.0, c)
     x_starts = [0.08, 0.26, 0.44, 0.62, 0.80]
@@ -150,7 +146,7 @@ def main():
         ],
     )
 
-    # ---- preview ----
+    # Preview
     fig = plt.figure(figsize=(13.5, 5.8))
 
     ax = fig.add_subplot(1, 2, 1, projection="3d")

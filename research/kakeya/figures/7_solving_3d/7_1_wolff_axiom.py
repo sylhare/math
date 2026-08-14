@@ -5,7 +5,7 @@ For every rectangular prism R in R^3 and a direction-separated family of delta-t
 Each tube has |T| = delta^2 and tubes in R overlap boundedly, so #tubes <~ delta^-2 |R|.
 Wolff's resulting R^3 dimension lower bound (1995): (n+2)/2 = (3+2)/2 = 5/2.
 
-Two slab prisms R at the same delta: SATISFYING (count <= delta^-2 |R|) and FORBIDDEN (a thinner
+Two slab prisms R at the same delta: satisfying (count <= delta^-2 |R|) and forbidden (a thinner
 slab with count > delta^-2 |R|).
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/wolff_axiom.py
 """
@@ -13,9 +13,7 @@ import numpy as np
 from _shared import COLORS, math_check, save_preview
 
 
-# ---------------------------------------------------------------------------
-# GEOMETRY (pure numpy, portable)
-# ---------------------------------------------------------------------------
+# Geometry (pure numpy, portable)
 def prism_volume(dims) -> float:
     """Volume |R| of an axis-aligned rectangular prism of side lengths (Lx, Ly, Lz)."""
     lx, ly, lz = dims
@@ -81,12 +79,12 @@ def main():
     delta = 0.1
     n_wolff = (3 + 2) / 2  # (n+2)/2 in R^3
 
-    # SATISFYING slab: count <= delta^-2 |R|
+    # Satisfying slab: count <= delta^-2 |R|
     dims_ok = (1.2, 1.2, 0.30)
     bound_ok = wolff_bound(delta, dims_ok)     # 100 * 0.432 = 43.2
     n_ok = 18
 
-    # FORBIDDEN slab: count > delta^-2 |R|
+    # Forbidden slab: count > delta^-2 |R|
     dims_bad = (1.2, 1.2, 0.12)
     bound_bad = wolff_bound(delta, dims_bad)   # 100 * 0.1728 = 17.28
     n_bad = 26
@@ -103,7 +101,7 @@ def main():
         ],
     )
 
-    # --- PREVIEW -------------------------------------------------------------
+    # Preview
     radius = delta / 2.0
     fig = plt.figure(figsize=(12.5, 6.2))
 

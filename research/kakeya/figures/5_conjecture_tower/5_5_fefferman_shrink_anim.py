@@ -1,9 +1,9 @@
 """r -> 0 limit of Fefferman's ball-multiplier geometry (kakeya.md 5b).
 
 As r = 2 sin(pi/N) shrinks (N slabs grows):
-  (a) FREQUENCY: N slabs of size r x r^2 tangent to the unit circle (long side r along the tangent,
+  (a) Frequency: N slabs of size r x r^2 tangent to the unit circle (long side r along the tangent,
       thickness r^2 radial), thinner as r -> 0.
-  (b) PHYSICAL: dual 1/r x 1/r^2 tubes through the origin, drawn normalised to unit length (width r).
+  (b) Physical: dual 1/r x 1/r^2 tubes through the origin, drawn normalised to unit length (width r).
 
 Each slab's inner edge stays at distance 1 from the centre; aspects r:r^2 and 1/r^2:1/r equal 1/r.
 
@@ -59,7 +59,7 @@ def main():
 
     ns = n_schedule()
 
-    # --- validation across every frame: tangency = 1, both aspects = 1/r ----------------------
+    # Validation across every frame: tangency = 1, both aspects = 1/r
     max_tangent_err = 0.0
     max_aspect_err = 0.0
     for n_rect in ns:

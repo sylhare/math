@@ -86,7 +86,7 @@ def main():
 
     print("wrote", save_preview(fig))
 
-    # --- validation: the arrow order must match kakeya.md, Kakeya at the base ----------
+    # Validation: the arrow order must match kakeya.md, Kakeya at the base
     order = [t[0].split()[0] for t in TOWER]
     expected = ["Local", "Bochner-Riesz", "Restriction", "Kakeya"]
     order_ok = order == expected

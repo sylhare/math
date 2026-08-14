@@ -39,7 +39,7 @@ def main():
     ts = np.linspace(0.0, 2 * math.pi, N, endpoint=True)
     curve = deltoid(R_ROLL, n=400)  # reference deltoid from _shared
 
-    # --- honesty: the traced point lies on the rolling rim; chord 4r = 1; area 2 pi r^2 = pi/8 ----
+    # Assertions: the traced point lies on the rolling rim; chord 4r = 1; area 2 pi r^2 = pi/8
     rim_err = max(abs(np.linalg.norm(traced_point(t) - rolling_center(t)) - R_ROLL) for t in ts)
     assert rim_err < 1e-9, f"traced point must lie on the rolling rim (err {rim_err:.2e})"
     chord = 4 * R_ROLL
@@ -55,7 +55,7 @@ def main():
         ],
     )
 
-    # ---- figure -------------------------------------------------------------------------
+    # Figure
     import matplotlib
 
     matplotlib.use("Agg")
@@ -82,12 +82,12 @@ def main():
         ax.axis("off")
         ax.set_xlim(-lim, lim)
         ax.set_ylim(-lim, lim)
-        ax.plot(fixed[:, 0], fixed[:, 1], color=COLORS["guide"], lw=1.5)  # fixed circle
+        ax.plot(fixed[:, 0], fixed[:, 1], color=COLORS["guide"], lw=1.5)
         ax.plot(curve[: max(2, int(400 * (k + 1) / N)), 0],
                 curve[: max(2, int(400 * (k + 1) / N)), 1], color=COLORS["accent"], lw=2.0)  # deltoid so far
         ax.fill(roll[:, 0], roll[:, 1], facecolor=COLORS["region"], edgecolor=COLORS["outer"], lw=1.2, alpha=0.7)
         ax.plot([c[0], p[0]], [c[1], p[1]], color=COLORS["outer"], lw=1.0)  # spoke to the marked point
-        ax.plot(*p, "o", color=COLORS["accent"], ms=8, zorder=5)  # the tracing point
+        ax.plot(*p, "o", color=COLORS["accent"], ms=8, zorder=5)
         ax.plot(*c, "o", color=COLORS["guide"], ms=3, zorder=5)
         ax.set_title("a circle rolling inside a 3x circle draws the deltoid", fontsize=11)
         return []

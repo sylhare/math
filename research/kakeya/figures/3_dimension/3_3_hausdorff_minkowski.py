@@ -1,7 +1,7 @@
 """Minkowski vs Hausdorff dimension (kakeya.md 3a-3b).
 
-Both measure a set by covers. Minkowski uses ONE box size delta: N(delta) boxes,
-d_box = log N(delta) / log(1/delta). Hausdorff allows covers of ANY sizes <= delta and takes
+Both measure a set by covers. Minkowski uses one box size delta: N(delta) boxes,
+d_box = log N(delta) / log(1/delta). Hausdorff allows covers of any sizes <= delta and takes
 H^s(E) = lim_{delta->0} inf { sum (diam U_i)^s : E subset union U_i, diam U_i <= delta }; the
 Hausdorff dimension is the threshold where H^s jumps from +inf to 0:
 dim_H = inf{ s : H^s(E) = 0 }. Always dim_H <= dim_box.

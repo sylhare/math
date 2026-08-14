@@ -6,8 +6,8 @@ Follows the Accromath kakeya19 sequence, top to bottom:
   3. sprout: slide the sub-triangles to overlap; the footprint area drops while the 60-degree fan of
      directions is preserved (overlap is not counted twice).
 
-Two readouts run throughout: AREA (percent of the original triangle) falling, and DIRECTIONS COVERED
-(the fan) staying at 60 degrees, the whole point of the construction.
+Two readouts run throughout: area (percent of the original triangle) falling, and directions covered
+(the fan) staying at 60 degrees.
 
 Run: PYTHONPATH=research/kakeya/figures uv run --with matplotlib --with shapely --with pillow \
      python research/kakeya/figures/2_kakeya_2d/2_4_perron_steps_anim.py

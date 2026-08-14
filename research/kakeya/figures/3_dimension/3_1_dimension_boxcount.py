@@ -17,7 +17,7 @@ import numpy as np
 from _shared import COLORS, math_check, new_axes, save_preview
 
 
-# --- geometry: pure-numpy box-counting -------------------------------------------------
+# Geometry: pure-numpy box-counting
 def _seg_hits_box(p0, p1, xmin, xmax, ymin, ymax):
     """Liang-Barsky: does segment p0->p1 meet the closed axis-aligned box?"""
     x0, y0 = p0

@@ -19,7 +19,7 @@ import numpy as np
 from _shared import COLORS, SQRT3, math_check, new_axes, save_preview
 
 
-# --- geometry: pure-numpy fractal builders ---------------------------------------------
+# Geometry: pure-numpy fractal builders
 def cantor_levels(depth):
     """List over levels; each level is a list of (x_left, x_right) surviving intervals."""
     levels = [[(0.0, 1.0)]]

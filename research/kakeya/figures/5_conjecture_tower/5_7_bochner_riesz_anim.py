@@ -34,7 +34,7 @@ def main():
     x = np.linspace(-1.6, 1.6, 800)
     xin = x[np.abs(x) <= 1]  # support, for the exact-profile check
 
-    # --- validation across every frame: endpoints pinned, curve == (1-x^2)^alpha on [-1,1] -----
+    # Validation across every frame: endpoints pinned, curve == (1-x^2)^alpha on [-1,1]
     max_dev = 0.0
     for a in alphas:
         got = profile(xin, a)
@@ -77,7 +77,7 @@ def main():
     ax.set_ylim(-0.12, 1.4)
     ax.set_xticks([]); ax.set_yticks([])
 
-    # ghost the hard edge (alpha=0 indicator) so the rounding reads against it
+    # ghost the hard edge (alpha=0 indicator) as a reference for the rounding
     ax.plot(xin, np.ones_like(xin), color=COLORS["accent"], lw=1.4, alpha=0.35)
     ax.plot([-1, -1], [0, 1], color=COLORS["accent"], lw=1.4, alpha=0.35)
     ax.plot([1, 1], [0, 1], color=COLORS["accent"], lw=1.4, alpha=0.35)

@@ -1,7 +1,7 @@
 """Kakeya needle set (Wikipedia image), built up by granularity (kakeya.md 2e).
 
 A solid central triangle with Perron-tree branches at each corner and a needle fringe along the
-edges: a Besicovitch set (a unit segment in every direction) drawn as the FILLED SILHOUETTE of its
+edges: a Besicovitch set (a unit segment in every direction) drawn as the filled silhouette of its
 needle family (union of core + needles, one outline). Granularity rises coarse -> dense. The area
 shrinking is the companion animation 2_7.
 

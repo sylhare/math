@@ -7,7 +7,7 @@ those fans over the full 180 deg (a direction and its reverse are the same): an 
     tree fan            = 60..120 deg
     + rotate 120 deg    = 180..240 deg == 0..60 deg (mod 180)
     + rotate 240 deg    = 300..360 deg == 120..180 deg (mod 180)
-    union               = 0..180 deg   -> a unit segment in EVERY direction.
+    union               = 0..180 deg   -> a unit segment in every direction.
 
 True |K| = 0 (Besicovitch) is a limit (n -> inf), area shrinking only ~1/log N (Keich), so this
 renders the minimum-visible finite-level approximation.
@@ -24,7 +24,7 @@ H = SQRT3 / 2.0          # height of the base-1 equilateral triangle
 APEX = (0.5, H)          # shared apex / rotation pivot
 
 
-# --- Perron cut-and-shift, replicated locally (not imported) -------------------------------------
+# Perron cut-and-shift, replicated locally (not imported)
 def _slivers(n: int):
     """2^n thin subtriangles of the base-1 equilateral triangle, all sharing the apex."""
     N = 2 ** n
@@ -109,7 +109,7 @@ def main():
         ],
     )
 
-    # --- preview ---
+    # Preview
     fig, ax = new_axes(2, figsize=(11, 5.6))
     _draw_region(ax[0], tree, COLORS["region"], 0.75)
     _draw_rays(ax[0], tris, (0.0,), APEX, COLORS["needle"])

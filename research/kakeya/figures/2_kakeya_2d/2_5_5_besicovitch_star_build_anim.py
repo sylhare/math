@@ -65,7 +65,7 @@ def rot_needle(ab, deg, ctr):
 
 
 def covered_bins(rot_list, base_dirs):
-    """Directions (1-degree bins in [0,180)) covered by the rotated fans. The fan is a CONTINUOUS range
+    """Directions (1-degree bins in [0,180)) covered by the rotated fans. The fan is a continuous range
     [min, max] of the base branch directions, so fill the whole range per rotation, not just samples."""
     lo, hi = math.degrees(min(base_dirs)), math.degrees(max(base_dirs))
     bins = set()

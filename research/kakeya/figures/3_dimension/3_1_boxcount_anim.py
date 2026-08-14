@@ -19,7 +19,7 @@ END_HOLD = 8      # extra hold on the finest stage
 SEG_Y = 0.55      # segment y, strictly inside one grid row
 
 
-# --- geometry: pure-numpy box-counting -------------------------------------------------
+# Geometry: pure-numpy box-counting
 def _seg_hits_box(p0, p1, xmin, xmax, ymin, ymax):
     """Liang-Barsky: does segment p0->p1 meet the closed axis-aligned box?"""
     x0, y0 = p0
@@ -88,7 +88,7 @@ def main():
         ],
     )
 
-    # ---- figure ----
+    # Figure
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt

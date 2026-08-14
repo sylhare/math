@@ -1,7 +1,7 @@
 """Animation: moving a needle between two parallel lines, parallelogram vs the far detour (kakeya.md 2d).
 
 Accromath, kakeya14-16: to slide a unit needle from one line to a parallel line a distance d away, the
-obvious region is a parallelogram of area L*d. Far better (kakeya16): slide the needle ALONG its own
+obvious region is a parallelogram of area L*d. Far better (kakeya16): slide the needle along its own
 axis (area 0), make the turn far out where a small angle alpha suffices, then slide back. Only the two
 small rotations cost area, 2 * (1/2 L^2 alpha) = L^2 alpha, and "plus le deplacement est grand, plus
 l'angle est petit": push the detour out to make alpha, hence the area, as small as wanted.
@@ -84,7 +84,7 @@ def main():
 
     par = np.array([START[0], START[1], TARGET, TARGET + np.array([-1.0, 0.0])])
 
-    # --- bounding box over the WHOLE choreography (so nothing is clipped) -----------------
+    # Bounding box over the whole choreography (so nothing is clipped)
     pts = [par]
     for p, _ in plan:
         for i in range(21):
@@ -133,7 +133,7 @@ def main():
                 ax.fill(w1[:, 0], w1[:, 1], facecolor=COLORS["accent"], edgecolor="none", alpha=0.85, zorder=2)
             if phase >= 4:
                 # the needle sweeps from the diagonal (pi-alpha) down to flat (pi); the swept red
-                # must trail BEHIND it, growing from the diagonal edge toward the needle's angle.
+                # must trail behind it, growing from the diagonal edge toward the needle's angle.
                 th_needle = 0.0 if phase > 4 else ALPHA * (1 - f)
                 w2 = wedge(PIVOT2, math.pi - ALPHA, math.pi - th_needle)
                 ax.fill(w2[:, 0], w2[:, 1], facecolor=COLORS["accent"], edgecolor="none", alpha=0.85, zorder=2)
