@@ -101,7 +101,7 @@ class TestNotebookContent:
     @pytest.mark.parametrize("notebook", get_all_notebooks(), ids=lambda p: p.stem)
     def test_output_size_reasonable(self, notebook: Path):
         """Verify exported HTML is neither too small nor too large."""
-        content, size = self._get_exported_html(notebook)
+        _content, size = self._get_exported_html(notebook)
         name = notebook.stem
 
         # Check minimum size (ensures content was actually generated)
