@@ -540,8 +540,8 @@ Formally, Fefferman used a Besicovitch/Perron construction to **disprove** the n
 `S_R^{ball} f`, does **not** converge to `f` in `L^p(R^n)` as `R → ∞`. Where do the needles come
 from? The boundary of the frequency ball is *curved*, and by the uncertainty principle of Section 5b
 a thin curved sliver of frequency dualizes to a long thin tube in physical space, one tube per
-tangent direction of the sphere. The engine of the
-counterexample is exactly Kakeya geometry: thin frequency slabs tangent to the sphere pile up in
+tangent direction of the sphere. The counterexample runs on
+exactly Kakeya geometry: thin frequency slabs tangent to the sphere pile up in
 physical space the way needles pile up in a Besicovitch set, so a geometry puzzle controls the
 convergence of Fourier series in higher dimensions.
 
@@ -666,7 +666,7 @@ $$
 \end{aligned}
 $$
 
-Dimension `d = 3` is the case `3 - d = 0`: the union's volume-meter stays lit as `δ → 0`. A
+Dimension `d = 3` is the case `3 - d = 0`: the union's volume stays bounded away from `0` as `δ → 0`. A
 dimension-`5/2` set would have `3 - d = 1/2` and shed about `29\%` of its volume at every halving,
 draining to `0`. So "dimension 3" is exactly "refining the tubes cannot drain the union."
 
@@ -697,7 +697,7 @@ Two axioms/definitions the proof leans on (Hickman):
 
 ![A prism and the tubes it may contain: the Wolff axiom caps this at delta^-2 |R|, giving the (n+2)/2 = 5/2 bound in R^3.](figures/7_solving_3d/7_1_wolff_axiom.png)
 
-Read as a capacity law it is vivid: thinning the prism shrinks `|R|`, so the cap `δ^{-2}|R|` drops and
+Read as a capacity law it is concrete: thinning the prism shrinks `|R|`, so the cap `δ^{-2}|R|` drops and
 the slab can legally hold fewer tubes. Packing all `δ^{-2}` tubes into one thin slab, the degenerate
 cheat, is exactly the configuration a count above `δ^{-2}|R|` forbids.
 
@@ -750,11 +750,11 @@ fat tubes? Two extreme behaviors:
 
 ![Sticky vs non-sticky occupancy of a fat tube: sticky packs ~ (rho/delta)^2 thin tubes (self-similar across scales), non-sticky scatters. Static and [animation](figures/7_solving_3d/7_2_sticky_morph_anim.gif).](figures/7_solving_3d/7_2_sticky_vs_nonsticky.png)
 
-Why start with sticky (the "more information = easier" beat): stickiness is a lot of extra
+Why start with sticky (the "more information = easier" step): stickiness is a lot of extra
 structure, so the induction hypothesis can be applied cleanly at both the fat scale `ρ` and inside
-each fat tube, and the two multiplicity bounds multiply consistently. This is not cheating.
-Proving the sticky case first is a reconnaissance: it shows the conjecture is true in the regime
-where you can compute, and it tells you exactly which enemy is left, the scattered configurations
+each fat tube, and the two multiplicity bounds multiply consistently. This is not cheating:
+proving the sticky case first is a reconnaissance that shows the conjecture holds in the regime
+where you can compute, and it identifies exactly which enemy remains, the scattered configurations
 that refuse to look like combs. Assuming stickiness the
 conjecture is *intuitively* the tractable case, and Wang-Zahl proved the **sticky Kakeya conjecture in
 `R^3`** first (2022), which was strong evidence the full thing was in reach.
@@ -818,7 +818,7 @@ induction feed on itself.
 
 ### 7d. Compression, quantified
 
-"Compression" has a kitchen-image version: total tube-content is the amount of pasta you started
+"Compression" in plain terms: total tube-content is the amount of pasta you started
 with, the union is the size of the pot you managed to fit it into, and compression is packing more
 and more pasta into an arbitrarily small pot by overlapping the strands. Formally (Zahl's survey,
 the **Besicovitch compression phenomenon**):
@@ -865,7 +865,7 @@ $$
 \qquad \mu_{\text{coarse}} = \text{multiplicity of } \bigcup_{T \subseteq T_\rho} T .
 $$
 
-Because grains within one fat tube are disjoint, `μ_coarse` is genuinely smaller than `μ_fat`, and the
+Because grains within one fat tube are disjoint, `μ_coarse` is strictly smaller than `μ_fat`, and the
 step **gains** `α` instead of losing. Graininess controls the loss, turning a lossy induction into
 one that ratchets the dimension estimate up to exactly 3.
 
