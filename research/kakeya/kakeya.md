@@ -636,9 +636,10 @@ formula.
 
 ![The implication tower local smoothing => Bochner-Riesz => restriction => Kakeya, Kakeya at the base (known n=2, open n>=3).](figures/5_conjecture_tower/5_9_conjecture_tower.png)
 
-**(i) Restriction conjecture** (Stein). In plain words: take a function living only on a curved
-surface, say a ripple pattern on a sphere, and let it radiate as waves into the whole space. How
-quickly must the radiated wave die out? With the extension operator on the sphere
+**(i) Restriction conjecture** (Stein). *One breath:* a wave built only from a curved surface's tones
+cannot stay bunched up, it has to leak energy and fade as it spreads. In plain words: take a function
+living only on a curved surface, say a ripple pattern on a sphere, and let it radiate as waves into
+the whole space. How quickly must the radiated wave die out? With the extension operator on the sphere
 `E g(x) = ∫_{S^{n-1}} g(ω) e^{2πi x·ω} dσ(ω)`,
 
 $$
@@ -653,9 +654,10 @@ behaves when restricted to a curved surface.
 
 ![Extension operator on the paraboloid/sphere: wave packets tangent to the surface; the L^q bound holds for q > 2n/(n-1).](figures/5_conjecture_tower/5_6_restriction_conjecture.png)
 
-**(ii) Bochner-Riesz conjecture.** In plain words: Fefferman showed the sharp ball cutoff rings
-like a badly tuned instrument; can you fix it by softening the cutoff, fading tones out gently near
-the boundary instead of chopping them? Smooth the ball cutoff with an exponent `α ≥ 0`:
+**(ii) Bochner-Riesz conjecture.** *One breath:* fade the frequency cutoff out gently instead of
+chopping it, and signals rebuild cleanly again. In plain words: Fefferman showed the sharp ball cutoff
+rings like a badly tuned instrument; can you fix it by softening the cutoff, fading tones out gently
+near the boundary instead of chopping them? Smooth the ball cutoff with an exponent `α ≥ 0`:
 
 $$
 B_R^{\alpha} f(x) := \int_{B(0,R)} e^{2\pi i x\cdot\xi}\Big(1 - \tfrac{|\xi|^2}{R^2}\Big)^{\alpha}
@@ -670,9 +672,10 @@ Kakeya set would build a counterexample overwhelming the `α > 0` smoothing).
 
 ![Bochner-Riesz multiplier (1 - |xi|^2/R^2)_+^alpha: the ball cutoff (alpha=0) smoothed as alpha grows. Static and [animation](figures/5_conjecture_tower/5_7_bochner_riesz_anim.gif).](figures/5_conjecture_tower/5_7_bochner_riesz.png)
 
-**(iii) Local smoothing conjecture** (Sogge, 1991), top of the tower. In plain words: freeze a wave
-at one instant and it can spike badly; watch it over a short time interval instead and the spikes
-move around, so the *time average* is smoother than any frozen frame. The conjecture asks exactly
+**(iii) Local smoothing conjecture** (Sogge, 1991), top of the tower. *One breath:* a wave averaged
+over a little stretch of time is smoother than it is at any single frozen instant. In plain words:
+freeze a wave at one instant and it can spike badly; watch it over a short time interval instead and
+the spikes move around, so the *time average* is smoother than any frozen frame. The conjecture asks exactly
 how much smoothness this averaging buys. It is about the wave equation via the
 half-wave propagator `e^{it√(-Δ)}` (so `u(x,t) = e^{it√(-Δ)} f` solves the wave equation):
 
