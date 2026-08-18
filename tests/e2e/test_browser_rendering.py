@@ -63,7 +63,7 @@ def http_server(exported_docs):
         def log_message(self, format, *args):
             pass
 
-    server = http.server.HTTPServer(("127.0.0.1", 0), QuietHandler)
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), QuietHandler)
     port = server.server_address[1]
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
