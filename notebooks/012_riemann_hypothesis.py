@@ -470,8 +470,8 @@ def _(np):
         return smooth - osc
 
     def unfold(gammas):
-        """Rescale ordinates to mean spacing 1: w_k = gamma_k log(gamma_k/2pi) / 2pi."""
-        return gammas * np.log(gammas / (2 * np.pi)) / (2 * np.pi)
+        """Rescale ordinates to unit mean spacing via N(T): w_k = gamma_k/2pi (log(gamma_k/2pi) - 1)."""
+        return gammas / (2 * np.pi) * (np.log(gammas / (2 * np.pi)) - 1.0)
 
     def montgomery_R2(u):
         """The pair-correlation form factor 1 - (sin pi u / pi u)^2 (Montgomery / GUE)."""
@@ -700,7 +700,7 @@ def _(COLORS, base_layout, go, np, partial_euler, primes_up_to, style_subplot_ax
 
     _fig.update_layout(**base_layout(title="Partial Euler products climbing to ζ(s)", height=440))
     _fig.update_xaxes(title_text="s")
-    _fig.update_yaxes(title_text="value", range=[0.8, 5.0])
+    _fig.update_yaxes(title_text="value", range=[0.8, 6.2])
     style_subplot_axes(_fig, show_ticklabels=True)
     _fig
     return
@@ -863,7 +863,7 @@ def _(COLORS, ZEROS, base_layout, go, hardy_Z, np, play_pause, style_subplot_axe
     _fig.add_trace(_marks(0))
 
     _fig.frames = [
-        go.Frame(data=[_curve(_fi), _marks(_fi)], traces=[1, 2], name=str(_fi)) for _fi in range(len(_schedule))
+        go.Frame(data=[_curve(_fi), _marks(_fi)], traces=[0, 1], name=str(_fi)) for _fi in range(len(_schedule))
     ]
 
     _fig.update_layout(**base_layout(title="Hardy Z(t): each sign change is a zero on the line", height=440))
@@ -1118,7 +1118,7 @@ def _(COLORS, base_layout, go, np, style_subplot_axes, von_mangoldt):
 
     _fig.update_layout(**base_layout(title="The rightmost zero sets the prime error band", height=440))
     _fig.update_xaxes(title_text="x")
-    _fig.update_yaxes(title_text="ψ(x) − x", range=[-90, 90])
+    _fig.update_yaxes(title_text="ψ(x) − x", range=[-200, 200])
     style_subplot_axes(_fig, show_ticklabels=True)
     _fig
     return
@@ -1497,13 +1497,6 @@ def _(COLORS, H_d, H_flat, H_opt, base_layout, go, np, style_subplot_axes):
 
     _fig = go.Figure()
     _fig.add_hline(y=5 / 12, line={"color": COLORS["muted"], "width": 1.5, "dash": "dot"})
-    _fig.add_annotation(
-        x=0.34,
-        y=5 / 12 + 0.03,
-        text="previous record 5/12",
-        showarrow=False,
-        font={"color": COLORS["muted"], "size": 11},
-    )
     _fig.add_trace(
         go.Scatter(
             x=_lam,
@@ -1545,6 +1538,13 @@ def _(COLORS, H_d, H_flat, H_opt, base_layout, go, np, style_subplot_axes):
     _fig.update_xaxes(title_text="bandwidth λ", range=[0.3, 1.05])
     _fig.update_yaxes(title_text="certified proportion", range=[0.2, 0.9])
     style_subplot_axes(_fig, show_ticklabels=True)
+    _fig.add_annotation(
+        x=0.34,
+        y=5 / 12 + 0.03,
+        text="previous record 5/12",
+        showarrow=False,
+        font={"color": COLORS["muted"], "size": 11},
+    )
     _fig
     return
 
@@ -1603,6 +1603,11 @@ def _(COLORS, base_layout, go, np, random_psd_sum, random_signature_block, style
     _fig = go.Figure()
     _fig.add_trace(go.Histogram(x=_slacks, nbinsx=60, marker={"color": "rgba(78,205,196,0.6)"}, showlegend=False))
     _fig.add_vline(x=0.0, line={"color": COLORS["secondary"], "width": 2, "dash": "dash"})
+
+    _fig.update_layout(**base_layout(title="Rank-trace inequality: slack ≥ 0 on every random instance", height=420))
+    _fig.update_xaxes(title_text="slack  r − (rank-trace right-hand side)")
+    _fig.update_yaxes(title_text="count")
+    style_subplot_axes(_fig, show_ticklabels=True)
     _fig.add_annotation(
         x=0.0,
         y=1.0,
@@ -1613,11 +1618,6 @@ def _(COLORS, base_layout, go, np, random_psd_sum, random_signature_block, style
         font={"color": COLORS["highlight"], "size": 13},
         xanchor="left",
     )
-
-    _fig.update_layout(**base_layout(title="Rank-trace inequality: slack ≥ 0 on every random instance", height=420))
-    _fig.update_xaxes(title_text="slack  r − (rank-trace right-hand side)")
-    _fig.update_yaxes(title_text="count")
-    style_subplot_axes(_fig, show_ticklabels=True)
     _fig
     return
 
@@ -1732,13 +1732,6 @@ def _(COLORS, H_opt, SQRT2, base_layout, c_star, go, math, np, style_subplot_axe
 
     _fig = go.Figure()
     _fig.add_hline(y=0.90, line={"color": COLORS["muted"], "width": 1.5, "dash": "dot"})
-    _fig.add_annotation(
-        x=0.72,
-        y=0.915,
-        text="0.90 (above the single-window ceiling)",
-        showarrow=False,
-        font={"color": COLORS["muted"], "size": 11},
-    )
     _fig.add_trace(
         go.Scatter(
             x=_lam_known,
@@ -1786,6 +1779,13 @@ def _(COLORS, H_opt, SQRT2, base_layout, c_star, go, math, np, style_subplot_axe
     _fig.update_xaxes(title_text="bandwidth λ", range=[0.5, _pole])
     _fig.update_yaxes(title_text="certified proportion", range=[0.35, 0.98])
     style_subplot_axes(_fig, show_ticklabels=True)
+    _fig.add_annotation(
+        x=0.72,
+        y=0.915,
+        text="0.90 (above the single-window ceiling)",
+        showarrow=False,
+        font={"color": COLORS["muted"], "size": 11},
+    )
     _fig
     return
 
@@ -1850,6 +1850,10 @@ def _(COLORS, base_layout, go, style_subplot_axes):
         )
     )
     _fig.add_vrect(x0=-0.5, x1=2.5, fillcolor="rgba(78,205,196,0.08)", line={"width": 0})
+
+    _fig.update_layout(**base_layout(title="What each lever buys", height=440))
+    _fig.update_yaxes(title_text="certified proportion", range=[0, 1.16])
+    style_subplot_axes(_fig, show_ticklabels=True)
     _fig.add_annotation(
         x=1,
         y=1.08,
@@ -1860,10 +1864,6 @@ def _(COLORS, base_layout, go, style_subplot_axes):
     _fig.add_annotation(
         x=3.5, y=1.08, text="conditional", showarrow=False, font={"color": COLORS["accent2"], "size": 11}
     )
-
-    _fig.update_layout(**base_layout(title="What each lever buys", height=440))
-    _fig.update_yaxes(title_text="certified proportion", range=[0, 1.16])
-    style_subplot_axes(_fig, show_ticklabels=True)
     _fig
     return
 
