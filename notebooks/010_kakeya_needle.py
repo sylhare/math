@@ -136,19 +136,6 @@ def _(np):
         _e0, _e1 = _polygon_chord(_p, _d, _bx, _by)
         return np.array([_e0[0], _e1[0]]), np.array([_e0[1], _e1[1]])
 
-    def fit_unit_chord(theta, bx, by):
-        """Endpoints of a unit needle at angle theta, centred in the longest chord of polygon (bx, by)."""
-        _u = np.array([math.cos(theta), math.sin(theta)])
-        _perp = np.array([-math.sin(theta), math.cos(theta)])
-        _best, _mid = 0.0, np.zeros(2)
-        for _c in np.linspace(-0.75, 0.75, 61):
-            _e0, _e1 = _polygon_chord(_c * _perp, _u, bx, by)
-            _len = float(np.hypot(_e1[0] - _e0[0], _e1[1] - _e0[1]))
-            if _len > _best:
-                _best, _mid = _len, 0.5 * (_e0 + _e1)
-        _a, _b = _mid - 0.5 * _u, _mid + 0.5 * _u
-        return np.array([_a[0], _b[0]]), np.array([_a[1], _b[1]])
-
     def equilateral_h1():
         """Equilateral triangle of height 1 (Pal's convex minimum): rows [baseL, baseR, apex]."""
         return np.array([[-1.0 / SQRT3, 0.0], [1.0 / SQRT3, 0.0], [0.0, 1.0]])
@@ -200,7 +187,6 @@ def _(np):
         deltoid,
         deltoid_needle,
         equilateral_h1,
-        fit_unit_chord,
         math,
         needle_at,
         perron_pieces,
@@ -419,7 +405,6 @@ def _(
     base_layout,
     circle,
     equilateral_h1,
-    fit_unit_chord,
     go,
     make_subplots,
     math,
@@ -443,40 +428,85 @@ def _(
             _y += list(_c[1] + width * np.sin(_t))
         return np.array(_x), np.array(_y)
 
+    def _pivot_needle(pp, uu, ww, u):
+        _a0 = math.atan2(uu[1] - pp[1], uu[0] - pp[0])
+        _a1 = math.atan2(ww[1] - pp[1], ww[0] - pp[0])
+        _da = (_a1 - _a0 + math.pi) % (2 * math.pi) - math.pi
+        _ang = _a0 + u * _da
+        return np.array([pp[0], pp[0] + math.cos(_ang)]), np.array([pp[1], pp[1] + math.sin(_ang)])
+
+    def _poly_needle(verts, t):
+        _tr = [(verts[0], verts[1], verts[2]), (verts[2], verts[0], verts[1]), (verts[1], verts[2], verts[0])]
+        _ph = min(2, int(t * 3))
+        return _pivot_needle(*_tr[_ph], t * 3 - _ph)
+
+    def _disc_needle(t):
+        _th = t * math.pi
+        return np.array([-0.5 * math.cos(_th), 0.5 * math.cos(_th)]), np.array(
+            [-0.5 * math.sin(_th), 0.5 * math.sin(_th)]
+        )
+
     _cx, _cy = circle(0.5, 200)
     _ux, _uy = _reuleaux(1.0)
+    _h = SQRT3 / 2.0
+    _rv = [np.array([0.0, _h * 2 / 3]), np.array([-0.5, -_h / 3]), np.array([0.5, -_h / 3])]
     _tri = equilateral_h1()
     _tx = np.array([_tri[0, 0], _tri[1, 0], _tri[2, 0], _tri[0, 0]])
     _ty = np.array([_tri[0, 1], _tri[1, 1], _tri[2, 1], _tri[0, 1]])
-    _shapes = [
-        (_cx, _cy, "rgba(0,212,255,0.10)"),
-        (_ux, _uy, "rgba(78,205,196,0.12)"),
-        (_tx, _ty, "rgba(149,225,211,0.12)"),
-    ]
+    _tv = [_tri[2], _tri[0], _tri[1]]
 
-    _angles = np.linspace(0, math.pi, 30, endpoint=False)
-    _needles = [[fit_unit_chord(_a, _bx, _by) for _a in _angles] for _bx, _by, _ in _shapes]
+    _nf = 36
+    _ts = np.linspace(0, 1, _nf, endpoint=False)
+    _seqs = [
+        [_disc_needle(_t) for _t in _ts],
+        [_poly_needle(_rv, _t) for _t in _ts],
+        [_poly_needle(_tv, _t) for _t in _ts],
+    ]
+    _fills = ["rgba(0,212,255,0.10)", "rgba(78,205,196,0.12)", "rgba(149,225,211,0.12)"]
+    _outlines = [(_cx, _cy), (_ux, _uy), (_tx, _ty)]
+
+    def _fan(seq, k):
+        _x, _y = [], []
+        for _j in range(k + 1):
+            _nx, _ny = seq[_j]
+            _x += [_nx[0], _nx[1], None]
+            _y += [_ny[0], _ny[1], None]
+        return _x, _y
 
     _fig = make_subplots(
         rows=1,
         cols=3,
         subplot_titles=("Disc  π/4 ≈ 0.785", "Reuleaux  (π−√3)/2 ≈ 0.705", "Pal triangle  1/√3 ≈ 0.577"),
     )
-    for _c, (_sx, _sy, _fill) in enumerate(_shapes, start=1):
+    for _c in (1, 2, 3):
+        _sx, _sy = _outlines[_c - 1]
         _fig.add_trace(
             go.Scatter(
                 x=_sx,
                 y=_sy,
                 mode="lines",
                 fill="toself",
-                fillcolor=_fill,
+                fillcolor=_fills[_c - 1],
                 line={"color": COLORS["grid"]},
                 showlegend=False,
             ),
             row=1,
             col=_c,
         )
-        _nx0, _ny0 = _needles[_c - 1][0]
+        _fx0, _fy0 = _fan(_seqs[_c - 1], 0)
+        _fig.add_trace(
+            go.Scatter(
+                x=_fx0,
+                y=_fy0,
+                mode="lines",
+                line={"color": COLORS["primary"], "width": 1},
+                opacity=0.4,
+                showlegend=False,
+            ),
+            row=1,
+            col=_c,
+        )
+        _nx0, _ny0 = _seqs[_c - 1][0]
         _fig.add_trace(
             go.Scatter(x=_nx0, y=_ny0, mode="lines", line={"color": COLORS["secondary"], "width": 5}, showlegend=False),
             row=1,
@@ -484,9 +514,14 @@ def _(
         )
 
     _frames = []
-    for _k in range(len(_angles)):
-        _data = [go.Scatter(x=_needles[_s][_k][0], y=_needles[_s][_k][1]) for _s in range(3)]
-        _frames.append(go.Frame(data=_data, traces=[1, 3, 5], name=str(_k)))
+    for _k in range(_nf):
+        _data = []
+        for _seq in _seqs:
+            _fx, _fy = _fan(_seq, _k)
+            _data.append(go.Scatter(x=_fx, y=_fy))
+            _nx, _ny = _seq[_k]
+            _data.append(go.Scatter(x=_nx, y=_ny))
+        _frames.append(go.Frame(data=_data, traces=[1, 2, 4, 5, 7, 8], name=str(_k)))
     _fig.frames = _frames
 
     _fig.update_layout(**base_layout(title="A unit needle turns in each convex answer", height=380))
@@ -509,10 +544,12 @@ def _(
 def _(mo):
     mo.md(
         r"""
-        Play it: the unit needle turns through every direction inside each convex shape, so all three
-        are genuine needle sets. The area falls from the disc to the Reuleaux triangle to Pal's
+        Play it: a unit needle turns through every direction inside each convex shape, its swept
+        positions accumulating as a faint fan. In the disc it spins about the centre; in the Reuleaux
+        triangle and Pal's triangle it pivots about each corner in turn, sliding along a shared edge
+        between pivots. All three are genuine needle sets, and the area falls disc → Reuleaux →
         triangle, yet Pal proved the triangle is the smallest convex answer. To get below $1/\sqrt3$
-        we have to give up convexity.
+        we give up convexity.
         """
     )
     return
@@ -564,7 +601,27 @@ def _(COLORS, base_layout, circle, deltoid, deltoid_needle, go, math, np, play_p
         _t = np.linspace(0, phi, max(2, k))
         return 2 * _b * np.cos(_t) + _b * np.cos(2 * _t), 2 * _b * np.sin(_t) - _b * np.sin(2 * _t)
 
+    def _needle_fan(k):
+        _x, _y = [], []
+        for _j in range(k + 1):
+            _fnx, _fny = deltoid_needle(_phis[_j], _b)
+            _x += [_fnx[0], _fnx[1], None]
+            _y += [_fny[0], _fny[1], None]
+        return _x, _y
+
     _fig = go.Figure()
+    _discx, _discy = circle(0.5, 200)
+    _fig.add_trace(
+        go.Scatter(
+            x=_discx,
+            y=_discy,
+            mode="lines",
+            fill="toself",
+            fillcolor="rgba(0,212,255,0.10)",
+            line={"color": COLORS["grid"], "width": 1, "dash": "dot"},
+            showlegend=False,
+        )
+    )
     _bx, _by = circle(3 * _b, 200)
     _fig.add_trace(go.Scatter(x=_bx, y=_by, mode="lines", line={"color": COLORS["grid"], "width": 1}, showlegend=False))
     _fig.add_trace(
@@ -580,6 +637,17 @@ def _(COLORS, base_layout, circle, deltoid, deltoid_needle, go, math, np, play_p
     _fig.add_trace(
         go.Scatter(x=_ax0, y=_ay0, mode="lines", line={"color": COLORS["primary"], "width": 3}, showlegend=False)
     )
+    _fanx0, _fany0 = _needle_fan(0)
+    _fig.add_trace(
+        go.Scatter(
+            x=_fanx0,
+            y=_fany0,
+            mode="lines",
+            line={"color": COLORS["secondary"], "width": 0.6},
+            opacity=0.35,
+            showlegend=False,
+        )
+    )
     _nx0, _ny0 = deltoid_needle(_phis[0], _b)
     _fig.add_trace(
         go.Scatter(x=_nx0, y=_ny0, mode="lines", line={"color": COLORS["secondary"], "width": 6}, showlegend=False)
@@ -590,16 +658,24 @@ def _(COLORS, base_layout, circle, deltoid, deltoid_needle, go, math, np, play_p
         _rx, _ry, _cxr, _cyr = _rolling(_phi)
         _ax, _ay = _arc_to(_phi, _k + 2)
         _nx, _ny = deltoid_needle(_phi, _b)
+        _fanx, _fany = _needle_fan(_k)
         _frames.append(
             go.Frame(
-                data=[go.Scatter(x=_rx, y=_ry), go.Scatter(x=_ax, y=_ay), go.Scatter(x=_nx, y=_ny)],
-                traces=[2, 3, 4],
+                data=[
+                    go.Scatter(x=_rx, y=_ry),
+                    go.Scatter(x=_ax, y=_ay),
+                    go.Scatter(x=_fanx, y=_fany),
+                    go.Scatter(x=_nx, y=_ny),
+                ],
+                traces=[3, 4, 5, 6],
                 name=str(_k),
             )
         )
     _fig.frames = _frames
 
-    _fig.update_layout(**base_layout(title="Rolling a circle traces the deltoid (area π/8)", height=520))
+    _fig.update_layout(
+        **base_layout(title="Rolling a circle traces the deltoid (π/8, half the dashed disc)", height=520)
+    )
     _fig.update_xaxes(range=[-0.85, 0.85], scaleanchor="y", constrain="domain", showticklabels=False)
     _fig.update_yaxes(range=[-0.85, 0.85], showticklabels=False)
     style_subplot_axes(_fig)
@@ -614,7 +690,9 @@ def _(mo):
         r"""
         The small teal circle rolls inside the large one; the cyan curve is the point it traces, the
         deltoid. The coral needle stays tangent, its ends riding the cusps, turning through every
-        direction while sliding along itself. One dent, and it beats every convex answer.
+        direction while sliding along itself; its swept positions accumulate as a faint fan whose
+        envelope is the deltoid. The dashed disc behind it is what spinning in place would sweep: the
+        deltoid fills exactly half of it. One dent, and it beats every convex answer.
         """
     )
     return
@@ -770,28 +848,30 @@ def _(mo):
 
 @app.cell
 def _(COLORS, SQRT3, base_layout, go, np, perron_pieces, play_pause, style_subplot_axes, union_fraction):
-    _nlev = 6
+    _nlev = 4
     _apex = (0.0, 1.0)
-    _base_half = 1.0 / SQRT3
+    _bh = 1.0 / SQRT3
     _gu = np.linspace(-1.3, 1.3, 180)
     _gv = np.linspace(-0.05, 1.05, 90)
     _GX, _GY = np.meshgrid(_gu, _gv)
     _cellA = (_gu[1] - _gu[0]) * (_gv[1] - _gv[0])
-    _alphas = np.linspace(0.0, 0.6, 16)
-    _base_area, _ = union_fraction(perron_pieces(_nlev, 0.0, _apex, _base_half), _GX, _GY, _cellA)
+    _base_area, _ = union_fraction(perron_pieces(_nlev, 0.0, _apex, _bh), _GX, _GY, _cellA)
 
-    def _tree(alpha):
-        _tris = perron_pieces(_nlev, alpha, _apex, _base_half)
+    def _poly(ts):
         _x, _y = [], []
-        for _t in _tris:
-            _x += [_t[0, 0], _t[1, 0], _t[2, 0], None]
-            _y += [_t[0, 1], _t[1, 1], _t[2, 1], None]
+        for _t in ts:
+            _x += [_t[0, 0], _t[1, 0], _t[2, 0], _t[0, 0], None]
+            _y += [_t[0, 1], _t[1, 1], _t[2, 1], _t[0, 1], None]
+        return _x, _y
+
+    def _slivers(alpha):
+        _tris = perron_pieces(_nlev, alpha, _apex, _bh)
         _ar, _ = union_fraction(_tris, _GX, _GY, _cellA)
-        return _x, _y, _ar
+        return _poly(_tris[0::2]), _poly(_tris[1::2]), _ar
 
     def _label(pct):
         return go.Scatter(
-            x=[-1.2],
+            x=[-1.22],
             y=[0.98],
             mode="text",
             text=[f"footprint {pct:.0f}%   fan 60°"],
@@ -800,34 +880,70 @@ def _(COLORS, SQRT3, base_layout, go, np, perron_pieces, play_pause, style_subpl
             showlegend=False,
         )
 
-    _x0, _y0, _a0 = _tree(_alphas[0])
+    _ramp = list(np.linspace(0.0, 0.6, 18))
+    _sched = [(0.0, "cut")] * 6 + [(_a, "slide") for _a in _ramp] + [(0.6, "done")] * 7
+    _titles = {
+        "cut": "Perron tree, step 1: cut the triangle into 16 slivers",
+        "slide": "Perron tree, step 2: slide alternate slivers to overlap",
+    }
+
     _fig = go.Figure()
     _fig.add_trace(
         go.Scatter(
-            x=_x0,
-            y=_y0,
+            x=[-_bh, _bh, 0.0, -_bh],
+            y=[0.0, 0.0, 1.0, 0.0],
             mode="lines",
             fill="toself",
-            fillcolor="rgba(0,212,255,0.18)",
-            line={"color": COLORS["primary"], "width": 0.8},
+            fillcolor="rgba(74,85,104,0.12)",
+            line={"color": COLORS["muted"], "width": 1, "dash": "dot"},
+            showlegend=False,
+        )
+    )
+    (_evx0, _evy0), (_odx0, _ody0), _a0 = _slivers(0.0)
+    _fig.add_trace(
+        go.Scatter(
+            x=_evx0,
+            y=_evy0,
+            mode="lines",
+            fill="toself",
+            fillcolor="rgba(0,212,255,0.30)",
+            line={"color": COLORS["primary"], "width": 1},
+            showlegend=False,
+        )
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=_odx0,
+            y=_ody0,
+            mode="lines",
+            fill="toself",
+            fillcolor="rgba(78,205,196,0.30)",
+            line={"color": COLORS["tertiary"], "width": 1},
             showlegend=False,
         )
     )
     _fig.add_trace(_label(100.0))
 
     _frames = []
-    for _k, _al in enumerate(_alphas):
-        _xx, _yy, _ar = _tree(_al)
+    for _k, (_al, _phase) in enumerate(_sched):
+        (_evx, _evy), (_odx, _ody), _ar = _slivers(_al)
+        _pct = 100.0 * _ar / _base_area
+        _ttl = _titles.get(_phase, f"Perron tree: footprint {_pct:.0f}% of the triangle, fan still 60°")
         _frames.append(
-            go.Frame(data=[go.Scatter(x=_xx, y=_yy), _label(100.0 * _ar / _base_area)], traces=[0, 1], name=str(_k))
+            go.Frame(
+                data=[go.Scatter(x=_evx, y=_evy), go.Scatter(x=_odx, y=_ody), _label(_pct)],
+                traces=[1, 2, 3],
+                name=str(_k),
+                layout={"title": {"text": _ttl}},
+            )
         )
     _fig.frames = _frames
 
-    _fig.update_layout(**base_layout(title="Perron tree: overlap the slivers", height=520))
+    _fig.update_layout(**base_layout(title="Perron tree, step 1: cut the triangle into 16 slivers", height=520))
     _fig.update_xaxes(range=[-1.3, 1.3], scaleanchor="y", constrain="domain", showticklabels=False)
     _fig.update_yaxes(range=[-0.1, 1.1], showticklabels=False)
     style_subplot_axes(_fig)
-    _fig.update_layout(updatemenus=play_pause("▶ Sprout the tree"))
+    _fig.update_layout(updatemenus=play_pause("▶ Cut, then slide", duration=120))
     _fig
     return
 
@@ -836,9 +952,11 @@ def _(COLORS, SQRT3, base_layout, go, np, perron_pieces, play_pause, style_subpl
 def _(mo):
     mo.md(
         r"""
-        As the overlap grows the footprint (top-left readout) drops well below the original triangle,
-        while the fan of directions stays locked at 60 degrees, because every sliver keeps its apex.
-        Area is spent; directions are kept.
+        Step 1 stripes the triangle into 16 thin slivers, all sharing the apex, so together they still
+        point across the same 60-degree fan. Step 2 slides alternate slivers (the two colours) sideways
+        to overlap: the footprint (top-left) drops toward half the triangle while every sliver keeps
+        its apex, so no direction is lost. The dashed triangle behind shows the room being saved. Area
+        is spent, directions are kept.
         """
     )
     return
@@ -1586,6 +1704,134 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
+        One more reading makes "dimension 2" concrete. Take a single overlapped pile and measure it
+        two ways as the overlap deepens: its **area**, and its **box-counting dimension** (the log-log
+        slope of how many $\delta$-boxes it meets). The two rulers pull apart.
+        """
+    )
+    return
+
+
+@app.cell
+def _(COLORS, SQRT3, base_layout, go, make_subplots, np, perron_pieces, play_pause, style_subplot_axes):
+    _apex = (0.0, 1.0)
+    _bh = 1.0 / SQRT3
+    _gu = np.linspace(-1.3, 1.3, 360)
+    _gv = np.linspace(-0.15, 1.15, 180)
+    _GX, _GY = np.meshgrid(_gu, _gv)
+
+    def _mask(tris):
+        _m = np.zeros(_GX.shape, bool)
+        for _t in tris:
+            (_ax, _ay), (_bx, _by), (_cx, _cy) = _t
+            _den = (_by - _cy) * (_ax - _cx) + (_cx - _bx) * (_ay - _cy)
+            _a = ((_by - _cy) * (_GX - _cx) + (_cx - _bx) * (_GY - _cy)) / _den
+            _b = ((_cy - _ay) * (_GX - _cx) + (_ax - _cx) * (_GY - _cy)) / _den
+            _m |= (_a >= -1e-9) & (_b >= -1e-9) & (1 - _a - _b >= -1e-9)
+        return _m
+
+    _blocks = [2, 3, 4, 6, 9, 12, 18]
+    _levels = list(range(1, 8))
+    _base = _mask(perron_pieces(1, 0.0, _apex, _bh)).sum()
+    _areas, _dims, _piles = [], [], []
+    for _n in _levels:
+        _tris = perron_pieces(_n, 0.6, _apex, _bh)
+        _M = _mask(_tris)
+        _areas.append(_M.sum() / _base)
+        _Ns = []
+        for _bk in _blocks:
+            _ny, _nx = _M.shape[0] // _bk * _bk, _M.shape[1] // _bk * _bk
+            _Ns.append(int(_M[:_ny, :_nx].reshape(_ny // _bk, _bk, _nx // _bk, _bk).any(axis=(1, 3)).sum()))
+        _dims.append(float(np.polyfit(np.log([1.0 / _bk for _bk in _blocks]), np.log(_Ns), 1)[0]))
+        _px, _py = [], []
+        for _t in _tris:
+            _px += [_t[0, 0], _t[1, 0], _t[2, 0], None]
+            _py += [_t[0, 1], _t[1, 1], _t[2, 1], None]
+        _piles.append((_px, _py))
+
+    _fig = make_subplots(rows=1, cols=2, subplot_titles=("The overlapped pile", "Two rulers vs overlap level"))
+    _fig.add_trace(
+        go.Scatter(
+            x=_piles[0][0],
+            y=_piles[0][1],
+            mode="lines",
+            fill="toself",
+            fillcolor="rgba(0,212,255,0.18)",
+            line={"color": COLORS["primary"], "width": 0.7},
+            showlegend=False,
+        ),
+        row=1,
+        col=1,
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=_levels[:1],
+            y=_areas[:1],
+            mode="lines+markers",
+            line={"color": COLORS["primary"], "width": 3},
+            name="area (fraction of triangle)",
+        ),
+        row=1,
+        col=2,
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=_levels[:1],
+            y=_dims[:1],
+            mode="lines+markers",
+            line={"color": COLORS["secondary"], "width": 3},
+            name="box-counting dimension",
+        ),
+        row=1,
+        col=2,
+    )
+    _fig.add_hline(y=2.0, line={"color": COLORS["muted"], "width": 1, "dash": "dot"}, row=1, col=2)
+
+    _frames = []
+    for _k in range(len(_levels)):
+        _frames.append(
+            go.Frame(
+                data=[
+                    go.Scatter(x=_piles[_k][0], y=_piles[_k][1]),
+                    go.Scatter(x=_levels[: _k + 1], y=_areas[: _k + 1]),
+                    go.Scatter(x=_levels[: _k + 1], y=_dims[: _k + 1]),
+                ],
+                traces=[0, 1, 2],
+                name=str(_k),
+            )
+        )
+    _fig.frames = _frames
+
+    _fig.update_layout(**base_layout(title="Area falls, dimension stays near 2", height=430))
+    _fig.update_xaxes(range=[-1.3, 1.3], scaleanchor="y", constrain="domain", showticklabels=False, row=1, col=1)
+    _fig.update_yaxes(range=[-0.1, 1.1], showticklabels=False, row=1, col=1)
+    _fig.update_xaxes(title_text="overlap level n", row=1, col=2)
+    _fig.update_yaxes(title_text="area fraction  /  dimension", range=[0, 2.2], row=1, col=2)
+    style_subplot_axes(_fig, show_ticklabels=True)
+    _fig.update_layout(updatemenus=play_pause("▶ Deepen the overlap", duration=650))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        The box-counting dimension (coral) sits near 2 the whole way, hugging the dashed target, while
+        the area (cyan) stays a small fraction of the triangle. This fixed overlap schedule plateaus
+        the area near 44%; the true minimum is 0, reached only $1/\log N$ slowly, too slowly to watch.
+        The stable reading is the point: the pile keeps full dimension while its area shrinks away, so
+        **area 0, dimension 2** (Davies). The finite-resolution slope (~1.75) undershoots the true 2
+        only because the boxes are not yet small enough.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ## 5. Why anyone cares: the harmonic-analysis tower
 
         A needle puzzle stops being a curiosity here. It sits at the **bottom** of a tower of
@@ -2131,6 +2377,77 @@ def _(mo):
 
 
 @app.cell
+def _(COLORS, base_layout, circle, go, make_subplots, np, play_pause, style_subplot_axes):
+    _ts = np.linspace(0.15, 0.95, 18)
+
+    _fig = make_subplots(
+        rows=1, cols=2, subplot_titles=("Wavefront |x| = t expanding", "Space-time: energy rides the cone")
+    )
+    _wx0, _wy0 = circle(_ts[0], 160)
+    _fig.add_trace(
+        go.Scatter(x=_wx0, y=_wy0, mode="lines", line={"color": COLORS["primary"], "width": 3}, showlegend=False),
+        row=1,
+        col=1,
+    )
+    _fig.add_trace(
+        go.Scatter(x=[0], y=[0], mode="markers", marker={"color": COLORS["highlight"], "size": 7}, showlegend=False),
+        row=1,
+        col=1,
+    )
+    _xx = np.linspace(-1, 1, 120)
+    _fig.add_trace(
+        go.Scatter(
+            x=_xx, y=np.abs(_xx), mode="lines", line={"color": COLORS["secondary"], "width": 3}, showlegend=False
+        ),
+        row=1,
+        col=2,
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=[-_ts[0], _ts[0]],
+            y=[_ts[0], _ts[0]],
+            mode="markers",
+            marker={"color": COLORS["highlight"], "size": 9},
+            showlegend=False,
+        ),
+        row=1,
+        col=2,
+    )
+
+    _frames = []
+    for _k, _t in enumerate(_ts):
+        _wx, _wy = circle(_t, 160)
+        _frames.append(
+            go.Frame(data=[go.Scatter(x=_wx, y=_wy), go.Scatter(x=[-_t, _t], y=[_t, _t])], traces=[0, 3], name=str(_k))
+        )
+    _fig.frames = _frames
+
+    _fig.update_layout(**base_layout(title="Local smoothing: energy concentrates on the cone |x| = t", height=380))
+    _fig.update_xaxes(range=[-1, 1], scaleanchor="y", constrain="domain", showticklabels=False, row=1, col=1)
+    _fig.update_yaxes(range=[-1, 1], showticklabels=False, row=1, col=1)
+    _fig.update_xaxes(title_text="position x", row=1, col=2)
+    _fig.update_yaxes(title_text="time t", range=[-0.05, 1.05], row=1, col=2)
+    style_subplot_axes(_fig, show_ticklabels=True)
+    _fig.update_layout(updatemenus=play_pause("▶ Advance time"))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        Left: a point source sends out a wavefront $|x| = t$ that concentrates the wave's energy on an
+        expanding circle. Right, in space-time, that energy rides the light cone $|x| = t$ (the marks
+        climb the V as time advances). At a single instant the wave can spike on the circle; averaging
+        over the time interval smears the spike along the cone, and that regained smoothness is exactly
+        what local smoothing measures, the top rung of the tower.
+        """
+    )
+    return
+
+
+@app.cell
 def _(mo):
     mo.md(
         r"""
@@ -2233,6 +2550,92 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
+        That "cannot drain" has a numeric shape worth watching. Halving $\delta$ multiplies the tube
+        count by 4 and divides each tube's volume by 4, so the total content stays pinned; the only
+        question is how much of it the union keeps as $\delta \to 0$.
+        """
+    )
+    return
+
+
+@app.cell
+def _(COLORS, base_layout, go, np, play_pause, style_subplot_axes):
+    _ks = np.arange(0, 7)
+    _content = np.ones_like(_ks, dtype=float)
+    _union3 = np.ones_like(_ks, dtype=float)
+    _union25 = 2.0 ** (-_ks / 2.0)
+
+    _fig = go.Figure()
+    _fig.add_trace(
+        go.Scatter(
+            x=_ks[:1],
+            y=_content[:1],
+            mode="lines+markers",
+            line={"color": COLORS["quaternary"], "width": 3, "dash": "dot"},
+            name="tube content #T·|T|",
+        )
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=_ks[:1],
+            y=_union3[:1],
+            mode="lines+markers",
+            line={"color": COLORS["primary"], "width": 3},
+            name="union if dim = 3 (stays lit)",
+        )
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=_ks[:1],
+            y=_union25[:1],
+            mode="lines+markers",
+            line={"color": COLORS["secondary"], "width": 3},
+            name="union if dim = 5/2 (drains)",
+        )
+    )
+
+    _frames = []
+    for _k in range(len(_ks)):
+        _frames.append(
+            go.Frame(
+                data=[
+                    go.Scatter(x=_ks[: _k + 1], y=_content[: _k + 1]),
+                    go.Scatter(x=_ks[: _k + 1], y=_union3[: _k + 1]),
+                    go.Scatter(x=_ks[: _k + 1], y=_union25[: _k + 1]),
+                ],
+                traces=[0, 1, 2],
+                name=str(_k),
+                layout={"title": {"text": f"Refining δ: {_k} halvings, dim-5/2 union at {100 * _union25[_k]:.0f}%"}},
+            )
+        )
+    _fig.frames = _frames
+
+    _fig.update_layout(**base_layout(title="Refining δ: 0 halvings, dim-5/2 union at 100%", height=420))
+    _fig.update_xaxes(title_text="halvings of δ")
+    _fig.update_yaxes(title_text="fraction remaining", range=[0, 1.1])
+    style_subplot_axes(_fig, show_ticklabels=True)
+    _fig.update_layout(updatemenus=play_pause("▶ Halve δ"))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        The total content (yellow, dotted) stays pinned at 1. If the union has **dimension 3** its
+        volume stays pinned too (cyan): refining the tubes cannot drain it. A **dimension-5/2** set
+        would shed a factor $\sqrt2$ per halving (coral, about 29% each step), draining toward 0.
+        "Dimension 3" is exactly the statement that the right meter never drains.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         ## 7. Solving three dimensions: sticky, grains, induction
 
         The Wolff axiom stalls at $5/2$: capping the crudest concentration is not the same as ruling
@@ -2323,7 +2726,86 @@ def _(mo):
         $\text{grain} \approx \delta \times c \times c$ with $\delta \ll c \ll 1$. Within a fat tube
         the grains tile disjointly, and no point lies in too many grains, the quantitative ceiling on
         compression.
+        """
+    )
+    return
 
+
+@app.cell
+def _(COLORS, base_layout, go, np, play_pause, style_subplot_axes):
+    _rho = 0.2
+    _ng = 7
+
+    def _grains_upto(k):
+        _x, _y = [], []
+        for _i in range(k + 1):
+            _x0 = _i / _ng
+            _x += [_x0, _x0 + 1.0 / _ng, _x0 + 1.0 / _ng, _x0, _x0, None]
+            _y += [0, 0, _rho, _rho, 0, None]
+        return _x, _y
+
+    _fig = go.Figure()
+    _fig.add_trace(
+        go.Scatter(
+            x=[0, 1, 1, 0, 0],
+            y=[0, 0, _rho, _rho, 0],
+            mode="lines",
+            line={"color": COLORS["quaternary"], "width": 2},
+            showlegend=False,
+        )
+    )
+    for _y in np.linspace(0.03, _rho - 0.03, 6):
+        _fig.add_trace(
+            go.Scatter(
+                x=[0, 1], y=[_y, _y], mode="lines", line={"color": COLORS["muted"], "width": 1}, showlegend=False
+            )
+        )
+    _gx0, _gy0 = _grains_upto(0)
+    _fig.add_trace(
+        go.Scatter(
+            x=_gx0,
+            y=_gy0,
+            mode="lines",
+            fill="toself",
+            fillcolor="rgba(0,212,255,0.18)",
+            line={"color": COLORS["primary"], "width": 0.8},
+            showlegend=False,
+        )
+    )
+
+    _frames = []
+    for _k in range(_ng):
+        _gx, _gy = _grains_upto(_k)
+        _frames.append(go.Frame(data=[go.Scatter(x=_gx, y=_gy)], traces=[7], name=str(_k)))
+    _fig.frames = _frames
+
+    _fig.update_layout(**base_layout(title="Grains tile a fat tube: δ × c × c slabs, disjoint", height=300))
+    _fig.update_xaxes(range=[-0.04, 1.04], showticklabels=False)
+    _fig.update_yaxes(range=[-0.05, _rho + 0.05], showticklabels=False)
+    style_subplot_axes(_fig)
+    _fig.update_layout(updatemenus=play_pause("▶ Tile the grains", duration=500))
+    _fig
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        A fat tube (yellow) with its thin tubes running lengthwise (grey fibres). Guth's grains are the
+        short flat slabs that tile it disjointly, like the grain in a piece of wood, filling the tube
+        without overlapping. Across different fat tubes, no point lies in too many grains, and that cap
+        is the ceiling on compression. Tracking grains instead of individual tubes is what lets the
+        induction feed on itself.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
         **Compression, quantified.** The Perron pile already shows it: its $2^n$ pieces are only
         translated, so their areas sum to the whole triangle (content pinned at 1) while the union
         falls like $1/\log N$. Content over footprint climbs, but only $\log N$-slowly.
