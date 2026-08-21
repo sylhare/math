@@ -1060,23 +1060,37 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-        ## 3. Dimension: the right way to say "still big"
+        ## 3. Dimension: measuring a set with zero area
 
         A Besicovitch set has zero area yet holds a needle in every direction, so "zero area" cannot
-        mean "nothing there." The trap is reading *measure zero* as *small*. Zero measure means no
-        thickness, not no points: the rational numbers have zero length yet sit densely everywhere,
-        and the Cantor set (throw out the middle third, forever) has zero length yet is uncountable. A
-        vivid picture: a Kakeya set is a pile of thin sticks dropped not at random but arranged so one
-        points in every direction while the pile takes almost no room. Area sees only "almost no room"
-        and reports zero; it cannot tell that clever pile from an empty table.
+        mean "nothing there." Area has run out of resolution: it reports the same "0" for this set as
+        for an empty table, and we need a different measuring stick (a *ruler* in the sense of a
+        yardstick, not a person) that can still tell them apart.
 
-        So area is the wrong ruler. The right one is **dimension**, and the idea is simple: cover the
-        set with tiny boxes and watch *how fast the number of boxes you need grows as the boxes
-        shrink*. A line needs twice as many boxes each time you halve their size; a filled square needs
-        four times as many. That growth rate is the dimension, it can land between whole numbers (which
-        is what "more than a line, less than a surface" means), and it calls the stick pile genuinely
-        large even where area calls it nothing. We build it in two stages: box-counting (Minkowski)
-        first, then the finer Hausdorff version the conjecture actually uses.
+        The cleanest way to build that ruler is on the simplest set that breaks area in the same way,
+        one we can compute by hand: the **Cantor set**. It is not a Kakeya set and holds no needles.
+        It is a warm-up whose only job is to be a set of length zero that is plainly still substantial.
+        Once a ruler can register *that*, we turn it on the needle sets.
+
+        So the path is: build the Cantor set and watch its length vanish, then define the ruler
+        (box-counting dimension) that still sees it, test the ruler on a plain line and a filled square,
+        read off the in-between dimension of the classic fractals, and finally sharpen it into the
+        Hausdorff dimension the conjecture is actually stated in.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        ### The Cantor set: length zero, still substantial
+
+        The construction is one rule repeated forever. Start with the segment $[0,1]$. Delete its open
+        middle third, leaving two segments. Delete the middle third of each of those. Keep going. What
+        never gets deleted is the Cantor set. Watch two things at once below: the surviving pieces (each
+        round doubles their number and thirds their length), and their total length.
         """
     )
     return
@@ -1098,7 +1112,7 @@ def _(COLORS, base_layout, go, make_subplots, play_pause, style_subplot_axes):
     _levels = _cantor(_depth)
     _lengths = [(2.0 / 3.0) ** _m for _m in range(_depth + 1)]
 
-    def _upto(m):
+    def _keep(m):
         _x, _y = [], []
         for _mm in range(m + 1):
             for _a, _b in _levels[_mm]:
@@ -1106,10 +1120,28 @@ def _(COLORS, base_layout, go, make_subplots, play_pause, style_subplot_axes):
                 _y += [-_mm, -_mm, None]
         return _x, _y
 
-    _fig = make_subplots(rows=1, cols=2, subplot_titles=("The Cantor set, refined", "total length (2/3)ᵐ → 0"))
-    _x0, _y0 = _upto(0)
+    def _gaps(m):
+        _x, _y = [], []
+        for _mm in range(1, m + 1):
+            for _a, _b in _levels[_mm - 1]:
+                _t = (_b - _a) / 3.0
+                _x += [_a + _t, _b - _t, None]
+                _y += [-_mm, -_mm, None]
+        return _x, _y
+
+    _fig = make_subplots(
+        rows=1, cols=2, subplot_titles=("Surviving pieces (grey = middle thirds removed)", "total length (2/3)ᵐ → 0")
+    )
+    _x0, _y0 = _keep(0)
     _fig.add_trace(
-        go.Scatter(x=_x0, y=_y0, mode="lines", line={"color": COLORS["primary"], "width": 4}, showlegend=False),
+        go.Scatter(
+            x=[], y=[], mode="lines", line={"color": COLORS["muted"], "width": 4, "dash": "dot"}, showlegend=False
+        ),
+        row=1,
+        col=1,
+    )
+    _fig.add_trace(
+        go.Scatter(x=_x0, y=_y0, mode="lines", line={"color": COLORS["primary"], "width": 5}, showlegend=False),
         row=1,
         col=1,
     )
@@ -1127,11 +1159,16 @@ def _(COLORS, base_layout, go, make_subplots, play_pause, style_subplot_axes):
 
     _frames = []
     for _m in range(_depth + 1):
-        _xx, _yy = _upto(_m)
+        _kx, _ky = _keep(_m)
+        _gx, _gy = _gaps(_m)
         _frames.append(
             go.Frame(
-                data=[go.Scatter(x=_xx, y=_yy), go.Scatter(x=list(range(_m + 1)), y=_lengths[: _m + 1])],
-                traces=[0, 1],
+                data=[
+                    go.Scatter(x=_gx, y=_gy),
+                    go.Scatter(x=_kx, y=_ky),
+                    go.Scatter(x=list(range(_m + 1)), y=_lengths[: _m + 1]),
+                ],
+                traces=[0, 1, 2],
                 name=str(_m),
             )
         )
@@ -1152,11 +1189,13 @@ def _(COLORS, base_layout, go, make_subplots, play_pause, style_subplot_axes):
 def _(mo):
     mo.md(
         r"""
-        The Cantor set, built by removing middle thirds. Left: each row is the set after one more
-        removal, the surviving pieces drawn as bars, so after $m$ rounds there are $2^m$ pieces of
-        length $3^{-m}$ (the deep rows thin out into dust). Right: their total length $(2/3)^m$ marches
-        to 0. So length, like area, ends up reporting "nothing there," yet uncountably many points
-        survive. That mismatch is what dimension is built to see.
+        Left: each row is the set after one more round, the surviving pieces in cyan and the middle
+        thirds just removed in dotted grey, so after $m$ rounds there are $2^m$ pieces of length
+        $3^{-m}$ and the deep rows thin into dust. Right: the total surviving length $(2/3)^m$ marches
+        to 0. So length, like area, ends up reporting "nothing there," yet no endpoint is ever deleted
+        and uncountably many points survive. Length has failed, exactly as area failed on the needle
+        set. The fix is to stop measuring size and start measuring *how the set fills space as we look
+        closer*, which is what box-counting does next.
         """
     )
     return
@@ -1168,16 +1207,23 @@ def _(mo):
         r"""
         ### Box-counting (Minkowski) dimension
 
-        Cover the set with a grid of boxes of side $\delta$ and count the boxes $N(\delta)$ it meets:
+        The ruler: lay a grid of boxes of side $\delta$ over the set, count how many boxes $N(\delta)$
+        it touches, and watch that count grow as the boxes shrink.
 
         $$
-        \dim_{\text{box}} K = \lim_{\delta \to 0^+} \frac{\log N(\delta)}{\log(1/\delta)},
-        \qquad N(\delta) \sim \delta^{-d}.
+        \begin{aligned}
+        N(\delta) &\sim \delta^{-d} && \text{box count grows like a power of } 1/\delta \\
+        \dim_{\text{box}} K &= \lim_{\delta \to 0^+} \frac{\log N(\delta)}{\log(1/\delta)} && \text{that power } d \text{ is the dimension}
+        \end{aligned}
         $$
 
-        Halving the box size doubles the count for a line (exponent 1) and quadruples it for a filled
-        square (exponent 2). The slope of $\log N$ against $\log(1/\delta)$ is the dimension. Play it
-        below: as the grid shrinks, the segment's box count (coral) and the square's (cyan) pull apart.
+        Test it on two shapes whose dimension we already agree on. Below, the left panel puts a
+        **filled square** (cyan, a 2D shape) and a **segment** (coral, a 1D shape) side by side, each
+        under its own grid of side $\delta$, and lights up exactly the boxes that shape touches. Shrink
+        the boxes and count: the square needs a box for every cell, $N = (1/\delta)^2$, so its lit boxes
+        multiply by 4 at each halving; the segment lies along a single row, $N = 1/\delta$, so its lit
+        boxes only double. Plotted as $\log N$ against $\log(1/\delta)$ on the right, that is a slope of
+        exactly 2 for the square and 1 for the segment: the slope *is* the dimension.
         """
     )
     return
@@ -1189,31 +1235,39 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
     _logx = np.log(_ns)
     _seg_logy = np.log(_ns)
     _sq_logy = np.log([_n * _n for _n in _ns])
+    _segx0 = 1.4
 
-    def _cells_all(n):
+    def _cells(pairs, n, x0):
         _d = 1.0 / n
+        _g = 0.16 * _d
         _x, _y = [], []
-        for _i in range(n):
-            for _j in range(n):
-                _x += [_i * _d, (_i + 1) * _d, (_i + 1) * _d, _i * _d, _i * _d, None]
-                _y += [_j * _d, _j * _d, (_j + 1) * _d, (_j + 1) * _d, _j * _d, None]
+        for _i, _j in pairs:
+            _ax, _ay = x0 + _i * _d + _g, _j * _d + _g
+            _bx, _by = x0 + (_i + 1) * _d - _g, (_j + 1) * _d - _g
+            _x += [_ax, _bx, _bx, _ax, _ax, None]
+            _y += [_ay, _ay, _by, _by, _ay, None]
         return _x, _y
 
-    def _cells_row(n):
-        _d = 1.0 / n
-        _j = int(0.5 / _d)
-        _x, _y = [], []
-        for _i in range(n):
-            _x += [_i * _d, (_i + 1) * _d, (_i + 1) * _d, _i * _d, _i * _d, None]
-            _y += [_j * _d, _j * _d, (_j + 1) * _d, (_j + 1) * _d, _j * _d, None]
-        return _x, _y
+    def _square_cells(n):
+        return _cells([(_i, _j) for _i in range(n) for _j in range(n)], n, 0.0)
 
-    def _label(n):
+    def _row_index(n):
+        return n // 2
+
+    def _segment_cells(n):
+        _j = _row_index(n)
+        return _cells([(_i, _j) for _i in range(n)], n, _segx0)
+
+    def _segment_line(n):
+        _yc = (_row_index(n) + 0.5) / n
+        return [_segx0, _segx0 + 1.0], [_yc, _yc]
+
+    def _labels(n):
         return go.Scatter(
-            x=[0.5],
-            y=[1.09],
+            x=[0.5, _segx0 + 0.5],
+            y=[-0.13, -0.13],
             mode="text",
-            text=[f"δ = 1/{n}    segment N = {n}    square N = {n * n}"],
+            text=[f"filled square: N = {n}² = {n * n}", f"segment: N = {n}"],
             textfont={"color": COLORS["highlight"], "size": 13},
             showlegend=False,
         )
@@ -1221,55 +1275,58 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
     _fig = make_subplots(
         rows=1,
         cols=2,
-        subplot_titles=("Grid of side δ: segment vs filled square", "log N vs log(1/δ): the slope is the dimension"),
+        subplot_titles=(
+            "Boxes of side δ that each shape touches",
+            "log N vs log(1/δ): the slope is the dimension",
+        ),
     )
-    _ax0, _ay0 = _cells_all(_ns[0])
+    for _x0 in (0.0, _segx0):
+        _fig.add_trace(
+            go.Scatter(
+                x=[_x0, _x0 + 1, _x0 + 1, _x0, _x0],
+                y=[0, 0, 1, 1, 0],
+                mode="lines",
+                line={"color": COLORS["muted"], "width": 1},
+                showlegend=False,
+            ),
+            row=1,
+            col=1,
+        )
+    _sqx0, _sqy0 = _square_cells(_ns[0])
     _fig.add_trace(
         go.Scatter(
-            x=_ax0,
-            y=_ay0,
+            x=_sqx0,
+            y=_sqy0,
             mode="lines",
             fill="toself",
-            fillcolor="rgba(0,212,255,0.14)",
-            line={"color": COLORS["primary"], "width": 0.4},
+            fillcolor="rgba(0,212,255,0.4)",
+            line={"color": COLORS["primary"], "width": 0.5},
             showlegend=False,
         ),
         row=1,
         col=1,
     )
-    _rx0, _ry0 = _cells_row(_ns[0])
+    _sgx0, _sgy0 = _segment_cells(_ns[0])
     _fig.add_trace(
         go.Scatter(
-            x=_rx0,
-            y=_ry0,
+            x=_sgx0,
+            y=_sgy0,
             mode="lines",
             fill="toself",
-            fillcolor="rgba(255,107,107,0.55)",
+            fillcolor="rgba(255,107,107,0.45)",
             line={"color": COLORS["secondary"], "width": 0.5},
             showlegend=False,
         ),
         row=1,
         col=1,
     )
+    _slx0, _sly0 = _segment_line(_ns[0])
     _fig.add_trace(
-        go.Scatter(
-            x=[0, 1], y=[0.5, 0.5], mode="lines", line={"color": COLORS["secondary"], "width": 3}, showlegend=False
-        ),
+        go.Scatter(x=_slx0, y=_sly0, mode="lines", line={"color": COLORS["secondary"], "width": 3}, showlegend=False),
         row=1,
         col=1,
     )
-    _fig.add_trace(_label(_ns[0]), row=1, col=1)
-    _fig.add_trace(
-        go.Scatter(
-            x=_logx[:1],
-            y=_seg_logy[:1],
-            mode="lines+markers",
-            line={"color": COLORS["secondary"], "width": 3},
-            name="segment (slope 1)",
-        ),
-        row=1,
-        col=2,
-    )
+    _fig.add_trace(_labels(_ns[0]), row=1, col=1)
     _fig.add_trace(
         go.Scatter(
             x=_logx[:1],
@@ -1281,31 +1338,46 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         row=1,
         col=2,
     )
+    _fig.add_trace(
+        go.Scatter(
+            x=_logx[:1],
+            y=_seg_logy[:1],
+            mode="lines+markers",
+            line={"color": COLORS["secondary"], "width": 3},
+            name="segment (slope 1)",
+        ),
+        row=1,
+        col=2,
+    )
 
     _frames = []
     for _k, _n in enumerate(_ns):
-        _ax, _ay = _cells_all(_n)
-        _rx, _ry = _cells_row(_n)
+        _sqx, _sqy = _square_cells(_n)
+        _sgx, _sgy = _segment_cells(_n)
+        _slx, _sly = _segment_line(_n)
         _frames.append(
             go.Frame(
                 data=[
-                    go.Scatter(x=_ax, y=_ay),
-                    go.Scatter(x=_rx, y=_ry),
-                    _label(_n),
-                    go.Scatter(x=_logx[: _k + 1], y=_seg_logy[: _k + 1]),
+                    go.Scatter(x=_sqx, y=_sqy),
+                    go.Scatter(x=_sgx, y=_sgy),
+                    go.Scatter(x=_slx, y=_sly),
+                    _labels(_n),
                     go.Scatter(x=_logx[: _k + 1], y=_sq_logy[: _k + 1]),
+                    go.Scatter(x=_logx[: _k + 1], y=_seg_logy[: _k + 1]),
                 ],
-                traces=[0, 1, 3, 4, 5],
+                traces=[2, 3, 4, 5, 6, 7],
                 name=str(_n),
             )
         )
     _fig.frames = _frames
 
     _fig.update_layout(**base_layout(title="Box-counting the dimension", height=440))
-    _fig.update_xaxes(range=[-0.05, 1.05], scaleanchor="y", constrain="domain", showticklabels=False, row=1, col=1)
-    _fig.update_yaxes(range=[-0.05, 1.18], showticklabels=False, row=1, col=1)
-    _fig.update_xaxes(title_text="log(1/δ)", row=1, col=2)
-    _fig.update_yaxes(title_text="log N(δ)", row=1, col=2)
+    _fig.update_xaxes(
+        range=[-0.1, _segx0 + 1.1], scaleanchor="y", constrain="domain", showticklabels=False, row=1, col=1
+    )
+    _fig.update_yaxes(range=[-0.22, 1.05], showticklabels=False, row=1, col=1)
+    _fig.update_xaxes(title_text="log(1/δ)", range=[1.2, 3.0], row=1, col=2)
+    _fig.update_yaxes(title_text="log N(δ)", range=[1.0, 6.0], row=1, col=2)
     style_subplot_axes(_fig, show_ticklabels=True)
     _fig.update_layout(updatemenus=play_pause("▶ Shrink the boxes"))
     _fig
@@ -1316,11 +1388,13 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
 def _(mo):
     mo.md(
         r"""
-        Left: the grid shrinks step by step over the same unit square. The filled square meets *every*
-        box (faint cyan), so its count is $N = (1/\delta)^2$; the segment (coral line) meets only the
-        one row it lies in, $N = 1/\delta$. Halving $\delta$ multiplies the square's count by 4 and the
-        segment's by 2. Right: plotted log-log, the segment rides a slope-1 line and the square a
-        slope-2 line, and that slope is the dimension.
+        Left: at each step the boxes get smaller and more numerous. The cyan square lights every box,
+        so its count is $N = (1/\delta)^2$ and the little boxes flood the whole area; the coral segment
+        lights only the boxes along its row, $N = 1/\delta$, a single thin chain however fine the grid.
+        Each halving of $\delta$ multiplies the square's count by 4 and the segment's by 2. Right:
+        plotted log-log, the square climbs a slope-2 line and the segment a slope-1 line, and that slope
+        is the dimension. Whole numbers here, because these are an honest surface and an honest line.
+        The interesting sets give a slope in between.
         """
     )
     return
@@ -1330,25 +1404,35 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-        The slope can come out fractional, and a self-similar set shows exactly why. If a set is made
-        of $N$ shrunken copies of itself, each scaled by $1/r$, then shrinking the boxes by a factor
-        $r$ reveals $N$ copies where there was one, so the box count multiplies by $N$. The growth rate
-        is therefore $\log N / \log r$:
+        The slope can come out fractional, and sets built by endless repetition show exactly why. If a
+        set is made of $N$ shrunken copies of itself, each scaled down by $1/r$, then shrinking the
+        boxes by the factor $r$ reveals $N$ copies where there had been one, so the box count multiplies
+        by $N$ at every step. The growth rate is therefore $\log N / \log r$:
 
         $$
         \begin{aligned}
         \text{Cantor set:} \quad & N=2,\ r=3 && \dim = \tfrac{\log 2}{\log 3} \approx 0.631 \\
-        \text{Sierpinski triangle:} \quad & N=3,\ r=2 && \dim = \tfrac{\log 3}{\log 2} \approx 1.585 \\
-        \text{Koch curve:} \quad & N=4,\ r=3 && \dim = \tfrac{\log 4}{\log 3} \approx 1.262 .
+        \text{Koch curve:} \quad & N=4,\ r=3 && \dim = \tfrac{\log 4}{\log 3} \approx 1.262 \\
+        \text{Sierpinski triangle:} \quad & N=3,\ r=2 && \dim = \tfrac{\log 3}{\log 2} \approx 1.585 .
         \end{aligned}
         $$
 
-        Read each row as "how many copies, at what shrink." The Cantor set is 2 copies at scale
-        $1/3$. The **Sierpinski triangle** is 3 half-size copies (the middle quarter removed), so it
-        never fills area yet is far more than a curve, dimension $\approx 1.585$. The **Koch curve**
-        replaces every straight piece by 4 copies a third as long, so its length multiplies by $4/3$
-        forever (it becomes infinitely long) while enclosing zero area, dimension $\approx 1.262$. All
-        three sit strictly between 1 and 2, the flavour a Besicovitch set turns out to have.
+        Read each row as "how many copies, at what shrink," and each set is built by one repeated rule,
+        just like the Cantor set:
+
+        - **Cantor set:** each piece splits into 2 copies at scale $1/3$ (the middle third dropped),
+          so $\dim \approx 0.631$, between a point and a line.
+        - **Koch curve:** replace the middle third of every straight piece with a triangular bump, so
+          each piece becomes 4 copies a third as long. The length multiplies by $4/3$ at every round
+          and runs off to infinity, yet the curve still encloses no area, $\dim \approx 1.262$: more
+          than a line.
+        - **Sierpinski triangle:** cut a filled triangle into 4 equal sub-triangles and throw away the
+          central one, then repeat on the 3 that remain, so it is 3 half-size copies of itself. It
+          never fills any area yet is far more than a curve, $\dim \approx 1.585$.
+
+        All three land strictly between 1 and 2, the in-between flavour a Besicovitch set turns out to
+        have. The next two figures pin two of them down: the Koch curve by drawing it, the Sierpinski
+        triangle by actually counting its boxes.
         """
     )
     return
@@ -1556,18 +1640,23 @@ def _(mo):
         r"""
         ### Hausdorff: the finer ruler the conjecture asks for
 
-        Box-counting uses one box size everywhere. Hausdorff lets the cover use boxes of different
-        sizes and, for an exponent $s$, measures the cheapest such cover $\mathcal{H}^s$. As $s$
-        sweeps up, $\mathcal{H}^s$ jumps from $\infty$ to $0$ at one threshold, the Hausdorff
-        dimension. On the Cantor set the depth-$m$ cover is $2^m$ intervals of length $3^{-m}$, so
+        Box-counting is forced to use one box size everywhere. The Hausdorff ruler is more careful: it
+        lets a cover mix boxes of different sizes, and for an exponent $s$ it charges each cover a
+        *price* $\sum_i (\operatorname{diam} U_i)^s$, then keeps the cheapest cover. Sweep $s$ upward and
+        that cheapest price flips, all at once, from $\infty$ to $0$; the single exponent where it flips
+        is the **Hausdorff dimension**.
+
+        Point it at the same Cantor dust. The natural depth-$m$ cover is its $2^m$ surviving pieces,
+        each of length $3^{-m}$, so the price is
 
         $$
         \sum_i (\operatorname{diam} U_i)^s = 2^m (3^{-m})^s = \big(2 \cdot 3^{-s}\big)^m,
         $$
 
-        a geometric series whose base passes through 1 at $s = \log 2/\log 3$. Always $\dim_H \le
-        \dim_{\text{box}}$, so a Hausdorff statement is the stronger one, and Kakeya is stated for
-        this finer dimension.
+        a power of $m$ whose base $2 \cdot 3^{-s}$ passes through 1 exactly at $s = \log 2/\log 3$. Below
+        that exponent the price explodes with depth; above it the price collapses to 0. Always $\dim_H
+        \le \dim_{\text{box}}$, so a Hausdorff statement is the stronger one, and this is the ruler the
+        Kakeya conjecture is written in.
         """
     )
     return
@@ -1577,6 +1666,7 @@ def _(mo):
 def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplot_axes):
     _thr = math.log(2) / math.log(3)
     _m = 20
+    _cd = 5
 
     def _dust(depth):
         _lv = [(0.0, 1.0)]
@@ -1588,29 +1678,65 @@ def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplo
             _lv = _nx
         return _lv
 
+    _pieces = _dust(_cd)
+    _diam = 3.0 ** (-_cd)
+    _mid = [(_a + _b) / 2.0 for _a, _b in _pieces]
+
+    def _bars(s):
+        _h = (_diam**s) / (_diam**0.25)
+        _x, _y = [], []
+        for _c in _mid:
+            _x += [_c, _c, None]
+            _y += [0.0, _h, None]
+        return _x, _y
+
     _sx = np.linspace(0.2, 1.2, 240)
     _sy = (2.0 * 3.0 ** (-_sx)) ** _m
     _sweep = np.linspace(0.25, 1.15, 28)
+    _ybot = 10.0 ** (-6.5)
 
     def _tag(s):
         _v = (2.0 * 3.0 ** (-s)) ** _m
-        _w = "blows up" if s < _thr - 0.015 else ("collapses to 0" if s > _thr + 0.015 else "holds near 1")
-        return f"exponent s = {s:.2f}    cover sum ≈ {_v:.0e}    ({_w})"
+        _w = (
+            "price blows up"
+            if s < _thr - 0.015
+            else ("price collapses to 0" if s > _thr + 0.015 else "price holds near 1")
+        )
+        return f"exponent s = {s:.2f}    cover price ≈ {_v:.0e}    ({_w})"
 
     _fig = make_subplots(
-        rows=1, cols=2, subplot_titles=("The Cantor dust (depth 5)", "cover sum Σ(diam)ˢ at a deep cover")
+        rows=1,
+        cols=2,
+        subplot_titles=("Each box's price (diam)ˢ, all 2⁵ of them", "total price Σ(diam)ˢ vs the exponent s"),
     )
     _dx, _dy = [], []
-    for _a, _b in _dust(5):
+    for _a, _b in _pieces:
         _dx += [_a, _b, None]
-        _dy += [0, 0, None]
+        _dy += [-0.05, -0.05, None]
     _fig.add_trace(
-        go.Scatter(x=_dx, y=_dy, mode="lines", line={"color": COLORS["primary"], "width": 6}, showlegend=False),
+        go.Scatter(x=_dx, y=_dy, mode="lines", line={"color": COLORS["muted"], "width": 5}, showlegend=False),
+        row=1,
+        col=1,
+    )
+    _bx0, _by0 = _bars(_sweep[0])
+    _fig.add_trace(
+        go.Scatter(x=_bx0, y=_by0, mode="lines", line={"color": COLORS["highlight"], "width": 2}, showlegend=False),
         row=1,
         col=1,
     )
     _fig.add_trace(
-        go.Scatter(x=_sx, y=_sy, mode="lines", line={"color": COLORS["primary"], "width": 2.5}, showlegend=False),
+        go.Scatter(x=_sx, y=_sy, mode="lines", line={"color": COLORS["muted"], "width": 1.5}, showlegend=False),
+        row=1,
+        col=2,
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=[_sweep[0], _sweep[0]],
+            y=[_ybot, (2.0 * 3.0 ** (-_sweep[0])) ** _m],
+            mode="lines",
+            line={"color": COLORS["highlight"], "width": 6},
+            showlegend=False,
+        ),
         row=1,
         col=2,
     )
@@ -1619,35 +1745,42 @@ def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplo
             x=[_sweep[0]],
             y=[(2.0 * 3.0 ** (-_sweep[0])) ** _m],
             mode="markers",
-            marker={"color": COLORS["highlight"], "size": 12},
+            marker={"color": COLORS["highlight"], "size": 13},
             showlegend=False,
         ),
         row=1,
         col=2,
     )
     _fig.add_vline(x=_thr, line={"color": COLORS["secondary"], "width": 2, "dash": "dash"}, row=1, col=2)
-    _fig.add_hline(y=1.0, line={"color": COLORS["muted"], "width": 1, "dash": "dot"}, row=1, col=2)
+    _fig.add_hline(y=1.0, line={"color": COLORS["primary"], "width": 1.5, "dash": "dot"}, row=1, col=2)
 
-    _frames = [
-        go.Frame(
-            data=[go.Scatter(x=[_s], y=[(2.0 * 3.0 ** (-_s)) ** _m])],
-            traces=[2],
-            name=str(_k),
-            layout={"title": {"text": _tag(_s)}},
+    _frames = []
+    for _k, _s in enumerate(_sweep):
+        _bx, _by = _bars(_s)
+        _val = (2.0 * 3.0 ** (-_s)) ** _m
+        _frames.append(
+            go.Frame(
+                data=[
+                    go.Scatter(x=_bx, y=_by),
+                    go.Scatter(x=[_s, _s], y=[_ybot, _val]),
+                    go.Scatter(x=[_s], y=[_val]),
+                ],
+                traces=[1, 3, 4],
+                name=str(_k),
+                layout={"title": {"text": _tag(_s)}},
+            )
         )
-        for _k, _s in enumerate(_sweep)
-    ]
     _fig.frames = _frames
 
     _fig.update_layout(**base_layout(title=_tag(_sweep[0]), height=420))
     _fig.update_xaxes(range=[-0.02, 1.02], showticklabels=False, row=1, col=1)
-    _fig.update_yaxes(range=[-0.5, 0.5], showticklabels=False, row=1, col=1)
-    _fig.update_xaxes(title_text="exponent s", row=1, col=2)
-    _fig.update_yaxes(title_text="cover sum", type="log", range=[-6.5, 4.5], row=1, col=2)
+    _fig.update_yaxes(range=[-0.12, 1.15], showticklabels=False, row=1, col=1)
+    _fig.update_xaxes(title_text="exponent s", range=[0.2, 1.2], row=1, col=2)
+    _fig.update_yaxes(title_text="total price", type="log", range=[-6.5, 4.5], row=1, col=2)
     style_subplot_axes(_fig, show_ticklabels=True)
     _fig.add_annotation(
         x=_thr,
-        y=0.95,
+        y=0.97,
         xref="x2",
         yref="y2 domain",
         text="dim_H = log2/log3 ≈ 0.631",
@@ -1663,12 +1796,14 @@ def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplo
 def _(mo):
     mo.md(
         r"""
-        Sweep the exponent $s$. On the left is the Cantor dust; on the right, its cover sum
-        $\sum_i(\operatorname{diam} U_i)^s$ at a deep cover, with the current $s$ marked. Below the
-        threshold $s = \log 2/\log 3$ the sum is astronomically large (no cover is ever cheap enough);
-        above it the sum crashes to essentially zero. The single exponent where it neither blows up nor
-        vanishes, holding near 1, is the **Hausdorff dimension**. It is always $\le$ the box-counting
-        dimension, and it is the ruler the Kakeya conjecture uses.
+        Sweep the exponent $s$. Left: the Cantor dust with a bar over each of its cover boxes, each bar
+        the price $(\operatorname{diam})^s$ that box is charged; as $s$ rises every bar shrinks together.
+        Right: their total price at a deep cover, drawn as a rising-and-falling stem on a log axis.
+        Below the threshold $s = \log 2/\log 3$ the total is astronomically large (no cover is ever
+        cheap enough); above it the total crashes through the dotted price-1 line to essentially zero.
+        The single exponent where it neither blows up nor vanishes, balancing at 1, is the **Hausdorff
+        dimension**. It is always $\le$ the box-counting dimension, and it is the ruler the Kakeya
+        conjecture uses.
 
         On self-similar sets the two rulers agree, but not in general. For $\{0\} \cup \{1/n : n \ge
         1\}$ the points pile up at 0, so a uniform grid needs about $\delta^{-1/2}$ boxes ($\dim_{
@@ -1700,7 +1835,9 @@ def _(mo):
 
         so rectangles in well-separated directions barely overlap. Summed over all pairs the overlaps
         stay small, which forces the union to stay spread out: it cannot be compressed below full
-        dimension.
+        dimension. That is the whole content of "dimension 2," and it is what the first figure shows.
+        The second figure then measures one pile with both rulers at once, so you can watch its area
+        drain toward 0 while its dimension holds at 2.
         """
     )
     return
@@ -1708,7 +1845,7 @@ def _(mo):
 
 @app.cell
 def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplot_axes):
-    _width = 0.06
+    _width = 0.045
     _counts = [1, 4, 8, 16, 28]
 
     def _rect(a):
@@ -1751,7 +1888,7 @@ def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplo
             y=_y0,
             mode="lines",
             fill="toself",
-            fillcolor="rgba(78,205,196,0.25)",
+            fillcolor="rgba(78,205,196,0.18)",
             line={"color": COLORS["tertiary"], "width": 0.5},
             showlegend=False,
         ),
@@ -1804,14 +1941,16 @@ def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplo
 def _(mo):
     mo.md(
         r"""
-        Left: a fan of $1 \times \delta$ rectangles at separated angles. Right, both areas measured
-        from the drawn rectangles: the summed area (coral) climbs linearly, while the union (cyan)
-        grows to fill the disc and stays there. Thin pieces, stubbornly large union.
+        Left: a fan of thin $1 \times \delta$ needles at separated angles. Right, both areas measured
+        from the drawn needles: the summed area (coral) climbs steadily as needles are added, but the
+        union (cyan) saturates and refuses to shrink, because separated directions barely overlap. Thin
+        pieces, a stubbornly full-sized union. That refusal to be squashed is exactly what "dimension 2"
+        means: no matter how you try to compress the set, at every scale it still occupies a genuinely
+        two-dimensional chunk.
 
-        So the same clever pile answers two questions two ways. "How much paint to cover it?" is area,
-        and the answer is none. "How many boxes to find it?" is dimension, and the answer is all of
-        them. **Area 0, dimension 2** is not a contradiction, just two rulers on one set, and the
-        fact that the union resists compression is the seed of everything in higher dimensions.
+        This figure holds the thickness $\delta$ fixed to make the point visible; it does not yet make
+        the area small. The area-0 half comes from the Perron overlap of section 2, and the next figure
+        puts both effects on one pile at once.
         """
     )
     return
@@ -2496,21 +2635,37 @@ def _(mo):
 @app.cell
 def _(COLORS, base_layout, circle, go, make_subplots, np, play_pause, style_subplot_axes):
     _ts = np.linspace(0.15, 0.95, 18)
+    _lam = 0.11
+    _ripples = [(0, 3.0, 1.0), (1, 2.0, 0.55), (2, 1.4, 0.32), (3, 1.0, 0.18)]
+
+    def _ring(t, i):
+        _r = t - i * _lam
+        if _r <= 0.02:
+            return [], []
+        return circle(_r, 160)
 
     _fig = make_subplots(
         rows=1, cols=2, subplot_titles=("Wavefront |x| = t expanding", "Space-time: energy rides the cone")
-    )
-    _wx0, _wy0 = circle(_ts[0], 160)
-    _fig.add_trace(
-        go.Scatter(x=_wx0, y=_wy0, mode="lines", line={"color": COLORS["primary"], "width": 3}, showlegend=False),
-        row=1,
-        col=1,
     )
     _fig.add_trace(
         go.Scatter(x=[0], y=[0], mode="markers", marker={"color": COLORS["highlight"], "size": 7}, showlegend=False),
         row=1,
         col=1,
     )
+    for _i, _w, _op in _ripples:
+        _rx, _ry = _ring(_ts[0], _i)
+        _fig.add_trace(
+            go.Scatter(
+                x=_rx,
+                y=_ry,
+                mode="lines",
+                line={"color": COLORS["primary"], "width": _w},
+                opacity=_op,
+                showlegend=False,
+            ),
+            row=1,
+            col=1,
+        )
     _xx = np.linspace(-1, 1, 120)
     _fig.add_trace(
         go.Scatter(
@@ -2533,10 +2688,12 @@ def _(COLORS, base_layout, circle, go, make_subplots, np, play_pause, style_subp
 
     _frames = []
     for _k, _t in enumerate(_ts):
-        _wx, _wy = circle(_t, 160)
-        _frames.append(
-            go.Frame(data=[go.Scatter(x=_wx, y=_wy), go.Scatter(x=[-_t, _t], y=[_t, _t])], traces=[0, 3], name=str(_k))
-        )
+        _data = []
+        for _i, _w, _op in _ripples:
+            _rx, _ry = _ring(_t, _i)
+            _data.append(go.Scatter(x=_rx, y=_ry))
+        _data.append(go.Scatter(x=[-_t, _t], y=[_t, _t]))
+        _frames.append(go.Frame(data=_data, traces=[1, 2, 3, 4, 6], name=str(_k)))
     _fig.frames = _frames
 
     _fig.update_layout(**base_layout(title="Local smoothing: energy concentrates on the cone |x| = t", height=380))
@@ -2554,8 +2711,10 @@ def _(COLORS, base_layout, circle, go, make_subplots, np, play_pause, style_subp
 def _(mo):
     mo.md(
         r"""
-        Left: a point source sends out a wavefront $|x| = t$ that concentrates the wave's energy on an
-        expanding circle. Right, in space-time, that energy rides the light cone $|x| = t$ (the marks
+        Left: a point source sends out ripples, the bright leading ring is the wavefront $|x| = t$ and
+        the fainter rings behind it are the trailing crests, all expanding together and concentrating
+        the wave's energy near the front. Right, in space-time, that energy rides the light cone
+        $|x| = t$ (the marks
         climb the V as time advances). At a single instant the wave can spike on the circle; averaging
         over the time interval smears the spike along the cone, and that regained smoothness is exactly
         what local smoothing measures, the top rung of the tower.
@@ -2685,29 +2844,49 @@ def _(COLORS, base_layout, go, np, play_pause, style_subplot_axes):
     _fig = go.Figure()
     _fig.add_trace(
         go.Scatter(
-            x=_ks[:1],
-            y=_content[:1],
-            mode="lines+markers",
-            line={"color": COLORS["quaternary"], "width": 3, "dash": "dot"},
-            name="tube content #T·|T|",
-        )
-    )
-    _fig.add_trace(
-        go.Scatter(
-            x=_ks[:1],
-            y=_union3[:1],
-            mode="lines+markers",
-            line={"color": COLORS["primary"], "width": 3},
+            x=_ks,
+            y=_union3,
+            mode="lines",
+            line={"color": COLORS["primary"], "width": 8},
             name="union if dim = 3 (stays lit)",
         )
     )
     _fig.add_trace(
         go.Scatter(
-            x=_ks[:1],
-            y=_union25[:1],
+            x=_ks,
+            y=_content,
+            mode="lines+markers",
+            line={"color": COLORS["quaternary"], "width": 2, "dash": "dot"},
+            marker={"size": 6},
+            name="tube content #T·|T| (pinned)",
+        )
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=_ks,
+            y=_union25,
             mode="lines+markers",
             line={"color": COLORS["secondary"], "width": 3},
+            marker={"size": 7},
             name="union if dim = 5/2 (drains)",
+        )
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=[_ks[0]],
+            y=[_union25[0]],
+            mode="markers",
+            marker={"color": COLORS["highlight"], "size": 15, "line": {"color": "white", "width": 1.5}},
+            showlegend=False,
+        )
+    )
+    _fig.add_trace(
+        go.Scatter(
+            x=[_ks[0], _ks[0]],
+            y=[0, 1.1],
+            mode="lines",
+            line={"color": COLORS["muted"], "width": 1, "dash": "dash"},
+            showlegend=False,
         )
     )
 
@@ -2716,11 +2895,10 @@ def _(COLORS, base_layout, go, np, play_pause, style_subplot_axes):
         _frames.append(
             go.Frame(
                 data=[
-                    go.Scatter(x=_ks[: _k + 1], y=_content[: _k + 1]),
-                    go.Scatter(x=_ks[: _k + 1], y=_union3[: _k + 1]),
-                    go.Scatter(x=_ks[: _k + 1], y=_union25[: _k + 1]),
+                    go.Scatter(x=[_ks[_k]], y=[_union25[_k]]),
+                    go.Scatter(x=[_ks[_k], _ks[_k]], y=[0, 1.1]),
                 ],
-                traces=[0, 1, 2],
+                traces=[3, 4],
                 name=str(_k),
                 layout={"title": {"text": f"Refining δ: {_k} halvings, dim-5/2 union at {100 * _union25[_k]:.0f}%"}},
             )
@@ -2728,8 +2906,8 @@ def _(COLORS, base_layout, go, np, play_pause, style_subplot_axes):
     _fig.frames = _frames
 
     _fig.update_layout(**base_layout(title="Refining δ: 0 halvings, dim-5/2 union at 100%", height=420))
-    _fig.update_xaxes(title_text="halvings of δ")
-    _fig.update_yaxes(title_text="fraction remaining", range=[0, 1.1])
+    _fig.update_xaxes(title_text="halvings of δ", range=[-0.3, 6.3])
+    _fig.update_yaxes(title_text="fraction of tube content the union keeps", range=[0, 1.12])
     style_subplot_axes(_fig, show_ticklabels=True)
     _fig.update_layout(updatemenus=play_pause("▶ Halve δ"))
     _fig
@@ -2740,10 +2918,12 @@ def _(COLORS, base_layout, go, np, play_pause, style_subplot_axes):
 def _(mo):
     mo.md(
         r"""
-        The total content (yellow, dotted) stays pinned at 1. If the union has **dimension 3** its
-        volume stays pinned too (cyan): refining the tubes cannot drain it. A **dimension-5/2** set
-        would shed a factor $\sqrt2$ per halving (coral, about 29% each step), draining toward 0.
-        "Dimension 3" is exactly the statement that the right meter never drains.
+        The total tube content (yellow dotted) stays pinned at 1 no matter how fine the tubes get.
+        If the union has **dimension 3** its volume stays pinned to that content: the thick cyan line
+        sits right under the yellow dots, and that coincidence is the whole point, refining the tubes
+        cannot drain a dimension-3 union. A **dimension-5/2** set would instead shed a factor $\sqrt2$
+        per halving (coral, about 29% gone each step), the highlighted dot sliding down toward 0.
+        "Dimension 3" is exactly the statement that the coral curve can never happen.
         """
     )
     return
