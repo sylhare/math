@@ -5,8 +5,6 @@ A fresh walk through the Kakeya problem following `research/kakeya/kakeya.md`: t
 needle puzzle, the plane constructions that drive the swept area to zero, dimension as the
 ruler that replaces area, the harmonic-analysis tower that rests on the problem, and the
 2025 Wang-Zahl proof of the three-dimensional case (Hong Wang, 2026 Fields Medal).
-
-Status: draft
 """
 
 import marimo
@@ -233,7 +231,8 @@ def _(mo):
         \begin{aligned}
         A_{\text{disc}} &= \pi r^2                    && \text{area of a disc of radius } r \\
                         &= \pi\left(\tfrac12\right)^2  && \text{the tips reach only } r = \tfrac12 \\
-                        &= \tfrac{\pi}{4} \approx 0.785 .
+                        &= \tfrac{\pi}{4} \\
+                        &\approx 0.785 .
         \end{aligned}
         $$
 
@@ -321,7 +320,7 @@ def _(COLORS, base_layout, circle, go, make_subplots, math, needle_at, np, play_
         )
     _fig.frames = _frames
 
-    _fig.update_layout(**base_layout(title="Spinning in place paints the middle over and over", height=430))
+    _fig.update_layout(**base_layout(title="Spinning in place", height=430))
     _fig.update_xaxes(range=[-0.62, 0.62], scaleanchor="y", constrain="domain", showticklabels=False, row=1, col=1)
     _fig.update_yaxes(range=[-0.62, 0.62], showticklabels=False, row=1, col=1)
     _fig.update_xaxes(range=[-0.62, 0.62], scaleanchor="y2", constrain="domain", showticklabels=False, row=1, col=2)
@@ -381,8 +380,10 @@ def _(mo):
         ### The convex answers, and where they bottom out
 
         The intuitive answers keep the shape **convex** (no dents). Spinning fills the disc; a
-        Reuleaux triangle of width 1, turned by pivoting about its three corners, does better; and Pal
-        (1921) proved the smallest convex answer of all is the equilateral triangle of height 1:
+        Reuleaux triangle of width 1 (a triangle with its sides bulged out into circular arcs, so it
+        has the same width in every direction), turned by pivoting about its three corners, does
+        better; and Pal (1921) proved the smallest convex answer of all is the equilateral triangle of
+        height 1:
 
         $$
         \begin{aligned}
@@ -392,7 +393,8 @@ def _(mo):
         \end{aligned}
         $$
 
-        The area drops, but $1/\sqrt3$ is a floor: no convex shape beats it. That floor is the clue.
+        The area drops, but $1/\sqrt3$ is a floor: no convex shape beats it. The floor is a property
+        of convexity itself, so to go lower we have to drop convexity and allow a dent.
         """
     )
     return
@@ -546,10 +548,9 @@ def _(mo):
         r"""
         Play it: a unit needle turns through every direction inside each convex shape, its swept
         positions accumulating as a faint fan. In the disc it spins about the centre; in the Reuleaux
-        triangle and Pal's triangle it pivots about each corner in turn, sliding along a shared edge
-        between pivots. All three are genuine needle sets, and the area falls disc → Reuleaux →
-        triangle, yet Pal proved the triangle is the smallest convex answer. To get below $1/\sqrt3$
-        we give up convexity.
+        triangle and Pal's triangle it pivots about each corner in turn. All three are genuine needle
+        sets, and the area falls disc → Reuleaux → triangle, yet Pal proved the triangle is the
+        smallest convex answer. To get below $1/\sqrt3$ we give up convexity.
         """
     )
     return
@@ -578,7 +579,8 @@ def _(mo):
         \begin{aligned}
         A_{\text{deltoid}} &= 2\pi b^2                       && \text{area of a deltoid, rolling radius } b \\
                            &= 2\pi\left(\tfrac14\right)^2     && \text{unit chord } 4b = 1 \Rightarrow b = \tfrac14 \\
-                           &= \tfrac{\pi}{8} \approx 0.393    && < \tfrac{1}{\sqrt3}\text{, beating every convex answer} .
+                           &= \tfrac{\pi}{8} \\
+                           &\approx 0.393                     && < \tfrac{1}{\sqrt3}\text{, beating every convex answer} .
         \end{aligned}
         $$
         """
@@ -673,9 +675,7 @@ def _(COLORS, base_layout, circle, deltoid, deltoid_needle, go, math, np, play_p
         )
     _fig.frames = _frames
 
-    _fig.update_layout(
-        **base_layout(title="Rolling a circle traces the deltoid (π/8, half the dashed disc)", height=520)
-    )
+    _fig.update_layout(**base_layout(title="Rolling a circle traces the deltoid", height=520))
     _fig.update_xaxes(range=[-0.85, 0.85], scaleanchor="y", constrain="domain", showticklabels=False)
     _fig.update_yaxes(range=[-0.85, 0.85], showticklabels=False)
     style_subplot_axes(_fig)
@@ -691,8 +691,10 @@ def _(mo):
         The small teal circle rolls inside the large one; the cyan curve is the point it traces, the
         deltoid. The coral needle stays tangent, its ends riding the cusps, turning through every
         direction while sliding along itself; its swept positions accumulate as a faint fan whose
-        envelope is the deltoid. The dashed disc behind it is what spinning in place would sweep: the
-        deltoid fills exactly half of it. One dent, and it beats every convex answer.
+        outer boundary (the curve every position just grazes, its envelope) is the deltoid. The dashed
+        circle is the disc that spinning in place would sweep: the deltoid has exactly half its area
+        ($\pi/8$ against $\pi/4$), even though its cusps poke further out. One dent, and it beats
+        every convex answer.
         """
     )
     return
@@ -704,11 +706,14 @@ def _(mo):
         r"""
         ### One move does all the shrinking: slide is free, only turning costs
 
-        Every construction below rests on a single asymmetry between the needle's two moves. Rotating
-        by an angle $\theta$ about a pivot sweeps a sector of area $\theta/2$. Sliding along its own
-        length sweeps nothing new: the needle stays on the same line. Directions cost area, position
-        is free. So two triangles that each carry a fan of directions can be slid to **overlap**,
-        keeping every direction while taking less room.
+        The deltoid already leaned on the reason it beats the disc: as it turns, the needle keeps
+        sliding along its own length, and that sliding costs no area. But the deltoid still rides one
+        smooth curve and still fills half the disc. Name the slide-versus-turn asymmetry outright and
+        we can push far past a single dent. Every construction below rests on it. Rotating by an angle
+        $\theta$ about a pivot sweeps a sector of area $\theta/2$. Sliding along its own length sweeps
+        nothing new: the needle stays on the same line. Directions cost area, position is free. So two
+        triangles that each carry a fan of directions can be slid to **overlap**, keeping every
+        direction while taking less room.
         """
     )
     return
@@ -718,7 +723,7 @@ def _(mo):
 def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplot_axes):
     _pivot = np.array([-0.35, -0.15])
     _thetas = np.linspace(0, math.pi / 3, 24)
-    _slides = np.linspace(0.0, 0.9, 24)
+    _slides = np.linspace(0.0, 0.5, 24)
 
     def _sector(a1):
         _a = np.linspace(0, a1, 40)
@@ -758,15 +763,15 @@ def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplo
         row=1,
         col=1,
     )
-    _fsx, _fsy = _sector(_thetas[-1])
+    _slide_dir = np.array([math.cos(math.pi / 3), math.sin(math.pi / 3)])
+    _track_tip = _pivot + (1.0 + _slides[-1]) * _slide_dir
     _fig.add_trace(
         go.Scatter(
-            x=_fsx,
-            y=_fsy,
+            x=[_pivot[0], _track_tip[0]],
+            y=[_pivot[1], _track_tip[1]],
             mode="lines",
-            fill="toself",
-            fillcolor="rgba(74,85,104,0.18)",
-            line={"color": COLORS["muted"], "width": 1},
+            line={"color": COLORS["muted"], "width": 9},
+            opacity=0.5,
             showlegend=False,
         ),
         row=1,
@@ -803,7 +808,7 @@ def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplo
             row=1,
             col=_c,
         )
-        _fig.update_yaxes(range=[-0.45, 1.15], showticklabels=False, row=1, col=_c)
+        _fig.update_yaxes(range=[-0.45, 1.3], showticklabels=False, row=1, col=_c)
     style_subplot_axes(_fig)
     _fig.update_layout(updatemenus=play_pause("▶ Rotate, then slide"))
     _fig
@@ -815,9 +820,9 @@ def _(mo):
     mo.md(
         r"""
         Left: rotating about a pivot, the swept sector (yellow) grows with the angle. Right: sliding
-        the needle along its own axis, the region never grows past the grey sliver it started in.
-        Turning is the only move that costs area, so a construction should spend as little turning as
-        it can.
+        the needle along its own axis, it only travels up and down the same line (grey), a thin sliver
+        of zero area no matter how far it slides. Turning is the only move that costs area, so a
+        construction should spend as little turning as it can.
         """
     )
     return
@@ -971,14 +976,23 @@ def _(mo):
         A 60-degree fan is only an artefact of one triangle. Three rotated Perron trees (0, 60, 120
         degrees) cover all 180 directions (a direction and its reverse are the same); six copies
         close into a symmetric star. Take the sprouting to the limit inside each copy, and
-        Besicovitch (1919) gets the payoff:
+        Besicovitch (1919) proved:
 
         > There is a Kakeya (Besicovitch) set $K \subseteq \mathbb{R}^2$ with area $|K| = 0$.
 
-        For the *needle* version, Pal joins glue the branches (slide the needle far out, turn where a
-        tiny angle suffices, slide back), so the needle turns continuously in area as small as you
-        like but never zero. Van Alphen (1942), then Cunningham (1971), fit such needle sets inside
-        the **unit disc**, the smallest disc that can hold a unit segment at all.
+        That gives a set of zero area holding a segment in every direction, but in separate branches,
+        with no way to *turn* between them. A **Pal join** stitches consecutive branches into one
+        continuous turn, redeeming the needle-set promise from Section 1:
+
+        > **Pal join.** To carry the needle from one branch to the next, slide it out along its own
+        > axis (free), make the small turn far out where a tiny angle suffices, then slide back into
+        > the next branch. Only the little turns add area, and that area shrinks as the detour lengthens.
+
+        Chaining the joins across every branch turns the needle continuously through a full circle, so
+        the star plus its thin turning fringe is a genuine needle set of area as small as we like, but
+        never zero. Van Alphen (1942) fit such needle sets inside a disc of radius $2 + \varepsilon$;
+        Cunningham (1971) sharpened this to the **unit disc** (radius 1), the smallest disc that can
+        hold a unit segment at all.
         """
     )
     return
@@ -1046,10 +1060,10 @@ def _(mo):
     mo.md(
         r"""
         Each play step drops in another rotated copy of the tree. Three cover all 180 directions;
-        six close into the star. Every copy has vanishing area, so the whole star does too, while now
-        holding a needle in every direction. The area falls only like $1/\log N$ for $N = 2^n$
-        slivers, too slowly to watch it reach zero, yet it clearly still holds a needle pointing
-        everywhere. Something with no area is still substantial, which is the signal that area is the
+        six close into the star. Each copy's area can be driven as small as we like, so the whole
+        star's can too, while now holding a needle in every direction. The area falls only like
+        $1/\log N$ for $N = 2^n$ slivers, too slowly to watch it reach zero, yet it clearly still
+        holds a needle pointing everywhere. Something with no area is still substantial, which is the signal that area is the
         wrong ruler.
         """
     )
@@ -1135,7 +1149,11 @@ def _(COLORS, base_layout, go, make_subplots, play_pause, style_subplot_axes):
     _x0, _y0 = _keep(0)
     _fig.add_trace(
         go.Scatter(
-            x=[], y=[], mode="lines", line={"color": COLORS["muted"], "width": 4, "dash": "dot"}, showlegend=False
+            x=[0.0],
+            y=[0.0],
+            mode="lines",
+            line={"color": COLORS["muted"], "width": 4, "dash": "dot"},
+            showlegend=False,
         ),
         row=1,
         col=1,
@@ -1231,7 +1249,7 @@ def _(mo):
 
 @app.cell
 def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes):
-    _ns = [4, 6, 8, 12, 16]
+    _ns = [4, 8, 16, 32]
     _logx = np.log(_ns)
     _seg_logy = np.log(_ns)
     _sq_logy = np.log([_n * _n for _n in _ns])
@@ -1376,8 +1394,8 @@ def _(COLORS, base_layout, go, make_subplots, np, play_pause, style_subplot_axes
         range=[-0.1, _segx0 + 1.1], scaleanchor="y", constrain="domain", showticklabels=False, row=1, col=1
     )
     _fig.update_yaxes(range=[-0.22, 1.05], showticklabels=False, row=1, col=1)
-    _fig.update_xaxes(title_text="log(1/δ)", range=[1.2, 3.0], row=1, col=2)
-    _fig.update_yaxes(title_text="log N(δ)", range=[1.0, 6.0], row=1, col=2)
+    _fig.update_xaxes(title_text="log(1/δ)", range=[1.2, 3.7], row=1, col=2)
+    _fig.update_yaxes(title_text="log N(δ)", range=[1.0, 7.3], row=1, col=2)
     style_subplot_axes(_fig, show_ticklabels=True)
     _fig.update_layout(updatemenus=play_pause("▶ Shrink the boxes"))
     _fig
@@ -1430,8 +1448,8 @@ def _(mo):
           central one, then repeat on the 3 that remain, so it is 3 half-size copies of itself. It
           never fills any area yet is far more than a curve, $\dim \approx 1.585$.
 
-        All three land strictly between 1 and 2, the in-between flavour a Besicovitch set turns out to
-        have. The next two figures pin two of them down: the Koch curve by drawing it, the Sierpinski
+        All three land strictly between 1 and 2, the same in-between range a Besicovitch set occupies.
+        The next two figures pin two of them down: the Koch curve by drawing it, the Sierpinski
         triangle by actually counting its boxes.
         """
     )
@@ -1697,12 +1715,8 @@ def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplo
 
     def _tag(s):
         _v = (2.0 * 3.0 ** (-s)) ** _m
-        _w = (
-            "price blows up"
-            if s < _thr - 0.015
-            else ("price collapses to 0" if s > _thr + 0.015 else "price holds near 1")
-        )
-        return f"exponent s = {s:.2f}    cover price ≈ {_v:.0e}    ({_w})"
+        _w = "blows up" if s < _thr - 0.015 else ("collapses" if s > _thr + 0.015 else "holds near 1")
+        return f"s = {s:.2f} · price ≈ {_v:.0e} · {_w}"
 
     _fig = make_subplots(
         rows=1,
@@ -1798,9 +1812,10 @@ def _(mo):
         r"""
         Sweep the exponent $s$. Left: the Cantor dust with a bar over each of its cover boxes, each bar
         the price $(\operatorname{diam})^s$ that box is charged; as $s$ rises every bar shrinks together.
-        Right: their total price at a deep cover, drawn as a rising-and-falling stem on a log axis.
-        Below the threshold $s = \log 2/\log 3$ the total is astronomically large (no cover is ever
-        cheap enough); above it the total crashes through the dotted price-1 line to essentially zero.
+        Right: the total price, summed over a much deeper cover than the 32 bars drawn on the left,
+        as a stem that slides steadily down the log axis as $s$ increases. Well below the threshold
+        $s = \log 2/\log 3$ the total is astronomically large (no cover is ever cheap enough); well
+        above it the total has crashed through the dotted price-1 line to essentially zero.
         The single exponent where it neither blows up nor vanishes, balancing at 1, is the **Hausdorff
         dimension**. It is always $\le$ the box-counting dimension, and it is the ruler the Kakeya
         conjecture uses.
@@ -1835,9 +1850,9 @@ def _(mo):
 
         so rectangles in well-separated directions barely overlap. Summed over all pairs the overlaps
         stay small, which forces the union to stay spread out: it cannot be compressed below full
-        dimension. That is the whole content of "dimension 2," and it is what the first figure shows.
-        The second figure then measures one pile with both rulers at once, so you can watch its area
-        drain toward 0 while its dimension holds at 2.
+        dimension. That is what "dimension 2" means here, and it is what the first figure shows. The
+        second figure then measures one pile with both rulers at once, so you can watch its area fall
+        to a plateau while its dimension holds near 2.
         """
     )
     return
@@ -1899,8 +1914,8 @@ def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplo
     _un = [_union(_m) for _m in _counts]
     _fig.add_trace(
         go.Scatter(
-            x=_counts,
-            y=_summed,
+            x=_counts[:1],
+            y=_summed[:1],
             mode="lines+markers",
             line={"color": COLORS["secondary"], "width": 3},
             name="Σ areas (piles up)",
@@ -1910,8 +1925,8 @@ def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplo
     )
     _fig.add_trace(
         go.Scatter(
-            x=_counts,
-            y=_un,
+            x=_counts[:1],
+            y=_un[:1],
             mode="lines+markers",
             line={"color": COLORS["primary"], "width": 3},
             name="union (stays spread)",
@@ -1921,16 +1936,26 @@ def _(COLORS, base_layout, go, make_subplots, math, np, play_pause, style_subplo
     )
 
     _frames = []
-    for _m in _counts:
+    for _i, _m in enumerate(_counts):
         _xx, _yy = _fan(_m)
-        _frames.append(go.Frame(data=[go.Scatter(x=_xx, y=_yy)], traces=[0], name=str(_m)))
+        _frames.append(
+            go.Frame(
+                data=[
+                    go.Scatter(x=_xx, y=_yy),
+                    go.Scatter(x=_counts[: _i + 1], y=_summed[: _i + 1]),
+                    go.Scatter(x=_counts[: _i + 1], y=_un[: _i + 1]),
+                ],
+                traces=[0, 1, 2],
+                name=str(_m),
+            )
+        )
     _fig.frames = _frames
 
     _fig.update_layout(**base_layout(title="Small overlaps keep the union large", height=430))
     _fig.update_xaxes(range=[-0.75, 0.75], scaleanchor="y", constrain="domain", showticklabels=False, row=1, col=1)
     _fig.update_yaxes(range=[-0.75, 0.75], showticklabels=False, row=1, col=1)
-    _fig.update_xaxes(title_text="number of directions", row=1, col=2)
-    _fig.update_yaxes(title_text="area", row=1, col=2)
+    _fig.update_xaxes(title_text="number of directions", range=[0, 30], row=1, col=2)
+    _fig.update_yaxes(title_text="area", range=[0, 1.35], row=1, col=2)
     style_subplot_axes(_fig, show_ticklabels=True)
     _fig.update_layout(updatemenus=play_pause("▶ Add directions"))
     _fig
@@ -2073,12 +2098,12 @@ def _(COLORS, SQRT3, base_layout, go, make_subplots, np, perron_pieces, play_pau
 def _(mo):
     mo.md(
         r"""
-        The box-counting dimension (coral) sits near 2 the whole way, hugging the dashed target, while
-        the area (cyan) stays a small fraction of the triangle. This fixed overlap schedule plateaus
-        the area near 44%; the true minimum is 0, reached only $1/\log N$ slowly, too slowly to watch.
-        The stable reading is the point: the pile keeps full dimension while its area shrinks away, so
-        **area 0, dimension 2** (Davies). The finite-resolution slope (~1.75) undershoots the true 2
-        only because the boxes are not yet small enough.
+        The box-counting dimension (coral) holds well above the single-needle line and climbs toward
+        the dashed target of 2, while the area (cyan) stays a small fraction of the triangle. This
+        fixed overlap schedule plateaus the area near 44%; the true minimum is 0, reached only
+        $1/\log N$ slowly, too slowly to watch. The pile keeps its dimension while its area shrinks
+        away, so **area 0, dimension 2** (Davies). The finite-resolution reading (~1.75) sits below
+        the true 2 only because the boxes are not yet small enough.
         """
     )
     return
@@ -2088,7 +2113,7 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-        ## 5. Why anyone cares: the harmonic-analysis tower
+        ## 5. Why the problem matters: the harmonic-analysis tower
 
         A needle puzzle stops being a curiosity here. It sits at the **bottom** of a tower of
         conjectures in Fourier analysis (the mathematics of breaking a signal into pure tones), from
@@ -2102,6 +2127,10 @@ def _(mo):
         would topple the whole tower. The bridge is the **uncertainty principle**: a thin sliver in
         frequency corresponds to a long thin tube in space, and tubes pointing every which way are
         exactly a Besicovitch configuration.
+
+        Two pieces of notation recur below. $\|f\|_{L^p}$ measures the average size of a function $f$
+        (the ordinary energy when $p = 2$), and $a \lesssim b$ means $a$ is at most a fixed constant
+        times $b$.
         """
     )
     return
@@ -2169,8 +2198,14 @@ def _(mo):
         r"""
         ### The analytic form: the Kakeya maximal function
 
-        The version harmonic analysts chase averages $|f|$ over the *best* $\delta$-tube in each
-        direction $\omega$, calling that $f^{*}_\delta(\omega)$. The conjecture says this greedy
+        In full generality the geometric statement is:
+
+        > **Kakeya conjecture.** Every Kakeya (Besicovitch) set in $\mathbb{R}^n$ has Hausdorff and
+        > Minkowski dimension $n$.
+
+        Section 4 settled $n = 2$ and Section 6 will settle $n = 3$; $n \ge 4$ is open. Harmonic
+        analysts chase an equivalent analytic form. It averages $|f|$ over the *best* $\delta$-tube in
+        each direction $\omega$, calling that $f^{*}_\delta(\omega)$, and says this greedy
         tube-averaging barely amplifies anything, only a loss slower than any power of $\delta$:
 
         $$
@@ -2407,13 +2442,14 @@ def _(mo):
 def _(mo):
     mo.md(
         r"""
-        ### Fefferman, 1971: where the tube geometry first bit
+        ### Fefferman, 1971: where the tube geometry becomes a counterexample
 
         To rebuild a signal you sum its tones one cutoff at a time; the natural higher-dimensional
-        cutoff is a **ball** ($|\xi| \le R$, then $R \to \infty$). For $p = 2$ it converges;
-        Fefferman showed that for every other $p$ it fails, and the reason is the needle puzzle. The
-        ball's boundary is curved, so each thin slab tangent to it dualizes to a long tube, and those
-        tubes pile up exactly as needles in a Besicovitch set.
+        cutoff is a **ball** ($|\xi| \le R$, then $R \to \infty$). This sharp keep-inside, drop-outside
+        filter is called the ball *multiplier*. For $p = 2$ it converges; Fefferman showed that for
+        every other $p$ it fails, and the reason is the needle puzzle. The ball's boundary is curved,
+        so each thin slab tangent to it dualizes to a long tube, and those tubes pile up exactly as
+        needles in a Besicovitch set.
         """
     )
     return
@@ -2567,7 +2603,8 @@ def _(mo):
         r"""
         ### The three rungs above Kakeya
 
-        Each is stronger than the one below, and each has a plain reading.
+        Each is stronger than the one below, and each has a plain reading. Restriction has no figure of
+        its own; the two rungs above it each get one, directly below where they are introduced.
 
         **Restriction** (Stein): a wave built only from a curved surface's tones must leak energy and
         fade. With the extension operator $E g(x) = \int_{S^{n-1}} g(\omega) e^{2\pi i x\cdot\omega}
@@ -2577,11 +2614,7 @@ def _(mo):
         **Bochner-Riesz**: soften the ball cutoff with an exponent $\alpha \ge 0$, fading tones out
         near the boundary. At $\alpha = 0$ it is Fefferman's failing cutoff; the conjecture says any
         $\alpha > 0$ restores convergence for a range of $p$. Known $n=2$, open $n \ge 3$, and it
-        implies Kakeya.
-
-        **Local smoothing** (Sogge, the top): a wave averaged over a short time interval is smoother
-        than at any frozen instant. It implies Bochner-Riesz, restriction, and Kakeya. Known $n=2$
-        (Guth-Wang-Zhang 2020), open $n \ge 3$.
+        implies Kakeya. The figure sweeps $\alpha$ from that hard cutoff upward.
         """
     )
     return
@@ -2625,8 +2658,21 @@ def _(mo):
         r"""
         At $\alpha = 0$ the multiplier is a hard step at $|\xi| = R$, Fefferman's failing cutoff. As
         $\alpha$ grows the edge fades in smoothly, and the conjecture is that any positive softening
-        already restores convergence for a range of $p$. The uncertainty principle is what ties all
-        of these back to how tubes in many directions pack, which is Kakeya.
+        already restores convergence for a range of $p$.
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(
+        r"""
+        **Local smoothing** (Sogge, the top rung): a wave averaged over a short time interval is
+        smoother than at any frozen instant. It implies Bochner-Riesz, restriction, and Kakeya (known
+        $n=2$, Guth-Wang-Zhang 2020, open $n \ge 3$). The figure below shows why the averaging helps:
+        a point source concentrates its energy on an expanding front, and smearing that front over a
+        short time is what regains smoothness.
         """
     )
     return
@@ -2641,7 +2687,7 @@ def _(COLORS, base_layout, circle, go, make_subplots, np, play_pause, style_subp
     def _ring(t, i):
         _r = t - i * _lam
         if _r <= 0.02:
-            return [], []
+            return [0.0], [0.0]
         return circle(_r, 160)
 
     _fig = make_subplots(
@@ -2713,11 +2759,13 @@ def _(mo):
         r"""
         Left: a point source sends out ripples, the bright leading ring is the wavefront $|x| = t$ and
         the fainter rings behind it are the trailing crests, all expanding together and concentrating
-        the wave's energy near the front. Right, in space-time, that energy rides the light cone
-        $|x| = t$ (the marks
-        climb the V as time advances). At a single instant the wave can spike on the circle; averaging
-        over the time interval smears the spike along the cone, and that regained smoothness is exactly
-        what local smoothing measures, the top rung of the tower.
+        the wave's energy near the front. Right, the same thing plotted with time going up (position
+        across, time up): the front traces a widening V, the light cone $|x| = t$, and the marks climb
+        it as time advances. At a single instant the wave can spike on the circle; averaging over the
+        time interval smears the spike along the cone, and that regained smoothness is exactly what
+        local smoothing measures, the top rung of the tower. Across all three rungs it is the
+        uncertainty principle that ties the analysis back to how tubes in many directions pack, which
+        is Kakeya.
         """
     )
     return
@@ -2741,6 +2789,9 @@ def _(mo):
         \qquad |N_\delta K| \sim \delta^{\,3 - d}.
         $$
 
+        Here $\#\mathbb{T} \cdot |T|$ is the number of tubes times the volume of one, and $N_\delta K$
+        is the $\delta$-neighbourhood of the set (the solid region you get once every tube is actually
+        drawn), so $|N_\delta K|$ is that region's volume and $d$ is the set's dimension.
         Dimension $d = 3$ is the case $3 - d = 0$: refining the tubes cannot drain the union. But
         space is genuinely harder than the plane: two lines in different directions almost always
         **cross** in the plane, while in space two tubes generically **miss** (skew lines), so the 2D
@@ -2920,8 +2971,8 @@ def _(mo):
         r"""
         The total tube content (yellow dotted) stays pinned at 1 no matter how fine the tubes get.
         If the union has **dimension 3** its volume stays pinned to that content: the thick cyan line
-        sits right under the yellow dots, and that coincidence is the whole point, refining the tubes
-        cannot drain a dimension-3 union. A **dimension-5/2** set would instead shed a factor $\sqrt2$
+        sits right under the yellow dots, and that coincidence says refining the tubes cannot drain a
+        dimension-3 union. A **dimension-5/2** set would instead shed a factor $\sqrt2$
         per halving (coral, about 29% gone each step), the highlighted dot sliding down toward 0.
         "Dimension 3" is exactly the statement that the coral curve can never happen.
         """
@@ -2936,12 +2987,14 @@ def _(mo):
         ## 7. Solving three dimensions: sticky, grains, induction
 
         The Wolff axiom stalls at $5/2$: capping the crudest concentration is not the same as ruling
-        out the finer ways tubes overlap. Wang and Zahl (2025) closed the gap. Two ideas do the work.
+        out the finer ways tubes overlap. Wang and Zahl (2025) closed the gap; they had already proved
+        the *sticky* case in $\mathbb{R}^3$ in 2022, strong evidence the full result was within reach.
+        Two ideas do the work.
 
         **Sticky reduction.** Zoom out so thin $\delta$-tubes blur into fatter $\rho$-tubes and ask
         how the thin ones sit inside the fat ones. In the **sticky** case they clump maximally, about
-        $(\rho/\delta)^2$ per fat tube, and the picture repeats as you zoom (self-similar, like a
-        comb). In the **non-sticky** case they scatter, like tossed sticks. Hickman calls it the
+        $(\rho/\delta)^2$ per fat tube, arranged the same way at each level of zoom (self-similar,
+        like a comb). In the **non-sticky** case they scatter, like tossed sticks. Hickman calls it the
         single most important step: it *suffices* to prove the bound for sticky tubes.
         """
     )
@@ -3004,9 +3057,10 @@ def _(COLORS, base_layout, go, make_subplots, np, style_subplot_axes):
 def _(mo):
     mo.md(
         r"""
-        Cross-section of one fat tube. Left, sticky: the thin tubes fill it in a regular grid, the
-        same picture at every zoom. Right, non-sticky: the same count scattered. The proof reduces to
-        the sticky case, then handles the leftover geometry with grains.
+        Cross-section of one fat tube. Left, sticky: the thin tubes fill it in a regular grid, and it
+        is that regular packing (drawn here at one scale) that repeats as you zoom. Right, non-sticky:
+        the same count scattered. The proof reduces to the sticky case, then handles the leftover
+        geometry with grains.
         """
     )
     return
@@ -3018,7 +3072,8 @@ def _(mo):
         r"""
         **Grains.** Counting tubes directly is hopeless (a pair can cross, miss, or run nearly
         parallel at every scale). Guth's graininess, carried from Dvir's finite-field polynomial
-        method into Euclidean space, says a near-counterexample must cluster into thin slabs, one
+        method (organizing the tubes with the zero set of a well-chosen polynomial) into Euclidean
+        space, says a near-counterexample must cluster into thin slabs, one
         tube thick, wider but much shorter than the tubes through them, like the grain in wood:
         $\text{grain} \approx \delta \times c \times c$ with $\delta \ll c \ll 1$. Within a fat tube
         the grains tile disjointly, and no point lies in too many grains, the quantitative ceiling on
@@ -3176,8 +3231,11 @@ def _(mo):
 
         **Induction on scales** finishes: assume the bound at one scale and bootstrap to a slightly
         better one, repeating until $d$ reaches 3. Because grains within a fat tube are disjoint,
-        Wang-Zahl replace the wasteful multiplicity bound by the multiplicity of the actual union, so
-        each step gains instead of leaking.
+        Wang-Zahl replace a wasteful bound on the multiplicity (how many tubes pile up over a typical
+        point) with the multiplicity of the actual union, and keeping that small is the same as
+        keeping the union large, so each step gains instead of leaking. That non-leaking induction is
+        what finally reached dimension 3; the bound had climbed only slowly for three decades before
+        it, and the next figure is that history.
         """
     )
     return
@@ -3232,7 +3290,7 @@ def _(mo):
 
         $$
         \begin{aligned}
-        \dim_H K &\ge \tfrac{n+2}{2}                 && \text{Wolff (1995), the hairbrush bound} \\
+        \dim_H K &\ge \tfrac{n+2}{2}                 && \text{Wolff (1995)} \\
         \dim_H K &\ge (2 - \sqrt2)(n - 4) + 3        && \text{Katz-Tao (2002),}\ 2 - \sqrt2 \approx 0.586 .
         \end{aligned}
         $$
@@ -3301,12 +3359,23 @@ def _(mo):
         cross at $n = 4$. Wolff leads for $n = 2, 3, 4$; Katz-Tao overtakes from $n = 5$. The gap to
         the dashed line is the open problem.
 
+        Why the wall sits at $n \ge 4$: the classic **bush** and **hairbrush** arguments (bound how
+        many tubes can pass through a single point, then through a single central tube) and their
+        **planebrush** refinement give the bounds above, and the best current record at $n = 4$ (a
+        planebrush argument) reaches only about 3.059. Guth and Zahl (2018) isolated the missing
+        ingredient as a set of **polynomial Wolff axioms**: quantitative limits on how many tubes can
+        crowd into a low-degree algebraic surface. Those axioms can be established in the plane and in
+        space, which is what the known results rest on; for $n \ge 4$ they are only *conjectured* to
+        hold for every Kakeya set, and that unproven step is the concrete obstruction.
+
         Because the tower's implications run downward, proving the $n \ge 4$ Kakeya would not by
         itself settle restriction, Bochner-Riesz, or local smoothing. What propagates outward is the
-        toolkit: the proven multilinear Kakeya theorem drives $\ell^2$ decoupling (Bourgain-Demeter
-        2015), which proves the Vinogradov mean value theorem and reaches analytic number theory and
-        PDE. The expected payoff of $n \ge 4$ is methodological momentum, not a single toppling
-        domino.
+        toolkit. The geometric estimates that beat Kakeya, in a *multilinear* form that controls how
+        tubes in transverse directions overlap, drive a technique called $\ell^2$ **decoupling**
+        (Bourgain-Demeter 2015): a way to split a wave into its frequency pieces and recombine them
+        with almost no loss. Decoupling in turn settled the Vinogradov mean value theorem, a
+        long-standing counting problem in number theory, and feeds into PDE. The expected payoff of
+        $n \ge 4$ is methodological momentum, not a single toppling domino.
         """
     )
     return
@@ -3333,6 +3402,9 @@ def _(mo):
           conjecture in three dimensions*, [arXiv:2502.17655](https://arxiv.org/abs/2502.17655) (2025).
         - T. Tao, *The three-dimensional Kakeya conjecture, after Wang and Zahl* (blog, 2025).
         - Z. Dvir, *On the size of Kakeya sets in finite fields*, J. Amer. Math. Soc. 22 (2009).
+        - L. Guth, *The endpoint case of the Bennett-Carbery-Tao multilinear Kakeya conjecture*, Acta
+          Math. 205 (2010); L. Guth & J. Zahl, *Polynomial Wolff axioms and Kakeya-type estimates*
+          (2018).
         - K. J. Falconer, *The Geometry of Fractal Sets* (CUP, 1985); C. Fefferman, *The multiplier
           problem for the ball*, Ann. of Math. 94 (1971).
         - R. O. Davies (1971), 2D dimension; International Mathematical Union, *Fields Medals 2026*.
