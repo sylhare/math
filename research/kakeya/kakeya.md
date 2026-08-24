@@ -11,10 +11,83 @@ for every step:
 5. the Kakeya conjecture (dimension `n`) and the harmonic-analysis tower resting on it (Fourier,
    Fefferman, restriction, Bochner-Riesz, local smoothing);
 6. the 3D conjecture and what Minkowski dimension 3 means for tubes;
-7. solving 3D: tubes, sticky vs non-sticky, Guth's graininess/grains, and the compression bound.
+7. solving 3D: tubes, sticky vs non-sticky, Guth's graininess/grains, and the compression bound;
+8. going further: dimension `n ≥ 4` (open), the proven bounds that fall short, and what rests on it.
 
 Figures referenced below live in `figures/<part>/`; each is a numpy/shapely construction validated
 against the formula it illustrates.
+
+An innocent puzzle about turning a needle turns out to sit underneath a stack of central results in
+modern analysis, and closing its three-dimensional case earned a 2026 Fields Medal. The technical
+sections carry the exact math; the walkthrough just below carries the thread in plain words, and the
+jargon decoder at the very end translates every scary term on one page.
+
+---
+
+## Plain-language walkthrough (the thread, without the machinery)
+
+The whole argument in one read, with the reason each step forces the next. No symbol here is needed
+to follow the story; the numbered sections expand each beat, and any unfamiliar word is defined in the
+jargon decoder at the end.
+
+1. **The puzzle (§1).** Lay a needle of length 1 on a table and turn it until it has pointed in every
+   direction. The question is the *area* it must sweep. Two versions matter, and the difference is why
+   the subject is subtle. A *needle set* is room enough to turn the needle continuously, a real
+   physical turn. A *Besicovitch set* only has to contain a copy of the needle in each direction, with
+   no requirement that you can slide from one copy to the next. The first can be made as small as you
+   like but never zero. The second can actually reach zero area. ("As small as you like but never
+   zero" is what mathematicians mean by "smallest possible value is 0 but never attained": there is no
+   smallest, only smaller and smaller.)
+
+2. **Shrinking the area (§2).** The obvious answer, spinning the needle about its middle, fills a disc
+   and is wasteful (the center is covered over and over). Letting the needle slide as it turns (the
+   deltoid) halves that. Pal then shows the smallest answer *without dents* (convex) is a triangle,
+   and it is larger than the deltoid. That looks like going backwards, and that is the point: being
+   convex is a handicap, because a convex shape has to be used in one piece. Cut the shape apart and
+   the area can collapse. The one move behind every shrink: sliding a needle along its own length costs
+   no new area, only turning does. So cut a triangle into thin slivers (all still spanning the same fan
+   of directions, because sliding a piece never changes the directions of the needles inside it) and
+   slide them to pile on top of one another. The pile keeps every direction but takes less room.
+   Iterated, the area falls toward zero (Perron tree); three rotated copies cover all directions
+   (Besicovitch), reaching exactly zero for the "contains a needle" version.
+
+3. **Zero area, still big (§3).** A set can have zero area and still be substantial: the fractions on
+   the number line have zero length yet sit everywhere. So area is the wrong ruler. The right one is
+   *dimension*, measured by asking how the number of small boxes needed to cover the set grows as the
+   boxes shrink. A line needs twice as many boxes when you halve their size (growth exponent 1), a
+   filled square four times as many (exponent 2). That exponent can come out fractional, and that is
+   exactly what "a shape between a line and a surface" means. (Two flavors, Minkowski and Hausdorff,
+   differ only in whether the covering boxes must all be one size or may vary; the finer Hausdorff
+   flavor is the harder one to prove and the one the conjecture asks for.)
+
+4. **The 2D answer (§4).** Measured this way, the zero-area needle set in the plane has dimension 2,
+   the maximum. Area says "nothing there," dimension says "fills the plane." Both are right: they
+   answer different questions ("how much paint to cover it" versus "how many boxes to find it"). The
+   mechanism is that needles in well-separated directions barely overlap, so their union cannot be
+   squeezed into anything lower-dimensional.
+
+5. **Why anyone cares (§5).** This is where a needle puzzle stops being a curiosity. It sits at the
+   bottom of a tower of central conjectures in Fourier analysis (the mathematics of breaking a signal
+   into pure tones). The bridge is the uncertainty principle: a thin sliver in frequency corresponds to
+   a long thin tube in space, and tubes pointing every which way are exactly a Besicovitch
+   configuration. Fefferman used this to show that a natural way of rebuilding signals fails in
+   dimension 2 and up, and the failure is the needle puzzle in disguise. Because Kakeya is the *weakest*
+   statement in the tower, every stronger one needs it, and a single counterexample would topple them
+   all.
+
+6. **Higher dimensions (§6-§7).** Does "zero volume, full dimension" also hold in space and beyond?
+   Fatten each needle into a thin tube. In the plane, tubes in different directions almost always
+   cross; in space they usually miss (pass by without touching), so the 2D argument breaks and the
+   problem is genuinely harder. Wolff (1995) reached dimension 5/2 with a packing rule (no thin box
+   holds more tubes than its volume allows), and progress stalled there for decades. Wang and Zahl
+   (2025) closed the gap to the full dimension 3: reduce to the well-behaved "sticky" case, control the
+   leftover geometry with "grains" (short flat slabs that the tubes lie along, like the grain in wood,
+   which cannot pile up too much at any point), and ratchet the estimate up scale by scale without
+   leaking. This is the work for which Hong Wang received the 2026 Fields Medal.
+
+The spine in one line: motion puzzle, then concrete shapes shrink the area, then the area hits zero,
+then area is the wrong ruler, then dimension, then the plane is solved (dimension 2), then why it
+matters (the tower), then space is harder, and finally the 2025 machinery closes it.
 
 ---
 
@@ -464,6 +537,12 @@ geometry resumes.
 
 ## 5. The Kakeya conjecture and the harmonic-analysis tower
 
+This section is the most notation-heavy, and one reading key covers most of it: the symbol
+`‖f‖_{L^p}` measures the *average size* of a function (ordinary energy when `p = 2`), and "converges
+in `L^p`" means the average size of the error shrinks to zero, not that the two functions agree at
+every single point. With that, every formula below is a comparison of average sizes, and the
+plain-words gloss under each still carries the argument if the symbols are skipped.
+
 ### 5a. The conjecture, named and stated
 
 > **Kakeya conjecture.** Every Kakeya set `K ⊆ R^n` has Hausdorff and Minkowski dimension `n`.
@@ -540,8 +619,8 @@ Formally, Fefferman used a Besicovitch/Perron construction to **disprove** the n
 `S_R^{ball} f`, does **not** converge to `f` in `L^p(R^n)` as `R → ∞`. Where do the needles come
 from? The boundary of the frequency ball is *curved*, and by the uncertainty principle of Section 5b
 a thin curved sliver of frequency dualizes to a long thin tube in physical space, one tube per
-tangent direction of the sphere. The engine of the
-counterexample is exactly Kakeya geometry: thin frequency slabs tangent to the sphere pile up in
+tangent direction of the sphere. The counterexample runs on
+exactly Kakeya geometry: thin frequency slabs tangent to the sphere pile up in
 physical space the way needles pile up in a Besicovitch set, so a geometry puzzle controls the
 convergence of Fourier series in higher dimensions.
 
@@ -557,9 +636,10 @@ formula.
 
 ![The implication tower local smoothing => Bochner-Riesz => restriction => Kakeya, Kakeya at the base (known n=2, open n>=3).](figures/5_conjecture_tower/5_9_conjecture_tower.png)
 
-**(i) Restriction conjecture** (Stein). In plain words: take a function living only on a curved
-surface, say a ripple pattern on a sphere, and let it radiate as waves into the whole space. How
-quickly must the radiated wave die out? With the extension operator on the sphere
+**(i) Restriction conjecture** (Stein). *One breath:* a wave built only from a curved surface's tones
+cannot stay bunched up, it has to leak energy and fade as it spreads. In plain words: take a function
+living only on a curved surface, say a ripple pattern on a sphere, and let it radiate as waves into
+the whole space. How quickly must the radiated wave die out? With the extension operator on the sphere
 `E g(x) = ∫_{S^{n-1}} g(ω) e^{2πi x·ω} dσ(ω)`,
 
 $$
@@ -574,9 +654,10 @@ behaves when restricted to a curved surface.
 
 ![Extension operator on the paraboloid/sphere: wave packets tangent to the surface; the L^q bound holds for q > 2n/(n-1).](figures/5_conjecture_tower/5_6_restriction_conjecture.png)
 
-**(ii) Bochner-Riesz conjecture.** In plain words: Fefferman showed the sharp ball cutoff rings
-like a badly tuned instrument; can you fix it by softening the cutoff, fading tones out gently near
-the boundary instead of chopping them? Smooth the ball cutoff with an exponent `α ≥ 0`:
+**(ii) Bochner-Riesz conjecture.** *One breath:* fade the frequency cutoff out gently instead of
+chopping it, and signals rebuild cleanly again. In plain words: Fefferman showed the sharp ball cutoff
+rings like a badly tuned instrument; can you fix it by softening the cutoff, fading tones out gently
+near the boundary instead of chopping them? Smooth the ball cutoff with an exponent `α ≥ 0`:
 
 $$
 B_R^{\alpha} f(x) := \int_{B(0,R)} e^{2\pi i x\cdot\xi}\Big(1 - \tfrac{|\xi|^2}{R^2}\Big)^{\alpha}
@@ -591,9 +672,10 @@ Kakeya set would build a counterexample overwhelming the `α > 0` smoothing).
 
 ![Bochner-Riesz multiplier (1 - |xi|^2/R^2)_+^alpha: the ball cutoff (alpha=0) smoothed as alpha grows. Static and [animation](figures/5_conjecture_tower/5_7_bochner_riesz_anim.gif).](figures/5_conjecture_tower/5_7_bochner_riesz.png)
 
-**(iii) Local smoothing conjecture** (Sogge, 1991), top of the tower. In plain words: freeze a wave
-at one instant and it can spike badly; watch it over a short time interval instead and the spikes
-move around, so the *time average* is smoother than any frozen frame. The conjecture asks exactly
+**(iii) Local smoothing conjecture** (Sogge, 1991), top of the tower. *One breath:* a wave averaged
+over a little stretch of time is smoother than it is at any single frozen instant. In plain words:
+freeze a wave at one instant and it can spike badly; watch it over a short time interval instead and
+the spikes move around, so the *time average* is smoother than any frozen frame. The conjecture asks exactly
 how much smoothness this averaging buys. It is about the wave equation via the
 half-wave propagator `e^{it√(-Δ)}` (so `u(x,t) = e^{it√(-Δ)} f` solves the wave equation):
 
@@ -666,7 +748,7 @@ $$
 \end{aligned}
 $$
 
-Dimension `d = 3` is the case `3 - d = 0`: the union's volume-meter stays lit as `δ → 0`. A
+Dimension `d = 3` is the case `3 - d = 0`: the union's volume stays bounded away from `0` as `δ → 0`. A
 dimension-`5/2` set would have `3 - d = 1/2` and shed about `29\%` of its volume at every halving,
 draining to `0`. So "dimension 3" is exactly "refining the tubes cannot drain the union."
 
@@ -697,7 +779,7 @@ Two axioms/definitions the proof leans on (Hickman):
 
 ![A prism and the tubes it may contain: the Wolff axiom caps this at delta^-2 |R|, giving the (n+2)/2 = 5/2 bound in R^3.](figures/7_solving_3d/7_1_wolff_axiom.png)
 
-Read as a capacity law it is vivid: thinning the prism shrinks `|R|`, so the cap `δ^{-2}|R|` drops and
+Read as a capacity law it is concrete: thinning the prism shrinks `|R|`, so the cap `δ^{-2}|R|` drops and
 the slab can legally hold fewer tubes. Packing all `δ^{-2}` tubes into one thin slab, the degenerate
 cheat, is exactly the configuration a count above `δ^{-2}|R|` forbids.
 
@@ -750,11 +832,11 @@ fat tubes? Two extreme behaviors:
 
 ![Sticky vs non-sticky occupancy of a fat tube: sticky packs ~ (rho/delta)^2 thin tubes (self-similar across scales), non-sticky scatters. Static and [animation](figures/7_solving_3d/7_2_sticky_morph_anim.gif).](figures/7_solving_3d/7_2_sticky_vs_nonsticky.png)
 
-Why start with sticky (the "more information = easier" beat): stickiness is a lot of extra
+Why start with sticky (the "more information = easier" step): stickiness is a lot of extra
 structure, so the induction hypothesis can be applied cleanly at both the fat scale `ρ` and inside
-each fat tube, and the two multiplicity bounds multiply consistently. This is not cheating.
-Proving the sticky case first is a reconnaissance: it shows the conjecture is true in the regime
-where you can compute, and it tells you exactly which enemy is left, the scattered configurations
+each fat tube, and the two multiplicity bounds multiply consistently. This is not cheating:
+proving the sticky case first is a reconnaissance that shows the conjecture holds in the regime
+where you can compute, and it identifies exactly which enemy remains, the scattered configurations
 that refuse to look like combs. Assuming stickiness the
 conjecture is *intuitively* the tractable case, and Wang-Zahl proved the **sticky Kakeya conjecture in
 `R^3`** first (2022), which was strong evidence the full thing was in reach.
@@ -818,7 +900,7 @@ induction feed on itself.
 
 ### 7d. Compression, quantified
 
-"Compression" has a kitchen-image version: total tube-content is the amount of pasta you started
+"Compression" in plain terms: total tube-content is the amount of pasta you started
 with, the union is the size of the pot you managed to fit it into, and compression is packing more
 and more pasta into an arbitrarily small pot by overlapping the strands. Formally (Zahl's survey,
 the **Besicovitch compression phenomenon**):
@@ -865,7 +947,7 @@ $$
 \qquad \mu_{\text{coarse}} = \text{multiplicity of } \bigcup_{T \subseteq T_\rho} T .
 $$
 
-Because grains within one fat tube are disjoint, `μ_coarse` is genuinely smaller than `μ_fat`, and the
+Because grains within one fat tube are disjoint, `μ_coarse` is strictly smaller than `μ_fat`, and the
 step **gains** `α` instead of losing. Graininess controls the loss, turning a lossy induction into
 one that ratchets the dimension estimate up to exactly 3.
 
@@ -882,6 +964,112 @@ runs downward: the tower needs Kakeya, but Kakeya does not give back the tower),
 geometric floor's uncertainty and gives the techniques (sticky reduction, grains, induction on
 scales) that people now hope to carry up the tower. Hong Wang received the 2026 Fields Medal for this
 work with Zahl.
+
+---
+
+## 8. Going further: dimension `n ≥ 4` (still open)
+
+The conjecture does not change with the dimension: a Kakeya set in `R^n` should have Hausdorff (and
+Minkowski) dimension `n`. What changes is that nobody can prove it. It is settled only for `n = 1`
+(trivial), `n = 2` (Davies), and `n = 3` (Wang-Zahl 2025). For every `n ≥ 4` it is **open**, and even
+the weaker *sticky* Kakeya conjecture is open there.
+
+### 8a. The same picture, one dimension up
+
+Everything in Sections 6 and 7 restates cleanly in `R^n`. A `δ`-tube is now `δ^{n-1} × 1` (a segment
+fattened to radius `δ` in the `n-1` transverse directions), directions are `δ`-separated on the
+sphere `S^{n-1}`, so there are about `δ^{-(n-1)}` of them, and the total tube content is still pinned:
+
+$$
+\#\mathbb{T}\cdot|T| \ \sim\ \delta^{-(n-1)}\cdot \delta^{\,n-1} = 1,
+\qquad
+|N_\delta K| \ \sim\ \delta^{\,n-d},
+$$
+
+so dimension `d = n` is again exactly the statement `|N_δ K| ≳ δ^ε`: refining the tubes cannot drain
+the union. The only thing that grows is the room to hide. Two generic lines in `R^n` miss by more as
+`n` rises, so the overlaps a Besicovitch construction can arrange are richer, and the crossing/`L²`
+arguments have even less to grip.
+
+### 8b. What is actually known: every bound falls short
+
+The proven lower bounds all sit strictly below `n`, and that shortfall *is* the open problem. The two
+landmark general-`n` bounds, with the plane-brush record at `n = 4`:
+
+$$
+\begin{aligned}
+\dim_H K &\ge \tfrac{n+2}{2}                    && \text{Wolff (1995), the "hairbrush" bound} \\
+\dim_H K &\ge (2-\sqrt2)(n-4) + 3               && \text{Katz-Tao (2002), } 2-\sqrt2 \approx 0.586 \\
+\dim_H K &\ge 3.059 \ \ (n = 4)                 && \text{Katz-Zahl (2019), "planebrush"} .
+\end{aligned}
+$$
+
+The two general bounds **cross exactly at `n = 4`**, where both give `3`: Wolff is best for
+`n = 2, 3, 4`, and Katz-Tao strictly overtakes it for `n ≥ 5` (the gap grows like
+`(\tfrac32 - \sqrt2)(n-4) > 0`). At `n = 4` the record is the planebrush `3.059` (a 2-plane analogue
+of the hairbrush; the sticky case has since been pushed to `3.25`), against a conjectured `4`. No
+method proves the *fraction* `\dim_H K / n` tends to `1`; the sum-difference method of Katz-Tao only
+reaches slope `\approx 0.586`. These arithmetic facts (the crossover at `4`, the overtaking at `5`,
+and every bound `< n`) are machine-checked in `lean/Kakeya.lean`, §8.
+
+### 8c. Why `n ≥ 4` is harder, and the missing axiom
+
+The proven bounds come from "brush" arguments that stack incidences: the **bush** (many tubes through
+one point), the **hairbrush** (all tubes meeting one central tube, which fall into thickened planes
+where the 2D argument applies, giving `(n+2)/2`), and the **planebrush** (tubes concentrating into a
+2-plane). Each brush exploits one more dimension of structure and is much harder to make quantitative,
+which is the `(n+2)/2` ceiling. The modern route abstracts to families of tubes obeying the **Wolff
+axioms** (no plane holds too many tubes) and their sharpenings, the **polynomial Wolff axioms**
+(Guth-Zahl 2018), where "plane" becomes "low-degree variety." Under those axioms one gets the `R^4`
+estimates. The gap that blocks `n ≥ 4`: it is only *conjectured*, not proven, that every Kakeya set
+satisfies the polynomial Wolff axioms in `n ≥ 4`. The Wang-Zahl `R^3` machinery (sticky reduction,
+grains, induction on scales) has not yet been carried to any `n ≥ 4`; Tao's reading is that the
+obstruction is technical rather than fundamental (in `R^3` a degenerate case dropped to the 2D
+problem, whereas in `R^4` a degenerate case is itself a hard 3D problem, so the induction must be set
+up in exactly the right ambient dimension), while Guth expects the `2 → 3` jump was the hardest.
+
+### 8d. Would solving it help, and what rests on it
+
+Kakeya sits at the **bottom** of the harmonic-analysis tower of Section 5, and that tower is open in
+every dimension `n ≥ 3`: restriction (best `R^3` exponent `p > 3 + \tfrac{3}{14}`, Wang-Wu 2022),
+Bochner-Riesz (Guo-Oh-Wang-Wu-Zhang 2025, matching the restriction range), and local smoothing (only
+`n = 2` is done, Guth-Wang-Zhang 2020). Because the implications run **downward**, proving the `n ≥ 4`
+Kakeya conjecture would *not* by itself resolve any of them: Kakeya is a necessary floor, not a
+sufficient hypothesis. Even the Kakeya *maximal* conjecture is still open in `R^3`.
+
+What genuinely propagates outward is not the linear conjecture but the *techniques* and the *proven*
+**multilinear Kakeya theorem** (Bennett-Carbery-Tao 2006). Through the broad-narrow argument it feeds
+improved restriction bounds; it is the engine of **`ℓ²` decoupling** (Bourgain-Demeter 2015), which
+proves the **Vinogradov mean value theorem** (Bourgain-Demeter-Guth 2016) and from there lands in
+analytic number theory (sharper exponential-sum and Riemann zeta-growth bounds, Waring-type problems)
+and in PDE (pointwise convergence of the Schrodinger flow, Du-Zhang 2019). The honest distinction: the
+tower (restriction, Bochner-Riesz, local smoothing) logically *depends* on Kakeya-type bounds, while
+decoupling, Vinogradov, and the Schrodinger results *share* the toolkit (wave packets, induction on
+scales, the polynomial method) without resting on the open linear conjecture. So the payoff of `n ≥ 4`
+is expected to be methodological momentum, not a single toppling domino.
+
+### 8e. What it looks like above three dimensions
+
+You cannot draw `R^n`, so you draw its **index**, its **shadows**, and its **meters**, each honest
+about what it hides:
+
+- **The direction index `S^{n-1}`.** One tube per direction, so the family is indexed by a
+  `δ`-net on the sphere: a circle (`n = 2`), a sphere (`n = 3`), and a projected `δ`-net on `S^3`
+  (`n = 4`), with the dot count `~ δ^{-(n-1)}` printed under each. This shows the object honestly: it
+  is the parameter space, not the ambient set.
+- **Shadows and slices of a 4D bundle.** Project a synthetic bundle of `4`-tubes to a 2-plane and a
+  3-space (a shadow can only merge tubes, never separate them, so a thin shadow does not prove a thin
+  set), and slice it by 2-planes `{x_3 = a, x_4 = b}`: each slice is a lower-dimensional
+  Kakeya-like picture, which is exactly the "a degenerate case drops one dimension" intuition.
+- **The tube-count-versus-union meter.** As `δ` halves, the tube count `δ^{-(n-1)}` explodes while the
+  union volume is read against the two envelopes `δ^{n-d}` for the proven Wolff `d = (n+2)/2` (which
+  sags to `0`) and the conjectured `d = n` (flat at `1`). "Dimension `n`" is the statement that the
+  right meter never drains, and the picture is faithful because every curve is computable even when
+  the set itself is not drawable.
+
+The formal core of this section, the general-`n` conjecture, the recorded Wolff and Katz-Tao bounds,
+and the proofs that they cross at `4`, separate at `5`, and always fall short of `n`, is in
+`lean/Kakeya.lean` (§8, `Kakeya.S8`).
 
 ---
 
@@ -903,3 +1091,78 @@ work with Zahl.
 - Restriction `‖Eg‖_{L^q} ≲ ‖g‖_∞`, `q > 2n/(n-1)`; Bochner-Riesz `B_R^α`; local smoothing
   `(∫_1^2 ‖e^{it√-Δ}f‖_p^p)^{1/p} ≲ ‖f‖_{L^p_{s_p-σ}}`, `s_p=(n-1)|1/2-1/p|`. Order:
   local smoothing ⟹ Bochner-Riesz ⟹ restriction ⟹ Kakeya.
+
+---
+
+## Jargon decoder
+
+Every scary term on one page, in plain words. Precise statements are in the body; these are the
+readings to keep in your head.
+
+**The needle problem (§1-§2)**
+
+- **Unit needle / unit segment.** A straight line piece of length exactly 1. It only slides and turns,
+  never grows or shrinks.
+- **Smallest area "0 but never attained."** You can make the area as small as you like, but no single
+  shape achieves 0. There is no smallest, only smaller and smaller.
+- **Measure / Lebesgue measure.** Ordinary area in the plane (volume in space). "Measure zero" means
+  zero area: no thickness, though there can still be infinitely many points.
+- **Convex.** No dents: the straight line between any two points of the shape stays inside it. A convex
+  shape has to be used in one piece, which is why it cannot be the smallest answer.
+- **Envelope / tangent (deltoid).** The curve that a family of moving lines hugs. The needle touches
+  the curve at one point in each of its positions.
+- **Perron tree / sprouting.** A triangle cut into thin slivers that are slid to overlap. Overlap
+  removes area; sliding never changes the directions the slivers point in, so every direction survives.
+- **Besicovitch set.** A set that contains a unit needle in every direction (no continuous turning
+  required). Can have measure zero.
+
+**Dimension (§3-§4)**
+
+- **Box-counting / Minkowski dimension.** Cover the set with boxes of one size and count them; the
+  dimension is how fast that count grows as the boxes shrink (a line doubles, a square quadruples).
+- **Hausdorff dimension.** Same idea, but the covering boxes may be different sizes. It is the finer,
+  harder-to-prove version, and never larger than the Minkowski one.
+- **Fractional dimension.** A number between whole ones, e.g. 1.585. It means "more than a line, less
+  than a filled surface": the set fills space at a rate in between.
+- **Self-similar / fractal.** Made of smaller scaled copies of itself. Its dimension is
+  `log N / log r` for `N` copies each shrunk by `r` (the `log`s just compare growth rates).
+- **`δ`-tube.** A needle fattened to thickness `δ`: a long thin cylinder. Used when counting instead
+  of infinitely thin needles.
+
+**The analysis tower (§5)**
+
+- **Fourier transform.** The "recipe" of a signal as a stack of pure tones: how much of each frequency
+  it contains.
+- **Plane wave.** A single pure tone spread across space, its flat wavefronts perpendicular to the
+  frequency direction.
+- **Uncertainty principle.** Narrow in frequency forces spread out in space, and vice versa. This is
+  the bridge: a thin frequency sliver becomes a long thin tube in space.
+- **`‖f‖_{L^p}` / "converges in `L^p`".** A way to measure the average size of a function. "Converges
+  in `L^p`" means the average size of the error shrinks to zero, not that the values match everywhere.
+- **Multiplier.** A filter that keeps some frequencies and drops or fades others. The "ball
+  multiplier" keeps every tone inside a ball and cuts the rest; Fefferman showed that sharp cut fails.
+- **Maximal function.** For each direction, the largest average of `|f|` over any tube pointing that
+  way.
+- **Restriction / Bochner-Riesz / local smoothing.** Three progressively stronger analysis
+  conjectures, each resting on Kakeya. The details are for specialists; the point is the chain.
+
+**Solving 3D (§6-§7)**
+
+- **Skew lines.** Two lines in space that point in different directions and never meet (they pass by).
+  This is why the plane's "different directions must cross" argument fails in space.
+- **Wolff axiom.** A packing rule: no thin box can hold more tubes than its volume allows. It caps the
+  crudest way tubes could concentrate.
+- **Sticky vs non-sticky.** Sticky: tubes pointing nearly the same way also sit near each other, like
+  the teeth of a comb (structured, easier). Non-sticky: they scatter, like tossed sticks (the hard
+  case).
+- **Grain.** A short flat slab that many tubes lie along, like the grain in a piece of wood. Grains
+  cannot pile up too much at any point, which caps how far the set can be compressed.
+- **Multiplicity.** How many tubes pile over a typical point. Keeping this small is the same as keeping
+  the union large.
+- **Induction on scales.** Prove the bound at one zoom level, use it to prove a slightly better bound
+  at the next, and repeat until the dimension reaches its maximum.
+- **Polynomial method (Dvir).** If a low-degree polynomial vanishes on the whole set, it must be zero
+  everywhere; a genuinely small set cannot force that, so the set is not small. The technique Guth
+  carried from finite fields into real space.
+- **Compression.** Squeezing a fixed total amount of tube-content into an arbitrarily small footprint
+  by overlapping. The conjecture says compression can cost all the volume but none of the dimension.

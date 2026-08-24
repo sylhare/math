@@ -115,10 +115,7 @@ def main():
         # the live needle (bold, length 1)
         nd = needles[i]
         ax.plot(nd[:, 0], nd[:, 1], color=COLORS["needle"], lw=2.6, solid_capstyle="round")
-        ax.set_title("Pal join: far detour, tiny swept area", fontsize=12)
-        ax.text(0.01, 0.97,
-                f"D = {D:g}   needle length = 1\nswept area = {area_per_frame[i]:.3f}  (schematic; lemma area < eps is rigorous)",
-                transform=ax.transAxes, va="top", ha="left", fontsize=9, color=COLORS["guide"])
+        ax.set_title("Pal join: slide out, turn far away, slide back", fontsize=12)
         return []
 
     anim = FuncAnimation(fig, update, frames=len(needles), interval=70, blit=False)
