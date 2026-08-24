@@ -133,11 +133,9 @@ def main():
         for t in ts[:: max(1, len(ts) // 24)]:
             bm = 0.5 * (t[0] + t[1])
             ax.plot([bm[0], t[2][0]], [bm[1], t[2][1]], color=COLORS["needle"], lw=0.6, alpha=0.75)
-        L, f = frame_plan[i]
-        done = L + (1 if f >= 1.0 - 1e-9 else 0)
         ax.set_title("Perron tree: cut and shift", fontsize=13)
-        ax.text(0.02, 0.98, f"level {done}/{N_LEVELS}\narea = {areas[i]:.3f}   fan 60..120 deg",
-                transform=ax.transAxes, va="top", ha="left", fontsize=10, color=COLORS["guide"])
+        ax.text(0.02, 0.98, f"footprint {areas[i] / base_area * 100:.0f}% of the triangle",
+                transform=ax.transAxes, va="top", ha="left", fontsize=11, color=COLORS["guide"])
         return []
 
     anim = FuncAnimation(fig, update, frames=len(frame_plan), interval=70, blit=False)

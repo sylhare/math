@@ -120,12 +120,20 @@ def main():
     reul = reuleaux_outline()
     tri = np.array([TH_APEX, TH_BL, TH_BR, TH_APEX])
 
-    fig, axes = plt.subplots(1, 3, figsize=(13.2, 4.8))
+    fig, axes = plt.subplots(1, 3, figsize=(13.2, 5.0))
     titles = [f"circle: spin about a point\narea pi/4 = {areas[0]:.3f}",
               f"Reuleaux: pivot about 3 points\narea (pi-sqrt3)/2 = {areas[1]:.3f}",
               f"equilateral triangle\narea 1/sqrt3 = {areas[2]:.3f}"]
     outlines = [disc, reul, tri]
     needle_lists = [cN, rN, tN]
+    # Recentre each shape on its centroid (only the height-1 triangle sits off-origin, centroid y=1/3)
+    # so all three line up horizontally and vertically inside one shared, symmetric axis box.
+    off = [np.array([0.0, 0.0]), np.array([0.0, 0.0]), np.array([0.0, -1.0 / 3.0])]
+    outlines = [outlines[j] + off[j] for j in range(3)]
+    needle_lists = [[(a + off[j], b + off[j]) for a, b in needle_lists[j]] for j in range(3)]
+    # Size each panel to its own shape's radius (same 1.18 margin as the non-convex figure) so both
+    # answer gifs render each shape at the same on-screen size, with the three panels aligned.
+    lim = [float(np.max(np.hypot(o[:, 0], o[:, 1]))) * 1.18 for o in outlines]
     nframes = max(len(cN), len(rN), len(tN))
     frames = list(range(nframes)) + [nframes - 1] * END_HOLD
 
@@ -135,8 +143,8 @@ def main():
             ax.cla()
             ax.set_aspect("equal")
             ax.axis("off")
-            ax.set_xlim(-0.72, 0.72)
-            ax.set_ylim(-0.62, 1.06)
+            ax.set_xlim(-lim[j], lim[j])
+            ax.set_ylim(-lim[j], lim[j])
             ax.plot(outlines[j][:, 0], outlines[j][:, 1], color=COLORS["guide"], lw=1.4)
             lst = needle_lists[j]
             upto = min(k + 1, len(lst))

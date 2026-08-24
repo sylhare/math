@@ -7,8 +7,6 @@ the critical line, the explicit formula that ties zeros to primes, the ladder of
 proportions on the line, and the August 2026 argument (Claude / Anthropic) that makes
 Montgomery's pair correlation unconditional and certifies at least two thirds of the zeros
 on the line by finite linear algebra.
-
-Status: draft
 """
 
 import marimo
@@ -849,9 +847,11 @@ def _(COLORS, ZEROS, base_layout, go, hardy_Z, np, play_pause, style_subplot_axe
     def _marks(fi):
         _tnow = 0.5 + (_schedule[fi] / _n_frames) * (_tmax - 0.5)
         _g = _gam[_gam <= _tnow]
+        _gx = _g if len(_g) else np.array([-1.0])
+        _gy = np.zeros_like(_gx)
         return go.Scatter(
-            x=_g,
-            y=np.zeros_like(_g),
+            x=_gx,
+            y=_gy,
             mode="markers",
             marker={"color": COLORS["secondary"], "size": 9},
             showlegend=False,
