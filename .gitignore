@@ -46,3 +46,4 @@ Thumbs.db
 
 # Generated docs (built during CI for GitHub Pages)
 docs/
+**/*.npy
