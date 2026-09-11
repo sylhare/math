@@ -6,9 +6,9 @@
     F(lambda)     = lambda / (1 + lambda^2/3)      the moment ratio target                F(1) = 3/4
 
 with c*_lambda = sqrt2 tan(theta)/(1 + theta tan(theta)), theta = lambda/sqrt2 (Montgomery-Taylor).
-The optimal window sits just above the flat one and reaches 0.6725 at lambda = 1: that value is a
-genuine maximum of the functional at bandwidth one (no window does better), not a stepping stone to a
-higher one. The previous record 5/12 = 0.4167 (PRZZ 2020) is a faint reference.
+The optimal window sits just above the flat one and reaches 0.6725 at lambda = 1, a maximum of the
+functional at bandwidth one (no window does better). The previous record 5/12 = 0.4167 (PRZZ 2020) is
+a faint reference.
 
 Run: PYTHONPATH=research/riemann/figures uv run --with matplotlib --with mpmath --with pillow \
      python research/riemann/figures/6_weil_form_argument/6_2_H_lambda_curve.py

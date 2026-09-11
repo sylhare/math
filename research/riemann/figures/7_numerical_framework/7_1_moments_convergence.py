@@ -10,7 +10,7 @@ from real zeta ordinates over an interior height window, with the tau_k spaced a
 (bandwidth lambda = 1) and window width sigma = mean gap. Because every zero at these heights is on
 the line, G = sum_j v_j v_j^T is a Gram matrix and so G >= 0. Its sorted eigenvalues are all >= 0;
 the minimum eigenvalue readout is the exact check. RH is verified this low, so this certifies
-nothing NEW: G >= 0 from real zeros is simply the thing we can confirm exactly.
+nothing new: G >= 0 from real zeros is the exact check.
 
 Run: PYTHONPATH=research/riemann/figures uv run --with matplotlib --with mpmath --with pillow \
   python research/riemann/figures/7_numerical_framework/7_1_moments_convergence.py

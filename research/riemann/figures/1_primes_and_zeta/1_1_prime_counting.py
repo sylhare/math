@@ -3,7 +3,7 @@
     pi(x)       = #{p prime : p <= x}                        the staircase, +1 at each prime
     x / log x   ~ pi(x)                                      prime number theorem density
     Li(x)       = int_2^x dt / log t                         the sharper guess (quadrature)
-    E(x)        = pi(x) - Li(x)                              the error the whole subject controls
+    E(x)        = pi(x) - Li(x)                              the error term
 
 Reproduces pi(1000) = 168, Li(1000) ~ 177.6, 1000/log(1000) ~ 144.8.
 

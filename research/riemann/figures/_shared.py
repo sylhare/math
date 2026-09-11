@@ -14,14 +14,13 @@ import os
 
 import numpy as np
 
-# Palette (mirrors the article's colour logic)
 COLORS = {
-    "prime": "#1f77b4",  # primes / arithmetic side
-    "zero": "#d62728",  # nontrivial zeros / the critical line
-    "line": "#111111",  # the critical line Re s = 1/2
-    "offline": "#ff7f0e",  # hypothetical off-line zeros
-    "region": "#9ecae1",  # strips / bands, faint
-    "onlinepos": "#2ca02c",  # on-line (positive) contribution
+    "prime": "#1f77b4",  # primes
+    "zero": "#d62728",  # zeros / critical line
+    "line": "#111111",  # critical line
+    "offline": "#ff7f0e",  # off-line zeros
+    "region": "#9ecae1",  # bands
+    "onlinepos": "#2ca02c",  # on-line
     "guide": "#555555",  # axes, arrows
     "muted": "#999999",
 }
@@ -123,7 +122,6 @@ def psi(x: float, lam: np.ndarray) -> float:
     return float(lam[: k + 1].sum())
 
 
-# Preview + reporting (identical contract to the Kakeya framework)
 def plot_axes(ncols: int = 1, figsize=None, equal: bool = False):
     """Standard matplotlib axes with a light grid; ``equal`` for complex-plane figures."""
     import matplotlib
