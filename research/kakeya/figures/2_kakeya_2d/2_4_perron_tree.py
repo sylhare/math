@@ -21,7 +21,7 @@ APEX_X = 0.5
 
 
 def _slivers(n):
-    N = 2 ** n
+    N = 2**n
     w = 1.0 / N
     return [[poly(np.array([[i * w, 0.0], [(i + 1) * w, 0.0], [APEX_X, H]]))] for i in range(N)]
 
@@ -30,14 +30,14 @@ def perron_tree(n: int, s: float = 0.2):
     """Symmetric cut-and-shift merge, n levels, keeping s*block of fresh base per merge.
     Returns (shapely union, list of triangles)."""
     shapes = _slivers(n)
-    w = 1.0 / (2 ** n)
+    w = 1.0 / (2**n)
     for _ in range(n):
         step = 0.5 * (1.0 - s) * w
         shapes = [
             [shp_translate(p, xoff=+step) for p in shapes[i]] + [shp_translate(p, xoff=-step) for p in shapes[i + 1]]
             for i in range(0, len(shapes), 2)
         ]
-        w *= (1.0 + s)
+        w *= 1.0 + s
     tris = [p for shp in shapes for p in shp]
     return unary_union(tris), tris
 
@@ -62,26 +62,26 @@ def main():
     n, s = 9, 0.2
     tree, tris = perron_tree(n, s)
 
-    # Validation
     lo, hi = triangle_fan_degrees(equilateral(1.0))
     pivot = (APEX_X, H)
     full = unary_union([shp_rotate(tree, a, origin=pivot) for a in (0, 120, 240)])
-    # tree area at a few levels
     areas = {k: perron_tree(k, s)[0].area for k in (1, 3, 6)}
-    areas[n] = tree.area  # reuse the already-built n=9 union instead of rebuilding it
+    areas[n] = tree.area  # reuse the n=9 union
     math_check(
         "Perron tree / Besicovitch",
         [
             ("equilateral apex fan", f"{lo:.0f}..{hi:.0f} deg  (60 deg wide)"),
             ("3 rotations cover", "0..180 deg  => all directions (60 deg is not a wall)"),
-            ("base triangle area", f"{base_area:.4f}  (base=1 equilateral => sqrt3/4 = {SQRT3/4:.4f})"),
+            ("base triangle area", f"{base_area:.4f}  (base=1 equilateral => sqrt3/4 = {SQRT3 / 4:.4f})"),
             ("tree area, this schedule", "  ".join(f"n={k}:{v:.3f}" for k, v in areas.items())),
-            ("=> visible approximation", f"{tree.area:.3f} = {tree.area/base_area*100:.0f}% of triangle"),
-            ("true Besicovitch area", "-> 0 as N->inf, but only ~1/log N (Keich): not drawable, so we show the min visible form"),
+            ("=> visible approximation", f"{tree.area:.3f} = {tree.area / base_area * 100:.0f}% of triangle"),
+            (
+                "true Besicovitch area",
+                "-> 0 as N->inf, but only ~1/log N (Keich): not drawable, so we show the min visible form",
+            ),
         ],
     )
 
-    # Preview
     fig, ax = new_axes(3, figsize=(16, 5.4))
     _draw_region(ax[0], base, COLORS["region"], 0.6)
     _draw_needles(ax[0], [base], COLORS["needle"])
@@ -89,7 +89,7 @@ def main():
 
     _draw_region(ax[1], tree, COLORS["region"], 0.7)
     _draw_needles(ax[1], tris, COLORS["needle"])
-    ax[1].set_title(f"Perron tree  (area {tree.area:.3f} = {tree.area/base_area*100:.0f}% of triangle)")
+    ax[1].set_title(f"Perron tree  (area {tree.area:.3f} = {tree.area / base_area * 100:.0f}% of triangle)")
 
     _draw_region(ax[2], full, COLORS["accent"], 0.75)
     ax[2].set_title("3 trees rotated 120 deg: all directions")

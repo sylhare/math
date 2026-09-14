@@ -10,6 +10,7 @@ rho = 1/4, delta = 1/16: (rho/delta)^2 = 16 thin per fat, rho^-2 = 16 fat, delta
 direction-family outlined in guide grey.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/sticky_morph_anim.py
 """
+
 import numpy as np
 from _shared import COLORS, math_check, save_gif
 from matplotlib.animation import FuncAnimation
@@ -70,27 +71,27 @@ def smoothstep(t):
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     rho, delta = 0.25, 0.0625
-    per_fat = round((rho / delta) ** 2)   # 16
-    n_fat = round(1.0 / rho) ** 2         # 16
-    n_thin = round(1.0 / delta) ** 2      # 256
+    per_fat = round((rho / delta) ** 2)  # 16
+    n_fat = round(1.0 / rho) ** 2  # 16
+    n_thin = round(1.0 / delta) ** 2  # 256
 
     pos_s, bins_s = sticky_positions(rho, delta)
     pos_n, bins_n = nonsticky_positions(rho, delta, np.random.default_rng(11))
-    assert np.array_equal(bins_s, bins_n)      # index-aligned correspondence for the morph
+    assert np.array_equal(bins_s, bins_n)  # index-aligned for the morph
     assert len(pos_s) == n_thin == len(pos_n)
 
     occ_n = occupancy(pos_n, bins_n, rho)
     occ_s = occupancy(pos_s, bins_s, rho)
 
-    # Invariant assertions
     assert n_thin == 256 and per_fat == 16 and n_fat == 16
     assert n_fat * per_fat == n_thin
-    assert abs(occ_s - per_fat) < 1e-9, occ_s      # sticky end realizes (rho/delta)^2
-    assert occ_n < per_fat / 2, occ_n              # non-sticky end far fewer
+    assert abs(occ_s - per_fat) < 1e-9, occ_s  # sticky end realizes (rho/delta)^2
+    assert occ_n < per_fat / 2, occ_n
 
     math_check(
         "sticky morph: (rho/delta)^2 occupancy, delta^-2 conserved",
@@ -114,7 +115,7 @@ def main():
     def update(fi):
         t = float(ts[fi])
         pos = (1 - t) * pos_n + t * pos_s
-        assert len(pos) == n_thin  # conservation in every frame
+        assert len(pos) == n_thin  # conservation each frame
         occ = occupancy(pos, bins_s, rho)
 
         ax.clear()
@@ -127,15 +128,28 @@ def main():
         other = bins_s != hi
         ax.scatter(pos[other, 0], pos[other, 1], s=9, color=COLORS["accent"], alpha=0.55)
         fam = bins_s == hi
-        ax.scatter(pos[fam, 0], pos[fam, 1], s=44, facecolor=COLORS["accent"],
-                   edgecolor=COLORS["guide"], linewidths=1.4, zorder=3)
+        ax.scatter(
+            pos[fam, 0],
+            pos[fam, 1],
+            s=44,
+            facecolor=COLORS["accent"],
+            edgecolor=COLORS["guide"],
+            linewidths=1.4,
+            zorder=3,
+        )
 
         regime = "sticky" if t > 0.5 else "non-sticky"
         ax.set_title(f"non-sticky -> sticky  (2D cross-section):  {regime}", fontsize=12)
-        ax.text(0.5, -0.09,
-                f"thin tubes: {n_thin} (conserved)   |   mean occupancy / fat tube: {occ:.1f}"
-                f"   ->   (rho/delta)^2 = {per_fat}",
-                ha="center", va="center", fontsize=9.5, color=COLORS["guide"])
+        ax.text(
+            0.5,
+            -0.09,
+            f"thin tubes: {n_thin} (conserved)   |   mean occupancy / fat tube: {occ:.1f}"
+            f"   ->   (rho/delta)^2 = {per_fat}",
+            ha="center",
+            va="center",
+            fontsize=9.5,
+            color=COLORS["guide"],
+        )
         return []
 
     anim = FuncAnimation(fig, update, frames=len(ts), interval=70, blit=False)

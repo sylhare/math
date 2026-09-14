@@ -6,6 +6,7 @@ boundary, and a fixed needle continues outward from that exit point. The filled 
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/2_kakeya_2d/2_6_6_radial_needle_set.py
 """
+
 import math
 
 import numpy as np
@@ -13,14 +14,14 @@ from _shared import math_check, save_preview
 from shapely.geometry import LineString, Polygon
 from shapely.ops import unary_union
 
-R = 1.0 / math.sqrt(3.0)          # core circumradius (equilateral, side 1)
+R = 1.0 / math.sqrt(3.0)  # core circumradius (equilateral, side 1)
 CORNERS_DEG = (90.0, 210.0, 330.0)
 VERTS = np.array([R * np.array([math.cos(math.radians(d)), math.sin(math.radians(d))]) for d in CORNERS_DEG])
 
-N_DIR = 480                       # directions over the full turn (divisible by 3 -> three-fold symmetric)
-HALFW = 0.005                     # needle half-width
-L_MIN, L_MAX = 0.16, 0.74         # needle length: short off the edges, long off the corners
-INRAD = R / 2.0                   # inradius (exit radius at an edge midpoint)
+N_DIR = 480  # directions over the full turn (divisible by 3 -> three-fold symmetric)
+HALFW = 0.005  # needle half-width
+L_MIN, L_MAX = 0.16, 0.74  # needle length: short off the edges, long off the corners
+INRAD = R / 2.0  # inradius (exit radius at an edge midpoint)
 FILL = "#f4e37a"
 
 
@@ -48,14 +49,13 @@ def build():
     """Core triangle plus one outward needle per direction; jitter tiles per 120 deg to stay symmetric."""
     rng = np.random.default_rng(4)
     per_sector = N_DIR // 3
-    jitter = 0.70 + 0.55 * rng.random(per_sector)         # length jitter for one sector
-    jitter = np.tile(jitter, 3)                           # repeat -> three-fold symmetric fray
+    jitter = 0.70 + 0.55 * rng.random(per_sector)  # length jitter for one sector
+    jitter = np.tile(jitter, 3)  # repeat -> three-fold symmetric fray
     needles = []
     for k, deg in enumerate(np.linspace(0.0, 360.0, N_DIR, endpoint=False)):
         d = _unit(deg)
         r = _exit_radius(d)
-        # corner-proximity in [0,1]: 0 at an edge midpoint, 1 at a corner
-        prox = np.clip((r - INRAD) / (R - INRAD), 0.0, 1.0)
+        prox = np.clip((r - INRAD) / (R - INRAD), 0.0, 1.0)  # corner-proximity in [0,1]
         length = (L_MIN + (L_MAX - L_MIN) * prox) * jitter[k]
         needles.append(_sliver(r * d, d, length))
     return needles
@@ -70,6 +70,7 @@ def _fill(ax, geom, fc, z=2):
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 

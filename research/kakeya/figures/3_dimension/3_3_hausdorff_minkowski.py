@@ -11,12 +11,13 @@ same curve (Hausdorff); (3) the H^s vs s jump at s = dim_H.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/3_dimension/3_3_hausdorff_minkowski.py
 """
+
 import math
 
 import numpy as np
 from _shared import COLORS, math_check, save_preview
 
-DIM = math.log(4) / math.log(3)   # Koch curve Hausdorff = Minkowski dimension ~ 1.2619
+DIM = math.log(4) / math.log(3)  # Koch dim log4/log3 ~ 1.2619
 
 
 def koch(p0, p1, depth):
@@ -48,28 +49,27 @@ def main():
     fig, ax = new_axes3()
     curve = polyline(4)
 
-    # panel 1: uniform delta-grid (Minkowski)
     delta = 1.0 / 27.0
     cells = boxes_hit(curve, delta)
-    for (i, j) in cells:
+    for i, j in cells:
         ax[0].add_patch(_rect(i * delta, j * delta, delta, delta, COLORS["region"], 0.55))
     ax[0].plot(curve[:, 0], curve[:, 1], color=COLORS["needle"], lw=1.2)
-    ax[0].set_title(f"Minkowski: one size delta, N(delta) = {len(cells)} boxes\n"
-                    f"d_box = log N / log(1/delta)", fontsize=10)
+    ax[0].set_title(
+        f"Minkowski: one size delta, N(delta) = {len(cells)} boxes\nd_box = log N / log(1/delta)", fontsize=10
+    )
 
-    # panel 2: variable-size cover (Hausdorff) -- coarse boxes on the straight left, fine on the right
     ax[1].plot(curve[:, 0], curve[:, 1], color=COLORS["needle"], lw=1.2)
-    for k in range(3):        # three big boxes over the left half
+    for k in range(3):
         ax[1].add_patch(_rect(k / 6.0, -0.02, 1 / 6.0, 1 / 6.0, COLORS["region"], 0.5))
-    fine = 1.0 / 27.0         # many small boxes over the wiggly right half
-    for (i, j) in boxes_hit(curve[len(curve) // 2:], fine):
+    fine = 1.0 / 27.0
+    for i, j in boxes_hit(curve[len(curve) // 2 :], fine):
         ax[1].add_patch(_rect(i * fine, j * fine, fine, fine, COLORS["accent"], 0.45))
     ax[1].set_title("Hausdorff: any sizes <= delta,\nminimise sum (diam U_i)^s", fontsize=10)
 
     for a in ax[:2]:
-        a.set_xlim(-0.05, 1.05); a.set_ylim(-0.45, 0.35)
+        a.set_xlim(-0.05, 1.05)
+        a.set_ylim(-0.45, 0.35)
 
-    # panel 3: H^s jumps from +inf to 0 at s = dim_H
     s = np.linspace(0.6, 2.0, 400)
     hs = np.where(s < DIM, 1.0 / np.clip(DIM - s, 1e-2, None), 0.0)
     ax[2].plot(s, np.clip(hs, 0, 12), color=COLORS["accent"], lw=2)
@@ -77,10 +77,13 @@ def main():
     ax[2].text(DIM + 0.03, 6, f"dim_H = {DIM:.4f}", color=COLORS["guide"], fontsize=9)
     ax[2].text(0.62, 11, "H^s = +inf", color=COLORS["accent"], fontsize=9, va="top")
     ax[2].text(1.55, 0.6, "H^s = 0", color=COLORS["accent"], fontsize=9)
-    ax[2].set_xlim(0.6, 2.0); ax[2].set_ylim(-0.5, 12)
-    ax[2].set_xlabel("s"); ax[2].set_title("H^s jumps at s = dim_H   (dim_H <= dim_box)", fontsize=10)
+    ax[2].set_xlim(0.6, 2.0)
+    ax[2].set_ylim(-0.5, 12)
+    ax[2].set_xlabel("s")
+    ax[2].set_title("H^s jumps at s = dim_H   (dim_H <= dim_box)", fontsize=10)
     ax[2].set_yticks([])
-    ax[2].axis("on"); ax[2].spines[["top", "right"]].set_visible(False)
+    ax[2].axis("on")
+    ax[2].spines[["top", "right"]].set_visible(False)
 
     math_check(
         "Minkowski vs Hausdorff",
@@ -97,16 +100,20 @@ def main():
 
 def new_axes3():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+
     fig, axes = plt.subplots(1, 3, figsize=(15, 5.0))
     for a in (axes[0], axes[1]):
-        a.set_aspect("equal"); a.axis("off")
+        a.set_aspect("equal")
+        a.axis("off")
     return fig, axes
 
 
 def _rect(x, y, w, h, color, alpha):
     import matplotlib.patches as mpatches
+
     return mpatches.Rectangle((x, y), w, h, facecolor=color, edgecolor=color, alpha=alpha, linewidth=0.3)
 
 

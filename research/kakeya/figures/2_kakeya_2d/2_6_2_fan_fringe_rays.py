@@ -7,6 +7,7 @@ fans; the three corner fans and the edge fringes give the outward rays. Three-fo
 Run: PYTHONPATH=research/kakeya/figures uv run --with matplotlib --with shapely --with pillow \
      python research/kakeya/figures/2_kakeya_2d/2_6_2_fan_fringe_rays.py
 """
+
 import math
 
 import numpy as np
@@ -18,11 +19,11 @@ CORNERS_DEG = (90.0, 210.0, 330.0)
 YELLOW = "#f4e37a"
 
 LEN_CORNER = 0.62
-LEN_EDGE_MID, LEN_EDGE_END = 0.22, 0.46   # fringe length: short mid-edge, long near corners
-FAN_HALF = 74                             # corner-fan half angle (deg); wide enough to close wedges
-JF, KF = 74, 40                           # corner-fan rays per corner / fringe rays per edge
-BODY_N = 260                              # vertex->opposite-edge lines per corner (fill the core)
-BULGE = 0.045                             # outward bow of the core edges (rounded body)
+LEN_EDGE_MID, LEN_EDGE_END = 0.22, 0.46  # fringe length: short mid-edge, long near corners
+FAN_HALF = 74  # corner-fan half angle (deg)
+JF, KF = 74, 40  # corner-fan rays per corner / fringe rays per edge
+BODY_N = 260  # vertex->opposite-edge lines per corner (fill the core)
+BULGE = 0.045  # outward bow of the core edges (rounded body)
 
 VERTS = np.array([R * np.array([math.cos(math.radians(d)), math.sin(math.radians(d))]) for d in CORNERS_DEG])
 CEN = VERTS.mean(0)
@@ -76,6 +77,7 @@ def fringe_segments(rng):
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.collections import LineCollection
@@ -106,11 +108,9 @@ def main():
     ax.set_xlim(x0 - m, x1 + m)
     ax.set_ylim(y0 - m, y1 + m)
 
-    # Body: dense overlapping lines saturate to a solid yellow core.
     lc_body = LineCollection(body, colors=YELLOW, linewidths=1.1, alpha=0.5, capstyle="round")
     lc_body.set_rasterized(True)
     ax.add_collection(lc_body)
-    # Rays: thin needles reading individually against white.
     lc_rays = LineCollection(corners + fringe, colors=YELLOW, linewidths=0.9, alpha=0.85, capstyle="round")
     lc_rays.set_rasterized(True)
     ax.add_collection(lc_rays)

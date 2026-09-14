@@ -6,6 +6,7 @@ sigma_x * sigma_xi = 1/(2 pi). sigma_xi measured by FFT each frame.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/uncertainty_anim.py
 """
+
 import math
 
 import numpy as np
@@ -15,13 +16,13 @@ from matplotlib.animation import FuncAnimation
 
 def gaussian_freq_std(sigma: float) -> tuple[float, float]:
     """FFT g(x)=exp(-x^2/2sigma^2) and return (measured, analytic 1/(2 pi sigma)) frequency std."""
-    L, n = 40.0 * sigma, 8192  # wide, fine window so tails and bins are well resolved
+    L, n = 40.0 * sigma, 8192  # wide/fine window resolves tails
     x = np.linspace(-L / 2, L / 2, n, endpoint=False)
     dx = x[1] - x[0]
     g = np.exp(-(x**2) / (2 * sigma**2))
     ghat = np.abs(np.fft.fftshift(np.fft.fft(g))) * dx
     xi = np.fft.fftshift(np.fft.fftfreq(n, d=dx))
-    w = ghat / ghat.sum()  # treat |g_hat| as a mass distribution (>= 0 here)
+    w = ghat / ghat.sum()  # |g_hat| as mass distribution
     mean = np.sum(w * xi)
     std = math.sqrt(np.sum(w * (xi - mean) ** 2))
     return std, 1.0 / (2 * math.pi * sigma)
@@ -29,7 +30,7 @@ def gaussian_freq_std(sigma: float) -> tuple[float, float]:
 
 def main():
     target = 1.0 / (2 * math.pi)
-    sigmas = np.linspace(1.4, 0.35, 34)  # narrowing sweep
+    sigmas = np.linspace(1.4, 0.35, 34)
 
     products, sxi_meas = [], []
     for sg in sigmas:
@@ -49,29 +50,31 @@ def main():
             ("sigma_x * sigma_xi target", f"1/(2 pi) = {target:.5f}"),
             ("product min / max over frames", f"{products.min():.5f} / {products.max():.5f}"),
             ("product constant ~ 1/(2 pi)?", "YES" if within else "NO"),
-            ("2 pi * product (want ~1)", f"min {2*math.pi*products.min():.4f}  max {2*math.pi*products.max():.4f}"),
+            (
+                "2 pi * product (want ~1)",
+                f"min {2 * math.pi * products.min():.4f}  max {2 * math.pi * products.max():.4f}",
+            ),
         ],
     )
     assert within, "sigma_x * sigma_xi must stay ~1/(2 pi) across all frames"
 
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle
 
     fig, ax = plt.subplots(1, 2, figsize=(12.5, 5.2))
 
-    # (a) the dual Gaussians
     xx = np.linspace(-4, 4, 800)
-    gx, = ax[0].plot([], [], color=COLORS["accent"], lw=2.0, label="g(x)  (physical)")
-    gh, = ax[0].plot([], [], color=COLORS["outer"], lw=2.0, label="g_hat(xi)  (frequency)")
+    (gx,) = ax[0].plot([], [], color=COLORS["accent"], lw=2.0, label="g(x)  (physical)")
+    (gh,) = ax[0].plot([], [], color=COLORS["outer"], lw=2.0, label="g_hat(xi)  (frequency)")
     ax[0].set_xlim(-4, 4)
     ax[0].set_ylim(0, 1.08)
     ax[0].set_xlabel("x   or   xi")
     ax[0].set_ylabel("amplitude")
     ax[0].legend(fontsize=9, loc="upper right")
 
-    # (b) the uncertainty box: sigma_x wide x sigma_xi tall, constant area
     smax = float(sigmas.max())
     box = Rectangle((0, 0), 1, 1, facecolor=COLORS["region"], edgecolor=COLORS["needle"], lw=1.8)
     ax[1].add_patch(box)
@@ -91,7 +94,7 @@ def main():
         gh.set_data(xx, np.exp(-2 * math.pi**2 * sg**2 * xx**2))
         box.set_width(sg)
         box.set_height(sxi)
-        ax[1].set_title(f"box  sigma_x * sigma_xi = {sg*sxi:.4f}  (= 1/(2 pi) = {target:.4f})")
+        ax[1].set_title(f"box  sigma_x * sigma_xi = {sg * sxi:.4f}  (= 1/(2 pi) = {target:.4f})")
         return gx, gh, box
 
     anim = FuncAnimation(fig, update, frames=len(sigmas), interval=140, blit=False)

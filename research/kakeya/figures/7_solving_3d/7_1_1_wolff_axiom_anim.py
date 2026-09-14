@@ -24,9 +24,9 @@ from _shared import COLORS, math_check, save_gif
 
 DELTA = 1.0 / 3.0  # delta^-2 = 9
 LX = LY = 1.0
-# slab thicknesses so the cap 9*Lz is an integer 9,7,5,4,3; then the forbidden over-stuff
+# thicknesses chosen so cap 9*Lz is integer 9,7,5,4,3
 LZ_LEGAL = [9 / 9, 7 / 9, 5 / 9, 4 / 9, 3 / 9]
-CHEAT_LZ = 3 / 9  # thinnest legal slab (cap 3) crammed with all 9 tubes -> violates
+CHEAT_LZ = 3 / 9  # thinnest slab (cap 3) crammed with 9 tubes -> violates
 CHEAT_COUNT = 9
 HOLD = 5
 END_HOLD = 8
@@ -70,11 +70,9 @@ def cap(lz):
 
 
 def main():
-    # stages: (Lz, tube count, legal?)  -- legal packs count = cap; the cheat over-stuffs the thin slab
     stages = [dict(lz=lz, count=round(cap(lz)), legal=True) for lz in LZ_LEGAL]
     stages.append(dict(lz=CHEAT_LZ, count=CHEAT_COUNT, legal=False))
 
-    # --- assertions: legal counts respect the cap and fall with |R|; the cheat violates it ---
     caps = [cap(s["lz"]) for s in stages]
     for i, s in enumerate(stages):
         if s["legal"]:
@@ -90,17 +88,25 @@ def main():
             ("delta", f"{DELTA:.4f}   delta^-2 = {DELTA**-2:.0f}"),
             ("slab R", f"{LX} x {LY} x Lz,  |R| = Lz,  cap = delta^-2 |R| = 9 Lz"),
             *[
-                (f"legal Lz = {s['lz']:.3f}", f"cap {cap(s['lz']):.0f}, tubes {s['count']}  -> {s['count']} <= {cap(s['lz']):.0f}  OK")
+                (
+                    f"legal Lz = {s['lz']:.3f}",
+                    f"cap {cap(s['lz']):.0f}, tubes {s['count']}  -> {s['count']} <= {cap(s['lz']):.0f}  OK",
+                )
                 for s in stages
                 if s["legal"]
             ],
-            ("cap falls with the slab", f"{legal_caps[0]:.0f} -> {legal_caps[-1]:.0f}  as Lz {LZ_LEGAL[0]:.2f} -> {LZ_LEGAL[-1]:.2f}"),
-            ("forbidden cheat", f"Lz {CHEAT_LZ:.3f}, cap {cap(CHEAT_LZ):.0f}, tubes {CHEAT_COUNT}  -> {CHEAT_COUNT} > {cap(CHEAT_LZ):.0f}  VIOLATES"),
+            (
+                "cap falls with the slab",
+                f"{legal_caps[0]:.0f} -> {legal_caps[-1]:.0f}  as Lz {LZ_LEGAL[0]:.2f} -> {LZ_LEGAL[-1]:.2f}",
+            ),
+            (
+                "forbidden cheat",
+                f"Lz {CHEAT_LZ:.3f}, cap {cap(CHEAT_LZ):.0f}, tubes {CHEAT_COUNT}  -> {CHEAT_COUNT} > {cap(CHEAT_LZ):.0f}  VIOLATES",
+            ),
             ("Wolff R^3 bound (n+2)/2", "5/2  (n=3)  -> dim >= 5/2 (Wolff 1995)"),
         ],
     )
 
-    # Figure
     import matplotlib
 
     matplotlib.use("Agg")
@@ -114,14 +120,14 @@ def main():
     axR = fig.add_subplot(1, 2, 2)
 
     frame_stage = [0] * HOLD + list(range(len(stages))) + [len(stages) - 1] * END_HOLD
-    cap_max = cap(LZ_LEGAL[0])  # 9, the full cap for the meter y-axis
+    cap_max = cap(LZ_LEGAL[0])  # 9, meter y-axis max
 
     def update(fi):
         s = stages[frame_stage[fi]]
         lz, count, legal = s["lz"], s["count"], s["legal"]
         col = COLORS["outer"] if legal else COLORS["accent"]
 
-        # LEFT: the slab + the bush of direction-separated tubes it holds
+        # left: slab + tube bush
         axL.cla()
         for a, b in prism_edges(LX, LY, lz):
             axL.plot(*zip(a, b, strict=False), color=COLORS["guide"], lw=1.0, alpha=0.9)
@@ -138,7 +144,7 @@ def main():
         axL.set_zticklabels([])
         axL.set_title(f"slab R = 1 x 1 x {lz:.2f},  |R| = {lz:.2f}", fontsize=10, color=col)
 
-        # RIGHT: capacity meter (cap outline vs tube count fill)
+        # right: capacity meter
         axR.cla()
         axR.set_xlim(-0.6, 1.6)
         axR.set_ylim(0, cap_max + 0.8)
@@ -155,8 +161,15 @@ def main():
         axR.set_title(verdict, fontsize=11, color=col, weight="bold")
         if not legal:
             axR.axhline(thebar, color=COLORS["accent"], ls="--", lw=1.2)
-            axR.text(1, thebar - 0.35, "over the cap:\nall tubes in one thin slab", ha="center", va="top",
-                     fontsize=9, color=COLORS["accent"])
+            axR.text(
+                1,
+                thebar - 0.35,
+                "over the cap:\nall tubes in one thin slab",
+                ha="center",
+                va="top",
+                fontsize=9,
+                color=COLORS["accent"],
+            )
         return []
 
     anim = FuncAnimation(fig, update, frames=len(frame_stage), interval=150, blit=False)

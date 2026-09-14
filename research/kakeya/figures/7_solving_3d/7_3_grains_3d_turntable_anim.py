@@ -6,13 +6,14 @@ the tube axis X), span the c x c cross-section, and are pairwise disjoint (share
 faces), so every point lies in at most one grain. Only the camera moves; the geometry is built once.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/grains_3d_turntable_anim.py
 """
+
 import numpy as np
 from _shared import COLORS, math_check, save_gif
 
-FRAMES = 72  # turntable: azimuth step 360 / 72 = 5 degrees
+FRAMES = 72  # azimuth step 360/72 = 5 deg
 
 
-# Geometry (replicated locally from grains_3d.py; do not import it)
+# replicated from grains_3d.py; do not import
 def grain_boxes(delta: float, c: float, x_starts) -> list[tuple]:
     """Axis-aligned grains delta x c x c inside a fat tube [0,1] x [0,c] x [0,c].
     Each grain is delta-thin along the tube axis X and spans the c x c cross-section."""
@@ -31,8 +32,7 @@ def _draw_box_wire(ax, box, color, lw=1.2, alpha=1.0):
     x0, x1, y0, y1, z0, z1 = box
     xs, ys, zs = (x0, x1), (y0, y1), (z0, z1)
     corners = np.array([[x, y, z] for x in xs for y in ys for z in zs])
-    edges = [(0, 1), (0, 2), (0, 4), (1, 3), (1, 5), (2, 3),
-             (2, 6), (3, 7), (4, 5), (4, 6), (5, 7), (6, 7)]
+    edges = [(0, 1), (0, 2), (0, 4), (1, 3), (1, 5), (2, 3), (2, 6), (3, 7), (4, 5), (4, 6), (5, 7), (6, 7)]
     for a, b in edges:
         ax.plot(*zip(corners[a], corners[b], strict=True), color=color, lw=lw, alpha=alpha)
 
@@ -55,23 +55,24 @@ def _draw_box_solid(ax, box, color, alpha=0.55):
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3d projection)
 
-    # Static geometry (built once; only the camera animates)
     delta3d, c = 0.05, 0.30
     fat_tube = (0.0, 1.0, 0.0, c, 0.0, c)
     x_starts = [0.08, 0.26, 0.44, 0.62, 0.80]
     grains = grain_boxes(delta3d, c, x_starts)
 
-    max_overlap = max((box_pairwise_overlap(grains[i], grains[j])
-                       for i in range(len(grains)) for j in range(i + 1, len(grains))), default=0.0)
+    max_overlap = max(
+        (box_pairwise_overlap(grains[i], grains[j]) for i in range(len(grains)) for j in range(i + 1, len(grains))),
+        default=0.0,
+    )
     starts = sorted(x_starts)
     max_mult = 1 if all(starts[i] + delta3d <= starts[i + 1] + 1e-12 for i in range(len(starts) - 1)) else 2
 
-    # Invariant assertions
     assert delta3d < c < 1.0, f"need delta << c << 1, got {delta3d}, {c}"
     assert delta3d <= c / 4.0, f"delta should be well below c: {delta3d} vs {c}"
     assert max_overlap < 1e-9, f"grains must be pairwise-disjoint, max overlap {max_overlap}"
@@ -88,17 +89,17 @@ def main():
         ],
     )
 
-    # Preview scene
     fig = plt.figure(figsize=(6.6, 6.0))
     ax = fig.add_subplot(1, 1, 1, projection="3d")
     _draw_box_wire(ax, fat_tube, COLORS["guide"], lw=1.3)
     for g in grains:
         _draw_box_solid(ax, g, COLORS["accent"], alpha=0.6)
-    # a few thin tubes running lengthwise
-    for (y, z) in [(0.09, 0.18), (0.20, 0.09), (0.15, 0.24), (0.24, 0.20)]:
+    for y, z in [(0.09, 0.18), (0.20, 0.09), (0.15, 0.24), (0.24, 0.20)]:
         ax.plot([0, 1], [y, y], [z, z], color=COLORS["outer"], lw=0.9, alpha=0.85)
     ax.set_box_aspect((1.0, c, c))
-    ax.set_xlim(0.0, 1.0); ax.set_ylim(0.0, c); ax.set_zlim(0.0, c)
+    ax.set_xlim(0.0, 1.0)
+    ax.set_ylim(0.0, c)
+    ax.set_zlim(0.0, c)
     ax.set_axis_off()
     ax.set_title("grains = delta x c x c slabs, one tube thick, disjoint in the fat tube", fontsize=9)
 

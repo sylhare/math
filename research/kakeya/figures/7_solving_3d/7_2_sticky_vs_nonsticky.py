@@ -9,11 +9,11 @@ rho = 1/4, delta = 1/16: (rho/delta)^2 = 16 thin per fat, rho^-2 = 16 fat, delta
 direction-family outlined in guide grey.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/sticky_vs_nonsticky.py
 """
+
 import numpy as np
 from _shared import COLORS, math_check, save_preview
 
 
-# Geometry (pure numpy, portable): cross-section positions of thin tubes
 def fat_centers(rho: float) -> np.ndarray:
     """Centres of the rho^-2 fat tubes on a regular grid tiling the unit square cross-section."""
     m = round(1.0 / rho)
@@ -61,7 +61,6 @@ def occupancy(pos, bins, rho):
     per_bin = []
     for i in np.unique(bins):
         p = pos[bins == i]
-        # densest rho x rho square: anchor it on each thin tube, take the largest count
         best = max(int(np.sum(np.all(np.abs(p - q) <= r, axis=1))) for q in p)
         per_bin.append(best)
     return float(np.mean(per_bin))
@@ -69,12 +68,13 @@ def occupancy(pos, bins, rho):
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     rho, delta = 0.25, 0.0625
-    per_fat = (rho / delta) ** 2      # 16
-    n_fat = round(1.0 / rho) ** 2     # 16
+    per_fat = (rho / delta) ** 2  # 16
+    n_fat = round(1.0 / rho) ** 2  # 16
     n_thin = round(1.0 / delta) ** 2  # 256
 
     pos_s, bins_s = sticky_positions(rho, delta)
@@ -85,7 +85,7 @@ def main():
     math_check(
         "sticky vs non-sticky: (rho/delta)^2 occupancy per fat tube",
         [
-            ("rho, delta", f"{rho}, {delta}   rho/delta = {rho/delta:.0f}"),
+            ("rho, delta", f"{rho}, {delta}   rho/delta = {rho / delta:.0f}"),
             ("thin per fat (rho/delta)^2", f"{per_fat:.0f}"),
             ("# fat tubes  rho^-2", f"{n_fat}"),
             ("# thin tubes  delta^-2", f"{n_thin}   (= {n_fat} x {per_fat:.0f})"),
@@ -94,7 +94,6 @@ def main():
         ],
     )
 
-    # Preview
     fig, axes = plt.subplots(1, 2, figsize=(12.0, 6.2))
     centers = fat_centers(rho)
     hi = 5  # highlighted direction-family
@@ -106,20 +105,37 @@ def main():
         ax.set_aspect("equal")
         ax.axis("off")
         ax.set_title(title)
-        for c in centers:  # fat rho-tubes (rho x rho cross-section)
+        for c in centers:
             ax.add_patch(plt.Rectangle(c - rho / 2, rho, rho, fill=False, ec=COLORS["outer"], lw=1.3, alpha=0.9))
         other = bins != hi
         ax.scatter(pos[other, 0], pos[other, 1], s=8, color=COLORS["accent"], alpha=0.55)
-        fam = bins == hi  # one direction-family, outlined in guide grey
-        ax.scatter(pos[fam, 0], pos[fam, 1], s=42, facecolor=COLORS["accent"],
-                   edgecolor=COLORS["guide"], linewidths=1.4, zorder=3)
-        ax.set_xlim(-0.05, 1.05); ax.set_ylim(-0.05, 1.05)
+        fam = bins == hi
+        ax.scatter(
+            pos[fam, 0],
+            pos[fam, 1],
+            s=42,
+            facecolor=COLORS["accent"],
+            edgecolor=COLORS["guide"],
+            linewidths=1.4,
+            zorder=3,
+        )
+        ax.set_xlim(-0.05, 1.05)
+        ax.set_ylim(-0.05, 1.05)
 
-    axes[0].legend(handles=[
-        plt.Line2D([], [], marker="o", ls="", mfc=COLORS["accent"], mec=COLORS["accent"], label="thin delta-tube"),
-        plt.Line2D([], [], marker="s", ls="", mfc="none", mec=COLORS["outer"], label="fat rho-tube"),
-        plt.Line2D([], [], marker="o", ls="", mfc=COLORS["accent"], mec=COLORS["guide"], label="one direction-family"),
-    ], loc="upper center", bbox_to_anchor=(1.05, -0.02), ncol=3, frameon=False, fontsize=9)
+    axes[0].legend(
+        handles=[
+            plt.Line2D([], [], marker="o", ls="", mfc=COLORS["accent"], mec=COLORS["accent"], label="thin delta-tube"),
+            plt.Line2D([], [], marker="s", ls="", mfc="none", mec=COLORS["outer"], label="fat rho-tube"),
+            plt.Line2D(
+                [], [], marker="o", ls="", mfc=COLORS["accent"], mec=COLORS["guide"], label="one direction-family"
+            ),
+        ],
+        loc="upper center",
+        bbox_to_anchor=(1.05, -0.02),
+        ncol=3,
+        frameon=False,
+        fontsize=9,
+    )
 
     print("wrote", save_preview(fig))
 

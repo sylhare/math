@@ -6,20 +6,21 @@ from the centroid, so their needles reach farther and bunch into sprays; single 
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/2_kakeya_2d/2_6_6_radial_sunburst.py
 """
+
 import math
 
 import numpy as np
 from _shared import math_check, save_preview
 from shapely.geometry import LineString, Polygon
 
-R = 1.0 / math.sqrt(3.0)            # core circumradius (equilateral, side 1, apex up)
+R = 1.0 / math.sqrt(3.0)  # core circumradius (equilateral, side 1, apex up)
 CORNERS_DEG = (90.0, 210.0, 330.0)
 VERTS = np.array([R * np.array([math.cos(math.radians(d)), math.sin(math.radians(d))]) for d in CORNERS_DEG])
 CORE = Polygon([tuple(v) for v in VERTS])
 
-N_DIR = 300                         # directions over the full turn (divisible by 3 -> three-fold)
-LENGTH = 0.55                       # unit needle length (same in every direction)
-HALFW = 0.004                       # needle half-width
+N_DIR = 300  # directions over the full turn (divisible by 3 -> three-fold)
+LENGTH = 0.55  # unit needle length (same in every direction)
+HALFW = 0.004  # needle half-width
 YELLOW = "#f4e37a"
 
 
@@ -54,6 +55,7 @@ def build():
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 

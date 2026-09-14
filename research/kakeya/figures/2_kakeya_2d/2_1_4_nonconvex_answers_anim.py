@@ -29,7 +29,7 @@ from shapely.ops import unary_union
 STEPS = 40
 END_HOLD = 9
 
-# Deltoid: tangent needle (constant chord 4b = 1)
+# deltoid: tangent needle, constant chord 4b = 1
 B = 0.25
 DELT = poly(deltoid(B, 400))
 if not DELT.is_valid:
@@ -66,13 +66,13 @@ def deltoid_needles():
     return out
 
 
-# Height-1 equilateral triangle: unit needles from the apex fit
+# height-1 equilateral triangle
 APEX = np.array([0.0, 1.0])
-HB = 1.0 / math.sqrt(3.0)  # half base; corners (+-HB, 0), side = apex..corner = 2/sqrt3
+HB = 1.0 / math.sqrt(3.0)  # half base; side = apex..corner = 2/sqrt3
 NLEV = 6
 TRI = Polygon([(-HB, 0.0), (HB, 0.0), tuple(APEX)])
 TRI_AREA = TRI.area
-AR = math.atan2(-1.0, HB)  # apex -> right corner direction angle
+AR = math.atan2(-1.0, HB)  # apex -> right corner
 AL = math.atan2(-1.0, -HB)  # apex -> left corner
 
 
@@ -103,7 +103,7 @@ def branch_needle(piece):
 
 
 def _needle_dir(ab):
-    return math.atan2(ab[1][1] - ab[0][1], ab[1][0] - ab[0][0]) % math.pi  # direction in [0, pi)
+    return math.atan2(ab[1][1] - ab[0][1], ab[1][0] - ab[0][0]) % math.pi  # in [0, pi)
 
 
 def rot_needle(ab, deg, ctr):
@@ -156,7 +156,7 @@ def main():
     import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
 
-    tris = {  # faint underlying triangle(s) that the needle fan lives in
+    tris = {
         1: [np.array(TRI.exterior.coords)],
         2: [np.array(shp_rotate(TRI, a, origin=(c.x, c.y)).exterior.coords) for a in (0, 120, 240)],
     }
@@ -167,16 +167,15 @@ def main():
         f"Perron tree\narea {areas[1]:.3f} ({areas[1] / TRI_AREA * 100:.0f}% of triangle)",
         f"Besicovitch star (3 trees)\narea {areas[2]:.3f} -> 0 in the limit",
     ]
-    # Recentre each shape on its centroid (deltoid already at origin; tree and star share centroid pv)
-    # so all three align horizontally and vertically. Size each panel to its own shape's radius so the
-    # three render at about the same on-screen size (like the convex-answers figure), not one shrunk box.
+    # recentre on centroid (deltoid at origin; tree and star share centroid pv), size each panel to its radius
     off = [np.array([0.0, 0.0]), -pv, -pv]
     lim = []
     for j, g in enumerate(shapes):
         ox, oy = off[j]
         rr = max(
-            float(np.max(np.hypot(np.asarray(gg.exterior.coords)[:, 0] + ox,
-                                  np.asarray(gg.exterior.coords)[:, 1] + oy)))
+            float(
+                np.max(np.hypot(np.asarray(gg.exterior.coords)[:, 0] + ox, np.asarray(gg.exterior.coords)[:, 1] + oy))
+            )
             for gg in (g.geoms if g.geom_type == "MultiPolygon" else [g])
         )
         lim.append(rr * 1.18)
@@ -192,14 +191,20 @@ def main():
             ax.set_xlim(-lim[j], lim[j])
             ax.set_ylim(-lim[j], lim[j])
             ox, oy = off[j]
-            if j in tris:  # faint underlying triangle(s)
+            if j in tris:
                 for tr in tris[j]:
                     ax.plot(tr[:, 0] + ox, tr[:, 1] + oy, color=COLORS["muted"], lw=0.8, ls="--", alpha=0.7)
             g = shapes[j]
             for gg in g.geoms if g.geom_type == "MultiPolygon" else [g]:
                 xs, ys = gg.exterior.xy
-                ax.fill(np.asarray(xs) + ox, np.asarray(ys) + oy,
-                        facecolor=COLORS["region"], edgecolor=COLORS["outer"], lw=0.9, alpha=0.6)
+                ax.fill(
+                    np.asarray(xs) + ox,
+                    np.asarray(ys) + oy,
+                    facecolor=COLORS["region"],
+                    edgecolor=COLORS["outer"],
+                    lw=0.9,
+                    alpha=0.6,
+                )
             lst = needles[j]
             upto = min(k + 1, len(lst))
             for a, b in lst[:upto]:

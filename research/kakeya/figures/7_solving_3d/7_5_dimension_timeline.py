@@ -10,9 +10,10 @@ Bounds just above 5/2 are plotted with a small offset so they do not collide; th
 are annotated. Top dashed line is dimension 3.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/dimension_timeline.py
 """
+
 from _shared import COLORS, math_check, save_preview
 
-# (year, plotted y, symbolic value, name, notion)
+# (year, plotted y, symbolic, name, notion)
 EVENTS = [
     (1995, 2.5, "5/2", "Wolff", "Hausdorff & Minkowski"),
     (2000, 2.53, "> 5/2", "Katz-Laba-Tao", "Minkowski"),
@@ -23,6 +24,7 @@ EVENTS = [
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
@@ -41,24 +43,34 @@ def main():
     years = [e[0] for e in EVENTS]
 
     ax.axhline(3.0, color=COLORS["accent"], ls="--", lw=1.3, alpha=0.75)
-    ax.text(1994, 3.01, "dimension 3 = full (the Kakeya conjecture in R^3)",
-            color=COLORS["accent"], fontsize=10, va="bottom")
-    # reference line at 5/2
+    ax.text(
+        1994,
+        3.01,
+        "dimension 3 = full (the Kakeya conjecture in R^3)",
+        color=COLORS["accent"],
+        fontsize=10,
+        va="bottom",
+    )
     ax.axhline(2.5, color=COLORS["guide"], ls=":", lw=0.9, alpha=0.6)
     ax.text(1994, 2.495, "5/2", color=COLORS["guide"], fontsize=9, va="top")
 
-    # connecting climb
     ax.plot(years, [e[1] for e in EVENTS], color=COLORS["guide"], lw=1.0, alpha=0.5, zorder=1)
 
     for yr, y, sym, name, notion in EVENTS:
-        final = (name == "Wang-Zahl")
+        final = name == "Wang-Zahl"
         col = COLORS["accent"] if final else COLORS["outer"]
-        ax.scatter([yr], [y], s=130 if final else 80, color=col, zorder=3,
-                   edgecolor="white", linewidth=1.0)
+        ax.scatter([yr], [y], s=130 if final else 80, color=col, zorder=3, edgecolor="white", linewidth=1.0)
         va = "bottom"
-        ax.annotate(f"{name} ({yr})\ndim {'=' if (final or sym == '5/2') else '>='} {sym}\n{notion}",
-                    xy=(yr, y), xytext=(yr, y + 0.06), ha="center", va=va,
-                    fontsize=9.5, color=col, fontweight="bold" if final else "normal")
+        ax.annotate(
+            f"{name} ({yr})\ndim {'=' if (final or sym == '5/2') else '>='} {sym}\n{notion}",
+            xy=(yr, y),
+            xytext=(yr, y + 0.06),
+            ha="center",
+            va=va,
+            fontsize=9.5,
+            color=col,
+            fontweight="bold" if final else "normal",
+        )
 
     ax.set_xlabel("year")
     ax.set_ylabel("proven lower bound on dim (Kakeya sets in R^3)")

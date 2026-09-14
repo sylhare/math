@@ -85,11 +85,11 @@ def box_count(geom, k):
 
 
 def main():
-    # 1. build every pile once, raw geometry (area is measured in original coordinates)
+    # area measured in original coordinates
     unions_raw = {n: unary_union(sprout(n)) for n in DEPTHS}
     area_raw = {n: unions_raw[n].area for n in DEPTHS}
 
-    # 2. fixed domain: the global bounding box over all depths, made square (side W)
+    # fixed square domain over all depths (side W)
     bounds = np.array([unions_raw[n].bounds for n in DEPTHS])
     x0, y0 = bounds[:, 0].min(), bounds[:, 1].min()
     x1, y1 = bounds[:, 2].max(), bounds[:, 3].max()
@@ -100,7 +100,7 @@ def main():
 
     unions_norm = {n: normalize(unions_raw[n]) for n in DEPTHS}
 
-    # 3. couple depth and scale: frame k uses depth n = k and grid delta_k = 1/2^k
+    # couple depth and scale: depth n = k, delta_k = 1/2^k
     stages = []
     for n in DEPTHS:
         hits, delta = box_count(unions_norm[n], n)  # k == n
@@ -125,16 +125,13 @@ def main():
     log_needle = [math.log(s["N_needle"]) for s in stages]
     log_square = [math.log(s["N_square"]) for s in stages]
 
-    # cumulative fitted slope of the Kakeya curve (frames so far)
     cum_slope = [math.nan]
     for j in range(1, len(stages)):
         cum_slope.append(float(np.polyfit(xs[: j + 1], logN[: j + 1], 1)[0]))
 
-    # reference fits: single needle -> slope 1, filled square -> slope 2 (exact)
     fit_needle = float(np.polyfit(xs, log_needle, 1)[0])
     fit_square = float(np.polyfit(xs, log_square, 1)[0])
 
-    # Assertions: everything drawn is measured and matches the theorem
     areas = [stages[j]["area_raw"] for j in range(len(stages))]
     diffs = np.diff(areas)
     assert (diffs < 0).all(), "measured union area must strictly decrease with depth n"
@@ -206,7 +203,6 @@ def main():
         n, delta = s["n"], s["delta"]
         ncell = 2**n
 
-        # Left: the fattened pile, the delta grid, and the highlighted boxes it meets
         axL.cla()
         axL.set_aspect("equal")
         axL.set_xlim(-0.03, 1.03)
@@ -214,21 +210,18 @@ def main():
         axL.set_xticks([])
         axL.set_yticks([])
 
-        # the delta grid (bottom)
         gl = min(0.6, 0.6 * 32.0 / ncell + 0.12)
         for kk in range(ncell + 1):
             c = kk * delta
             axL.plot([0, 1], [c, c], color=COLORS["muted"], lw=gl, alpha=0.5, zorder=1)
             axL.plot([c, c], [0, 1], color=COLORS["muted"], lw=gl, alpha=0.5, zorder=1)
 
-        # the shapely union of the pile, shaded (no edge yet)
         geom = unions_norm[n]
         polys = geom.geoms if geom.geom_type == "MultiPolygon" else [geom]
         for g in polys:
             gx, gy = g.exterior.xy
             axL.fill(gx, gy, facecolor=COLORS["region"], edgecolor="none", alpha=0.70, zorder=2)
 
-        # highlighted boxes (the N(delta) cells the union meets), tinted over the pile so the count is visible
         mask = np.zeros((ncell, ncell))
         for i, j in s["hits"]:
             mask[j, i] = 1.0
@@ -244,12 +237,10 @@ def main():
             interpolation="nearest",
         )
 
-        # the union outline on top so the thinning shape stays readable
         for g in polys:
             gx, gy = g.exterior.xy
             axL.plot(gx, gy, color=COLORS["needle"], lw=1.0, zorder=4)
 
-        # two big synced readouts on top
         axL.text(
             0.015,
             0.975,
@@ -281,7 +272,6 @@ def main():
             f"sprout depth n = {n} ({2**n} pieces),  delta = W/{ncell},  N(delta) = {s['Nbox']} lit cells", fontsize=10
         )
 
-        # Right: log N vs log(1/delta), points accumulating between slope-1 and slope-2 lines
         axR.cla()
         axR.set_xlim(0, xmax)
         axR.set_ylim(0, ymax)

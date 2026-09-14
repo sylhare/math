@@ -85,7 +85,7 @@ def main():
 
     base_nd = [branch_needle(p) for p in pieces]
     base_dirs = [math.atan2(u[1], u[0]) for _, u in base_nd]
-    tree_nd = [(t, t + u) for t, u in base_nd]  # (A, B) needles of the base tree
+    tree_nd = [(t, t + u) for t, u in base_nd]  # (A, B) needles
     all_nd = sorted((rot_needle(ab, r, ctr) for r in ROTS for ab in tree_nd), key=_dir)
 
     cov_after = [len(covered_bins(ROTS[: k + 1], base_dirs)) for k in range(len(ROTS))]
@@ -121,7 +121,7 @@ def main():
 
     ONE, DROP, SWEEP, FULL, END = len(tree_nd), 6, 10, len(all_nd), 12
     frames = [("one", i) for i in range(ONE)]
-    for k in range(1, len(ROTS)):  # dropping in copies 2..6, each followed by a short local sweep
+    for k in range(1, len(ROTS)):
         frames += [("drop", (k, f / (DROP - 1))) for f in range(DROP)]
         frames += [("band", (k, f / (SWEEP - 1))) for f in range(SWEEP)]
     frames += [("full", i) for i in range(FULL)]
@@ -166,7 +166,7 @@ def main():
             k, f = val
             for j in range(k):
                 fill(trees[j], 0.5)
-            fill(trees[k], 0.15 + 0.4 * f, z=3)  # the arriving copy fades in
+            fill(trees[k], 0.15 + 0.4 * f, z=3)
             gauge(cov_after[k - 1])
             ax.set_title(f"2. rotate a copy {ROTS[k]} degrees: a new star point", fontsize=12)
         elif kind == "band":

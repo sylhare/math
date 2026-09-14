@@ -7,6 +7,7 @@ overlapping centres read as a solid rounded triangle. Single yellow, no edges, f
 
 Run: uv run --with matplotlib --with shapely --with pillow python research/kakeya/figures/2_kakeya_2d/2_6_5_glow_rays_dark.py
 """
+
 import math
 import os
 
@@ -14,10 +15,10 @@ import numpy as np
 
 YELLOW = "#f4e37a"
 DARK = "#0b0b12"
-CORNERS_DEG = (90.0, 210.0, 330.0)     # three-fold spike directions
-N_RAYS = 1000                          # rays over the full turn
-L_MIN, L_MAX = 0.50, 1.30              # edge-length vs corner-length of a ray
-CORE_R = 0.42                          # radius of the solid core
+CORNERS_DEG = (90.0, 210.0, 330.0)  # three-fold spike directions
+N_RAYS = 1000  # rays over the full turn
+L_MIN, L_MAX = 0.50, 1.30  # edge-length vs corner-length of a ray
+CORE_R = 0.42  # radius of the solid core
 SEED = 5
 
 # bloom stack: (linewidth, alpha) from wide+faint to thin+bright
@@ -32,12 +33,12 @@ def _lobe(theta):
 def build_rays(rng):
     """Return (segments, r_out) for rays from the core out to a lobe-modulated tip."""
     theta = np.linspace(0.0, 2.0 * math.pi, N_RAYS, endpoint=False)
-    theta = theta + rng.normal(0.0, 0.006, N_RAYS)        # tiny angular jitter -> shaggy edge
+    theta = theta + rng.normal(0.0, 0.006, N_RAYS)  # angular jitter
     lobe = _lobe(theta)
-    jitter = 0.80 + 0.34 * rng.random(N_RAYS)             # per-ray length scatter
+    jitter = 0.80 + 0.34 * rng.random(N_RAYS)  # per-ray length scatter
     r_out = (L_MIN + (L_MAX - L_MIN) * lobe) * jitter
-    r_core = CORE_R * (0.55 + 0.72 * _lobe(theta))         # rounded-triangle core boundary
-    r_in = r_core * (0.35 + 0.35 * rng.random(N_RAYS))    # start inside the core for the bloom
+    r_core = CORE_R * (0.55 + 0.72 * _lobe(theta))  # rounded-triangle core boundary
+    r_in = r_core * (0.35 + 0.35 * rng.random(N_RAYS))  # start inside the core
     cx, cy = np.cos(theta), np.sin(theta)
     p0 = np.column_stack([r_in * cx, r_in * cy])
     p1 = np.column_stack([r_out * cx, r_out * cy])
@@ -54,6 +55,7 @@ def core_polygon(n=720):
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.collections import LineCollection
@@ -78,13 +80,12 @@ def main():
     ax.set_xlim(-reach, reach)
     ax.set_ylim(-reach * 0.90, reach * 1.02)
 
-    # solid core underneath the rays
     ax.fill(core[:, 0], core[:, 1], facecolor=YELLOW, edgecolor="none", zorder=1)
 
-    # stacked bloom passes: same segments, wide+faint first, thin+bright last
     for lw, alpha in BLOOM:
-        lc = LineCollection(segs, colors=YELLOW, linewidths=lw, alpha=alpha,
-                            capstyle="round", antialiaseds=True, zorder=2)
+        lc = LineCollection(
+            segs, colors=YELLOW, linewidths=lw, alpha=alpha, capstyle="round", antialiaseds=True, zorder=2
+        )
         lc.set_rasterized(True)
         ax.add_collection(lc)
 

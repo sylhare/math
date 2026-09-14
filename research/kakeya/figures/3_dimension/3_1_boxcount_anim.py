@@ -7,6 +7,7 @@ Log-log slope of N vs 1/delta is the box dimension: dim_box K = lim log N(delta)
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/boxcount_anim.py
 """
+
 import math
 
 import numpy as np
@@ -14,9 +15,9 @@ from _shared import COLORS, math_check, save_gif
 from matplotlib.animation import FuncAnimation
 
 DELTAS = [1 / 2, 1 / 4, 1 / 8, 1 / 16, 1 / 32, 1 / 64]
-HOLD = 6          # frames per delta stage
-END_HOLD = 8      # extra hold on the finest stage
-SEG_Y = 0.55      # segment y, strictly inside one grid row
+HOLD = 6  # frames per delta stage
+END_HOLD = 8  # extra hold on the finest stage
+SEG_Y = 0.55  # segment y, strictly inside one grid row
 
 
 # Geometry: pure-numpy box-counting
@@ -43,15 +44,18 @@ def _seg_hits_box(p0, p1, xmin, xmax, ymin, ymax):
 def boxcount_segment(p0, p1, delta):
     """Side-delta boxes the segment meets; returns (count, hit indices)."""
     n = round(1.0 / delta)
-    hits = [(i, j) for i in range(n) for j in range(n)
-            if _seg_hits_box(p0, p1, i * delta, (i + 1) * delta, j * delta, (j + 1) * delta)]
+    hits = [
+        (i, j)
+        for i in range(n)
+        for j in range(n)
+        if _seg_hits_box(p0, p1, i * delta, (i + 1) * delta, j * delta, (j + 1) * delta)
+    ]
     return len(hits), hits
 
 
 def main():
     seg_p0, seg_p1 = np.array([0.0, SEG_Y]), np.array([1.0, SEG_Y])
 
-    # box count + hit boxes per delta stage
     stages = []
     for delta in DELTAS:
         n = round(1.0 / delta)
@@ -59,7 +63,6 @@ def main():
         n_sq = n * n
         stages.append(dict(delta=delta, n=n, n_seg=n_seg, hits_seg=hits_seg, n_sq=n_sq))
 
-    # log-log data
     logs_x = [math.log(1.0 / s["delta"]) for s in stages]
     logs_seg = [math.log(s["n_seg"]) for s in stages]
     logs_sq = [math.log(s["n_sq"]) for s in stages]
@@ -72,9 +75,13 @@ def main():
         want_seg, want_sq = round(1.0 / s["delta"]), round(1.0 / s["delta"]) ** 2
         good = s["n_seg"] == want_seg and s["n_sq"] == want_sq
         ok = ok and good
-        rows.append((f"delta=1/{s['n']:<2d}",
-                     f"N_seg={s['n_seg']:<4d}(=1/d {want_seg})  "
-                     f"N_sq={s['n_sq']:<5d}(=(1/d)^2 {want_sq})  {'OK' if good else 'BAD'}"))
+        rows.append(
+            (
+                f"delta=1/{s['n']:<2d}",
+                f"N_seg={s['n_seg']:<4d}(=1/d {want_seg})  "
+                f"N_sq={s['n_sq']:<5d}(=(1/d)^2 {want_sq})  {'OK' if good else 'BAD'}",
+            )
+        )
     assert ok, "box counts must equal 1/delta and (1/delta)^2 at every stage"
     assert abs(slope_seg - 1.0) < 1e-9 and abs(slope_sq - 2.0) < 1e-9
 
@@ -90,18 +97,22 @@ def main():
 
     # Figure
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(1, 3, figsize=(15.5, 5.3))
     for a in (ax[0], ax[1]):
         a.set_aspect("equal")
-        a.set_xticks([]); a.set_yticks([])
+        a.set_xticks([])
+        a.set_yticks([])
     axL = ax[2]  # log-log panel
 
     def draw_grid_axes(a):
-        a.set_xlim(-0.05, 1.05); a.set_ylim(-0.05, 1.05)
-        a.set_xticks([]); a.set_yticks([])
+        a.set_xlim(-0.05, 1.05)
+        a.set_ylim(-0.05, 1.05)
+        a.set_xticks([])
+        a.set_yticks([])
 
     frame_stage = []
     for k in range(len(stages)):
@@ -113,41 +124,42 @@ def main():
         upto = frame_stage[fi] + 1
         delta, n = s["delta"], s["n"]
 
-        # left: unit segment + covering boxes
-        ax[0].cla(); draw_grid_axes(ax[0])
-        for (i, j) in s["hits_seg"]:
-            ax[0].fill([i * delta, (i + 1) * delta, (i + 1) * delta, i * delta],
-                       [j * delta, j * delta, (j + 1) * delta, (j + 1) * delta],
-                       color=COLORS["region"], alpha=0.75, zorder=1)
+        ax[0].cla()
+        draw_grid_axes(ax[0])
+        for i, j in s["hits_seg"]:
+            ax[0].fill(
+                [i * delta, (i + 1) * delta, (i + 1) * delta, i * delta],
+                [j * delta, j * delta, (j + 1) * delta, (j + 1) * delta],
+                color=COLORS["region"],
+                alpha=0.75,
+                zorder=1,
+            )
         for kk in range(n + 1):
             ax[0].plot([0, 1], [kk * delta, kk * delta], color=COLORS["muted"], lw=0.4, zorder=2)
             ax[0].plot([kk * delta, kk * delta], [0, 1], color=COLORS["muted"], lw=0.4, zorder=2)
         ax[0].plot([0, 1], [SEG_Y, SEG_Y], color=COLORS["needle"], lw=3.0, zorder=3)
         ax[0].set_title(f"unit segment,  delta=1/{n}\nN = {s['n_seg']} = 1/delta   (d = 1)")
 
-        # middle: unit square (every box covered) + grid
-        ax[1].cla(); draw_grid_axes(ax[1])
+        ax[1].cla()
+        draw_grid_axes(ax[1])
         ax[1].fill([0, 1, 1, 0], [0, 0, 1, 1], color=COLORS["region"], alpha=0.75, zorder=1)
         for kk in range(n + 1):
             ax[1].plot([0, 1], [kk * delta, kk * delta], color=COLORS["muted"], lw=0.4, zorder=2)
             ax[1].plot([kk * delta, kk * delta], [0, 1], color=COLORS["muted"], lw=0.4, zorder=2)
-        ax[1].fill([0, 1, 1, 0], [0, 0, 1, 1], facecolor="none",
-                   edgecolor=COLORS["needle"], lw=2.2, zorder=3)
+        ax[1].fill([0, 1, 1, 0], [0, 0, 1, 1], facecolor="none", edgecolor=COLORS["needle"], lw=2.2, zorder=3)
         ax[1].set_title(f"unit square,  delta=1/{n}\nN = {s['n_sq']} = (1/delta)^2   (d = 2)")
 
-        # right: log N vs log(1/delta), a point per delta so far, slope fits
         axL.cla()
         axL.set_xlim(0, logs_x[-1] + 0.5)
         axL.set_ylim(0, logs_sq[-1] + 0.5)
-        axL.set_xlabel("log(1/delta)"); axL.set_ylabel("log N")
+        axL.set_xlabel("log(1/delta)")
+        axL.set_ylabel("log N")
         axL.grid(True, color=COLORS["muted"], alpha=0.25, lw=0.5)
         xs = logs_x[:upto]
         axL.plot(xs, logs_seg[:upto], "-o", color=COLORS["needle"], ms=5, label="segment (slope 1)")
         axL.plot(xs, logs_sq[:upto], "-o", color=COLORS["accent"], ms=5, label="square (slope 2)")
-        axL.plot(logs_x[upto - 1], logs_seg[upto - 1], "o", color=COLORS["needle"],
-                 ms=11, mfc="none", mew=2)
-        axL.plot(logs_x[upto - 1], logs_sq[upto - 1], "o", color=COLORS["accent"],
-                 ms=11, mfc="none", mew=2)
+        axL.plot(logs_x[upto - 1], logs_seg[upto - 1], "o", color=COLORS["needle"], ms=11, mfc="none", mew=2)
+        axL.plot(logs_x[upto - 1], logs_sq[upto - 1], "o", color=COLORS["accent"], ms=11, mfc="none", mew=2)
         if upto >= 2:
             m1 = float(np.polyfit(xs, logs_seg[:upto], 1)[0])
             m2 = float(np.polyfit(xs, logs_sq[:upto], 1)[0])

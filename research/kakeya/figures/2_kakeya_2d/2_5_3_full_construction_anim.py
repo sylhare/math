@@ -27,7 +27,7 @@ from shapely.ops import unary_union
 
 APEX = np.array([0.0, 1.0])  # height-1 triangle: unit needles from the apex fit
 HB = 1.0 / math.sqrt(3.0)  # half base
-NLEV = 5  # 2^5 = 32 sub-triangles: the triangle visibly combs into strands, and the tree looks like one
+NLEV = 5  # 2^5 = 32 sub-triangles
 ALPHA_MAX = 0.7  # final overlap fraction per level (footprint ~37% of the triangle)
 TRI = Polygon([(-HB, 0.0), (HB, 0.0), tuple(APEX)])
 TRI_AREA = TRI.area
@@ -41,8 +41,8 @@ def base_pieces():
 
 
 def sprout_pieces(alpha):
-    """The 2^NLEV sub-triangles after sliding to overlap by fraction `alpha`, kept as separate polygons
-    so the motion (and the darkening overlaps) is visible. alpha = 0 tiles the original triangle."""
+    """The 2^NLEV sub-triangles after sliding to overlap by fraction `alpha`, kept as separate polygons.
+    alpha = 0 tiles the original triangle."""
     groups = [[p] for p in base_pieces()]
     w = 2 * HB / 2**NLEV
     for _ in range(NLEV):
@@ -150,7 +150,7 @@ def main():
                 f"3. slide to overlap (shear back and forth): {area_frac[val] * 100:.0f}% of the triangle", fontsize=11
             )
 
-        else:  # keep: the fan of directions is still present inside the finished tree
+        else:  # keep
             draw_pieces(final_pieces)
             for a, b in spines:
                 ax.plot([a[0], b[0]], [a[1], b[1]], color=COLORS["needle"], lw=0.7, alpha=0.22)

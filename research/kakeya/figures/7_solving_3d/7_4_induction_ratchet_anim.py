@@ -10,15 +10,16 @@ staircases climb in parallel:
 Schematic: alpha, start 2.5 and cap 3 are exact; the lossy leak is illustrative.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/induction_ratchet_anim.py
 """
+
 import math
 
 import numpy as np
 from _shared import COLORS, math_check, save_gif
 from matplotlib.animation import FuncAnimation
 
-D_START = 2.5    # Wolff's 1995 lower bound in R^3 = (n+2)/2
-D_TARGET = 3.0   # full dimension (Wang-Zahl)
-ALPHA = 0.1      # fixed per-step gain of the graininess induction
+D_START = 2.5  # Wolff 1995 bound (n+2)/2
+D_TARGET = 3.0  # full dimension (Wang-Zahl)
+ALPHA = 0.1  # per-step gain
 
 
 def ratchet(d_start, d_target, alpha):
@@ -43,8 +44,8 @@ def staircase_vertices(g):
     """Vertices of a `where=post` staircase: tread then riser for each step."""
     v = [(0.0, float(g[0]))]
     for i in range(len(g) - 1):
-        v.append((float(i + 1), float(g[i])))      # tread end
-        v.append((float(i + 1), float(g[i + 1])))  # riser end
+        v.append((float(i + 1), float(g[i])))
+        v.append((float(i + 1), float(g[i + 1])))
     return v
 
 
@@ -62,6 +63,7 @@ def revealed(v, p):
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
@@ -70,7 +72,6 @@ def main():
     bad = lossy(D_START, ALPHA, leak=0.28, n_steps=n_steps)
     incs = np.diff(good)
 
-    # Invariant assertions
     assert n_steps == 5, n_steps
     assert all(abs(inc - ALPHA) < 1e-9 for inc in incs), incs
     assert abs(good[-1] - 3.0) < 1e-12, good[-1]
@@ -114,7 +115,7 @@ def main():
         ax.plot(bx, by, color=COLORS["outer"], lw=2.0, label="lossy: mu ~ mu_fat * mu_fine")
         ax.plot(gx, gy, color=COLORS["accent"], lw=2.4, label="graininess: mu ~ mu_coarse * mu_fine")
 
-        for j in range(0, gk + 1, 2):  # settled level corners of the red staircase
+        for j in range(0, gk + 1, 2):  # settled level corners
             ax.plot(*good_v[j], "o", color=COLORS["accent"], ms=6, zorder=4)
         for j in range(0, bk + 1, 2):
             ax.plot(*bad_v[j], "s", color=COLORS["outer"], ms=4, zorder=4)

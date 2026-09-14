@@ -7,6 +7,7 @@ wide-faint to thin-bright stack of strokes to bloom. Single yellow, no edges.
 
 Run: uv run --with matplotlib --with shapely --with pillow python research/kakeya/figures/2_kakeya_2d/2_6_5_glow_dark.py
 """
+
 import math
 
 import numpy as np
@@ -16,9 +17,9 @@ YELLOW = "#f4e37a"
 DARK = "#0b0b12"
 CORNERS_DEG = (90.0, 210.0, 330.0)
 N_RAYS = 240
-R_MIN, R_MAX = 0.42, 1.25            # edge-length vs corner-length of a ray
-R_IN = 0.05                          # inner start radius (near the centre)
-CORE_R = 0.34                        # rounded-triangle core radius
+R_MIN, R_MAX = 0.42, 1.25  # edge-length vs corner-length of a ray
+R_IN = 0.05  # inner start radius (near the centre)
+CORE_R = 0.34  # rounded-triangle core radius
 
 # bloom stack: (linewidth, alpha) from wide+faint to thin+bright
 BLOOM = [(6.0, 0.015), (3.4, 0.035), (1.9, 0.10), (1.0, 0.28), (0.5, 0.85)]
@@ -48,6 +49,7 @@ def core_polygon(n=720):
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.collections import LineCollection
@@ -66,8 +68,7 @@ def main():
 
     ax.fill(core[:, 0], core[:, 1], facecolor=YELLOW, edgecolor="none", zorder=1)
     for lw, alpha in BLOOM:
-        lc = LineCollection(segs, colors=YELLOW, linewidths=lw, alpha=alpha,
-                            capstyle="round", zorder=2)
+        lc = LineCollection(segs, colors=YELLOW, linewidths=lw, alpha=alpha, capstyle="round", zorder=2)
         lc.set_rasterized(True)
         ax.add_collection(lc)
 

@@ -27,10 +27,10 @@ from shapely.ops import unary_union
 
 APEX = np.array([0.0, 1.0])
 HB = 1.0 / math.sqrt(3.0)
-NLEV = 4  # 16 branches: separated enough that a single Pal join is easy to see
+NLEV = 4  # 16 branches
 ALPHA = 0.6
-S_DETAIL = 0.75  # how far the needle slides out on the slow detour (bigger = more visible)
-S_FULL = 0.45  # slide-out on each quick detour in the chained sweep
+S_DETAIL = 0.75  # slide-out distance, slow detour
+S_FULL = 0.45  # slide-out distance, chained sweep
 
 
 def sprout_pieces(alpha=ALPHA):
@@ -52,22 +52,22 @@ def branch_needle(piece):
     apex = xy[np.argmax(xy[:, 1])]
     basemid = xy[xy[:, 1] < 0.5].mean(axis=0)
     d = basemid - apex
-    return apex, d / np.linalg.norm(d)  # (tip, unit direction pointing down the branch)
+    return apex, d / np.linalg.norm(d)  # (tip, unit direction)
 
 
 def pal_pose(tip_a, u_a, tip_b, u_b, s_out, f):
     """The needle (A, B) partway (fraction f in [0,1]) through a Pal join from branch (tip_a, u_a) to
     branch (tip_b, u_b): slide out along u_a, small turn far out, slide back along u_b."""
-    pivot = tip_a + (1.0 + s_out) * u_a  # far bottom end where the turn happens
-    if f < 0.4:  # slide out along the axis (free)
+    pivot = tip_a + (1.0 + s_out) * u_a
+    if f < 0.4:
         top = tip_a + (s_out * f / 0.4) * u_a
         return top, top + u_a, None
-    if f < 0.6:  # small turn far out about the bottom pivot
+    if f < 0.6:
         u = (f - 0.4) / 0.2
         ang = math.atan2(u_a[1], u_a[0]) + u * (math.atan2(u_b[1], u_b[0]) - math.atan2(u_a[1], u_a[0]))
         d = np.array([math.cos(ang), math.sin(ang)])
         return pivot - d, pivot, (pivot, math.atan2(u_a[1], u_a[0]), ang)
-    u = (f - 0.6) / 0.4  # slide back along u_b into branch b
+    u = (f - 0.6) / 0.4
     post_top = pivot - u_b
     top = post_top + u * (tip_b - post_top)
     return top, top + u_b, (pivot, math.atan2(u_a[1], u_a[0]), math.atan2(u_b[1], u_b[0]))
@@ -104,7 +104,7 @@ def main():
     import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
 
-    i_a, i_b = len(needles) // 2 - 2, len(needles) // 2 + 1  # a few branches apart, so the turn is visible
+    i_a, i_b = len(needles) // 2 - 2, len(needles) // 2 + 1
     DETAIL, PER, HOLD, END = 34, 7, 10, 10
     frames = [("intro", t) for t in range(HOLD)]
     frames += [("detail", f / (DETAIL - 1)) for f in range(DETAIL)]
@@ -143,7 +143,7 @@ def main():
         elif kind == "detail":
             ta, ua = needles[i_a]
             tb, ub = needles[i_b]
-            for tip, u in (needles[i_a], needles[i_b]):  # the two branches being joined
+            for tip, u in (needles[i_a], needles[i_b]):
                 ax.plot([tip[0], tip[0] + u[0]], [tip[1], tip[1] + u[1]], color=COLORS["needle"], lw=2.0, alpha=0.3)
             a, b, sect = pal_pose(ta, ua, tb, ub, S_DETAIL, val)
             draw_needle(a, b, sect)
@@ -157,7 +157,7 @@ def main():
             ax.set_title(f"One Pal join: {step}", fontsize=12)
         else:
             i, f = val
-            for j in range(i + 1):  # accumulate the detour slivers already swept
+            for j in range(i + 1):
                 ta, ua = needles[j]
                 tb, ub = needles[j + 1]
                 for g in np.linspace(0, 1, 6):

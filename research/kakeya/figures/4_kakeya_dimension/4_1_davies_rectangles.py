@@ -8,6 +8,7 @@ Small overlaps force the union to spread out: the "area 0 but dimension 2" mecha
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/davies_rectangles.py
 """
+
 import math
 
 import numpy as np
@@ -43,10 +44,10 @@ def main():
         formula = delta**2 / math.sin(th)
         rel = abs(measured - formula) / formula
         max_rel_err = max(max_rel_err, rel)
-        rows.append((f"theta={td:>2} deg  overlap",
-                     f"measured {measured:.3e}  formula {formula:.3e}  err {rel*100:.2f}%"))
+        rows.append(
+            (f"theta={td:>2} deg  overlap", f"measured {measured:.3e}  formula {formula:.3e}  err {rel * 100:.2f}%")
+        )
 
-    # fan of rectangles through a common center
     delta_fan = 0.05  # drawn rectangle thickness
     fan_counts = [1, 6, 12, 24]
     union_rows = []
@@ -54,8 +55,7 @@ def main():
     for m in fan_counts:
         rects = [poly(rectangle(1.0, delta_fan, a)) for a in np.linspace(0, math.pi, m, endpoint=False)]
         ua = union_area(rects)
-        union_rows.append((f"fan union, {m:>2} directions",
-                           f"{ua:.4f}   (sum of areas {m*delta_fan:.3f})"))
+        union_rows.append((f"fan union, {m:>2} directions", f"{ua:.4f}   (sum of areas {m * delta_fan:.3f})"))
         if m == max(fan_counts):
             fan_polys_full = rects
 
@@ -63,7 +63,7 @@ def main():
         "Davies overlap  |R1 cap R2| ~ delta^2 / sin theta   (delta = 0.01)",
         [
             *rows,
-            ("max relative error", f"{max_rel_err*100:.2f}%   (want few %)"),
+            ("max relative error", f"{max_rel_err * 100:.2f}%   (want few %)"),
             *union_rows,
             ("mechanism", "small overlaps -> large spread union -> dim 2 at area 0"),
         ],
@@ -71,7 +71,6 @@ def main():
 
     fig, ax = new_axes(2, figsize=(11, 5.6))
 
-    # left: two rectangles at theta = 30 deg + shaded intersection
     dvis, thv = 0.18, math.radians(30)
     ra = poly(rectangle(1.0, dvis, 0.0))
     rb = poly(rectangle(1.0, dvis, thv))
@@ -87,13 +86,15 @@ def main():
     ax[0].set_ylim(-0.6, 0.6)
     _m = overlap_area(delta, thv)
     _f = delta**2 / math.sin(thv)
-    ax[0].set_title(f"two 1 x delta rects, theta=30\noverlap ~ delta^2/sin theta  (err {abs(_m-_f)/_f*100:.1f}% @ delta=0.01)")
+    ax[0].set_title(
+        f"two 1 x delta rects, theta=30\noverlap ~ delta^2/sin theta  (err {abs(_m - _f) / _f * 100:.1f}% @ delta=0.01)"
+    )
 
-    # right: fan through a common center, union shaded
     for r in fan_polys_full:
         xs, ys = r.exterior.xy
         ax[1].fill(xs, ys, color=COLORS["needle"], alpha=0.25, lw=0)
     from shapely.ops import unary_union
+
     u = unary_union(fan_polys_full)
     geoms = getattr(u, "geoms", [u])
     for g in geoms:
@@ -101,7 +102,9 @@ def main():
         ax[1].plot(xs, ys, color=COLORS["accent"], lw=1.0)
     ax[1].set_xlim(-0.6, 0.6)
     ax[1].set_ylim(-0.6, 0.6)
-    ax[1].set_title(f"fan of {max(fan_counts)} directions\nunion area {union_area(fan_polys_full):.3f} (grows with spread)")
+    ax[1].set_title(
+        f"fan of {max(fan_counts)} directions\nunion area {union_area(fan_polys_full):.3f} (grows with spread)"
+    )
 
     print("wrote", save_preview(fig))
 

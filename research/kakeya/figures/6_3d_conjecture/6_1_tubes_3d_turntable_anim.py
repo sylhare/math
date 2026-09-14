@@ -6,18 +6,19 @@ skew tubes miss (min axis distance > 0), whereas two R^2 lines in different dire
 Only the camera moves; the geometry is built once.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/tubes_3d_turntable_anim.py
 """
+
 import numpy as np
 from _shared import COLORS, math_check, save_gif
 
-FRAMES = 72  # turntable: azimuth step 360 / 72 = 5 degrees
+FRAMES = 72  # azimuth step 5 deg
 
 
-# Geometry (replicated locally from tubes_3d.py; do not import it)
+# geometry replicated locally; do not import 6_1
 def fibonacci_sphere(n: int) -> np.ndarray:
     """n roughly-uniform points on the unit sphere S^2 (for sampling directions)."""
     i = np.arange(n) + 0.5
     phi = np.arccos(1 - 2 * i / n)
-    theta = np.pi * (1 + 5 ** 0.5) * i
+    theta = np.pi * (1 + 5**0.5) * i
     return np.column_stack([np.sin(phi) * np.cos(theta), np.sin(phi) * np.sin(theta), np.cos(phi)])
 
 
@@ -65,24 +66,25 @@ def tube_surface(center, direction, length, radius, n_theta=16):
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3d projection)
 
-    # Count of delta-separated directions ~ delta^-2
     samples = fibonacci_sphere(20000)
     counts = {d: len(delta_separated(samples, d)) for d in (0.4, 0.2, 0.1)}
 
-    # Two tubes in different directions miss (skew) in R^3
-    dir_a = np.array([1.0, 0.2, 0.3]); dir_a /= np.linalg.norm(dir_a)
-    dir_b = np.array([0.2, 1.0, -0.3]); dir_b /= np.linalg.norm(dir_b)
+    dir_a = np.array([1.0, 0.2, 0.3])
+    dir_a /= np.linalg.norm(dir_a)
+    dir_b = np.array([0.2, 1.0, -0.3])
+    dir_b /= np.linalg.norm(dir_b)
     cen_a = np.array([-0.15, 0.0, 0.0])
     cen_b = np.array([0.15, 0.0, 0.35])
     miss_dist = line_line_distance(cen_a, dir_a, cen_b, dir_b)
 
-    contents = [counts[d] * d ** 2 for d in (0.4, 0.2, 0.1)]
-    # count ~ delta^-2  <=>  count*delta^2 is O(1), roughly constant across delta
+    contents = [counts[d] * d**2 for d in (0.4, 0.2, 0.1)]
+    # count ~ delta^-2 <=> count*delta^2 = O(1)
     assert all(1.0 < ctd < 30.0 for ctd in contents), f"count*delta^2 not O(1): {contents}"
     assert max(contents) / min(contents) < 2.0, f"count*delta^2 not roughly constant: {contents}"
     assert counts[0.1] > counts[0.2] > counts[0.4], "count must grow as delta shrinks"
@@ -94,14 +96,17 @@ def main():
             ("count(delta=0.4)", f"{counts[0.4]}   count*delta^2 = {counts[0.4] * 0.4**2:.2f}"),
             ("count(delta=0.2)", f"{counts[0.2]}   count*delta^2 = {counts[0.2] * 0.2**2:.2f}"),
             ("count(delta=0.1)", f"{counts[0.1]}   count*delta^2 = {counts[0.1] * 0.1**2:.2f}"),
-            ("count ~ delta^-2", f"0.4->0.2: {counts[0.2]/counts[0.4]:.2f}x, 0.2->0.1: {counts[0.1]/counts[0.2]:.2f}x  (want ~4)"),
+            (
+                "count ~ delta^-2",
+                f"0.4->0.2: {counts[0.2] / counts[0.4]:.2f}x, 0.2->0.1: {counts[0.1] / counts[0.2]:.2f}x  (want ~4)",
+            ),
             ("tube |T| = delta^2", "delta x delta x 1 ; content #T*|T| ~ 1"),
             ("red skew tubes miss", f"min axis distance = {miss_dist:.4f} > 0  (they MISS; 2D lines would cross)"),
         ],
     )
 
-    # Static geometry (built once; only the camera animates)
-    delta_vis = 0.10  # display thickness for the thin tubes
+    # built once; only camera animates
+    delta_vis = 0.10  # display thickness
     radius = delta_vis / 2.0
 
     fig = plt.figure(figsize=(6.4, 6.4))
@@ -115,19 +120,21 @@ def main():
         c = rng.uniform(-0.18, 0.18, size=3)
         X, Y, Z = tube_surface(c, d, 1.0, radius)
         ax.plot_surface(X, Y, Z, color=COLORS["outer"], alpha=0.28, linewidth=0)
-    # the two highlighted skew tubes that miss
     for c, d in ((cen_a, dir_a), (cen_b, dir_b)):
         X, Y, Z = tube_surface(c, d, 1.0, radius * 1.1)
         ax.plot_surface(X, Y, Z, color=COLORS["accent"], alpha=0.9, linewidth=0)
-    # their axes (guide)
     for c, d in ((cen_a, dir_a), (cen_b, dir_b)):
         seg = np.array([c - 0.5 * d, c + 0.5 * d])
         ax.plot(seg[:, 0], seg[:, 1], seg[:, 2], color=COLORS["guide"], lw=1.0)
 
     ax.set_box_aspect((1, 1, 1))
-    # length-1 tubes off-centred up to 0.18 reach ~0.73; widen so the wireframe box contains them
-    ax.set_xlim(-0.85, 0.85); ax.set_ylim(-0.85, 0.85); ax.set_zlim(-0.85, 0.85)
-    ax.set_xticklabels([]); ax.set_yticklabels([]); ax.set_zticklabels([])
+    # tubes reach ~0.73; widen box to contain them
+    ax.set_xlim(-0.85, 0.85)
+    ax.set_ylim(-0.85, 0.85)
+    ax.set_zlim(-0.85, 0.85)
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+    ax.set_zticklabels([])
 
     def update(i):
         ax.view_init(elev=18, azim=i * (360.0 / FRAMES))
