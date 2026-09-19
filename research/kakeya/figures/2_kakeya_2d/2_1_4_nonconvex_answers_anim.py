@@ -167,7 +167,19 @@ def main():
         f"Perron tree\narea {areas[1]:.3f} ({areas[1] / TRI_AREA * 100:.0f}% of triangle)",
         f"Besicovitch star (3 trees)\narea {areas[2]:.3f} -> 0 in the limit",
     ]
-    lims = [(-0.85, 0.85, -0.8, 0.8), (-0.95, 0.95, -0.2, 1.15), (-1.25, 1.25, -1.25, 1.25)]
+    # Recentre each shape on its centroid (deltoid already at origin; tree and star share centroid pv)
+    # so all three align horizontally and vertically. Size each panel to its own shape's radius so the
+    # three render at about the same on-screen size (like the convex-answers figure), not one shrunk box.
+    off = [np.array([0.0, 0.0]), -pv, -pv]
+    lim = []
+    for j, g in enumerate(shapes):
+        ox, oy = off[j]
+        rr = max(
+            float(np.max(np.hypot(np.asarray(gg.exterior.coords)[:, 0] + ox,
+                                  np.asarray(gg.exterior.coords)[:, 1] + oy)))
+            for gg in (g.geoms if g.geom_type == "MultiPolygon" else [g])
+        )
+        lim.append(rr * 1.18)
     nframes = max(len(n) for n in needles)
     frames = list(range(nframes)) + [nframes - 1] * END_HOLD
 
@@ -177,24 +189,27 @@ def main():
             ax.cla()
             ax.set_aspect("equal")
             ax.axis("off")
-            ax.set_xlim(lims[j][0], lims[j][1])
-            ax.set_ylim(lims[j][2], lims[j][3])
+            ax.set_xlim(-lim[j], lim[j])
+            ax.set_ylim(-lim[j], lim[j])
+            ox, oy = off[j]
             if j in tris:  # faint underlying triangle(s)
                 for tr in tris[j]:
-                    ax.plot(tr[:, 0], tr[:, 1], color=COLORS["muted"], lw=0.8, ls="--", alpha=0.7)
+                    ax.plot(tr[:, 0] + ox, tr[:, 1] + oy, color=COLORS["muted"], lw=0.8, ls="--", alpha=0.7)
             g = shapes[j]
             for gg in g.geoms if g.geom_type == "MultiPolygon" else [g]:
-                ax.fill(*gg.exterior.xy, facecolor=COLORS["region"], edgecolor=COLORS["outer"], lw=0.9, alpha=0.6)
+                xs, ys = gg.exterior.xy
+                ax.fill(np.asarray(xs) + ox, np.asarray(ys) + oy,
+                        facecolor=COLORS["region"], edgecolor=COLORS["outer"], lw=0.9, alpha=0.6)
             lst = needles[j]
             upto = min(k + 1, len(lst))
             for a, b in lst[:upto]:
-                ax.plot([a[0], b[0]], [a[1], b[1]], color=COLORS["needle"], lw=0.7, alpha=0.28)
+                ax.plot([a[0] + ox, b[0] + ox], [a[1] + oy, b[1] + oy], color=COLORS["needle"], lw=0.7, alpha=0.28)
             a, b = lst[upto - 1]
-            ax.plot([a[0], b[0]], [a[1], b[1]], color=COLORS["accent"], lw=2.6, zorder=4)
+            ax.plot([a[0] + ox, b[0] + ox], [a[1] + oy, b[1] + oy], color=COLORS["accent"], lw=2.6, zorder=4)
             ax.set_title(titles[j], fontsize=10)
         return []
 
-    fig, axes = plt.subplots(1, 3, figsize=(13.2, 5.2))
+    fig, axes = plt.subplots(1, 3, figsize=(13.2, 5.0))
     anim = FuncAnimation(fig, update, frames=len(frames), interval=95, blit=False)
     print("wrote", save_gif(anim, fps=12, dpi=92))
 
