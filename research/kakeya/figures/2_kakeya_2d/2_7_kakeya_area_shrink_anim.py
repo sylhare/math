@@ -12,6 +12,7 @@ Companion to 2_6 (the needle-set build).
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/2_kakeya_2d/2_7_kakeya_area_shrink_anim.py
 """
+
 import math
 
 import numpy as np
@@ -29,7 +30,7 @@ KF, JF = 28, 62
 CORE = "#f4ec7a"
 EDGE = "#8a8a3a"
 
-DEPTHS = list(range(0, 10))    # cut-and-shift depth n = 0 (solid triangle) -> 9 (512 pieces)
+DEPTHS = list(range(0, 10))  # cut-and-shift depth n = 0 (solid triangle) -> 9 (512 pieces)
 
 VERTS = np.array([R * np.array([math.cos(math.radians(d)), math.sin(math.radians(d))]) for d in CORNERS_DEG])
 _EDIR = (VERTS[2] - VERTS[1]) / np.linalg.norm(VERTS[2] - VERTS[1])
@@ -52,7 +53,8 @@ def build_fine():
     cen = VERTS.mean(0)
     needles = []
     for a, b in ((VERTS[0], VERTS[1]), (VERTS[1], VERTS[2]), (VERTS[2], VERTS[0])):
-        nrm = np.array([(b - a)[1], -(b - a)[0]]); nrm = nrm / np.linalg.norm(nrm)
+        nrm = np.array([(b - a)[1], -(b - a)[0]])
+        nrm = nrm / np.linalg.norm(nrm)
         if np.dot(nrm, (a + b) / 2 - cen) < 0:
             nrm = -nrm
         for t in np.linspace(0.06, 0.94, KF):
@@ -71,15 +73,18 @@ def sprout(n):
     if n == 0:
         return [Polygon([tuple(v0), tuple(v1), tuple(v2)])]
     alphas = np.linspace(1.0, 0.5, n)
-    N = 2 ** n
-    pieces = [[Polygon([tuple(v1 + (v2 - v1) * (i / N)), tuple(v1 + (v2 - v1) * ((i + 1) / N)), tuple(v0)])]
-              for i in range(N)]
+    N = 2**n
+    pieces = [
+        [Polygon([tuple(v1 + (v2 - v1) * (i / N)), tuple(v1 + (v2 - v1) * ((i + 1) / N)), tuple(v0)])] for i in range(N)
+    ]
     w = np.linalg.norm(v2 - v1) / N
     for k in range(n):
         step = 0.5 * alphas[k] * w * _EDIR
-        pieces = [[shp_translate(p, *(+step)) for p in pieces[i]] + [shp_translate(p, *(-step)) for p in pieces[i + 1]]
-                  for i in range(0, len(pieces), 2)]
-        w *= (1.0 + alphas[k])
+        pieces = [
+            [shp_translate(p, *(+step)) for p in pieces[i]] + [shp_translate(p, *(-step)) for p in pieces[i + 1]]
+            for i in range(0, len(pieces), 2)
+        ]
+        w *= 1.0 + alphas[k]
     return [p for grp in pieces for p in grp]
 
 
@@ -89,13 +94,14 @@ def _fill(ax, geom, fc, ec, lw, alpha=1.0, z=2):
     for g in geoms:
         if g.is_empty:
             continue
-        a, = ax.fill(*g.exterior.xy, facecolor=fc, edgecolor=ec, linewidth=lw, alpha=alpha, zorder=z)
+        (a,) = ax.fill(*g.exterior.xy, facecolor=fc, edgecolor=ec, linewidth=lw, alpha=alpha, zorder=z)
         arts.append(a)
     return arts
 
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
@@ -120,14 +126,17 @@ def main():
         ],
     )
 
-    pts = np.vstack([np.array(fringe_all.envelope.exterior.coords),
-                     *[np.array(p.exterior.coords) for p in sprout_at[9]]])
+    pts = np.vstack(
+        [np.array(fringe_all.envelope.exterior.coords), *[np.array(p.exterior.coords) for p in sprout_at[9]]]
+    )
     (x0, y0), (x1, y1) = pts.min(0), pts.max(0)
     m = 0.08 * max(x1 - x0, y1 - y0)
 
     fig, ax = plt.subplots(figsize=(6.6, 6.6))
-    ax.set_aspect("equal"); ax.axis("off")
-    ax.set_xlim(x0 - m, x1 + m); ax.set_ylim(y0 - m, y1 + m)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.set_xlim(x0 - m, x1 + m)
+    ax.set_ylim(y0 - m, y1 + m)
     ax.set_title("Shrinking the area: sprout the pieces to overlap (every direction kept)", fontsize=10)
     counter = ax.text(0.02, 0.98, "", transform=ax.transAxes, va="top", fontsize=10, color=COLORS["guide"])
     holder = {"arts": []}
@@ -136,12 +145,14 @@ def main():
         for a in holder["arts"]:
             a.remove()
         n = frames[i]
-        fade = 0.5 * (1.0 - n / DEPTHS[-1]) + 0.06        # fringe fades as the core sprouts
+        fade = 0.5 * (1.0 - n / DEPTHS[-1]) + 0.06
         arts = _fill(ax, fringe_all, CORE, "none", 0.0, alpha=fade, z=1)
         arts += _fill(ax, unary_union(sprout_at[n]), CORE, "none", 0.0, z=3)
         holder["arts"] = arts
-        counter.set_text(f"cut-and-shift depth n = {n} ({2 ** n} pieces)      "
-                         f"area = {area_at[n] / tri_area * 100:.0f}% of the triangle  (-> 0 slowly; never 0)")
+        counter.set_text(
+            f"cut-and-shift depth n = {n} ({2**n} pieces)      "
+            f"area = {area_at[n] / tri_area * 100:.0f}% of the triangle  (-> 0 slowly; never 0)"
+        )
         return holder["arts"] + [counter]
 
     anim = FuncAnimation(fig, update, frames=len(frames), interval=320, blit=False)

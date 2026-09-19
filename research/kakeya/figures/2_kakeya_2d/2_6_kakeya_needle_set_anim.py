@@ -7,6 +7,7 @@ shrinking is the companion animation 2_7.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/2_kakeya_2d/2_6_kakeya_needle_set_anim.py
 """
+
 import math
 
 import numpy as np
@@ -17,13 +18,13 @@ from shapely.ops import unary_union
 SIDE = 1.0
 R = SIDE / math.sqrt(3.0)
 CORNERS_DEG = (90.0, 210.0, 330.0)
-HALFW = 0.012                  # needle half-width (wider so the union reads as filled branches)
+HALFW = 0.012  # needle half-width
 LEN_CORNER, LEN_EDGE = 0.62, 0.30
-KF, JF = 28, 62                # finest needle counts per edge / per corner fan
+KF, JF = 28, 62  # finest needle counts per edge / per corner fan
 CORE = "#f4ec7a"
 EDGE = "#8a8a3a"
 
-# (edge, corner) needle counts per frame, coarse -> fine, then hold on the full set
+# (edge, corner) needle counts per frame, coarse -> fine
 LEVELS = [(2, 6), (3, 9), (4, 13), (6, 18), (9, 26), (13, 35), (18, 46), (28, 62)]
 
 VERTS = np.array([R * np.array([math.cos(math.radians(d)), math.sin(math.radians(d))]) for d in CORNERS_DEG])
@@ -45,7 +46,8 @@ def build_fine():
     cen = VERTS.mean(0)
     edge_needles, corner_needles = [], []
     for a, b in ((VERTS[0], VERTS[1]), (VERTS[1], VERTS[2]), (VERTS[2], VERTS[0])):
-        nrm = np.array([(b - a)[1], -(b - a)[0]]); nrm = nrm / np.linalg.norm(nrm)
+        nrm = np.array([(b - a)[1], -(b - a)[0]])
+        nrm = nrm / np.linalg.norm(nrm)
         if np.dot(nrm, (a + b) / 2 - cen) < 0:
             nrm = -nrm
         for t in np.linspace(0.06, 0.94, KF):
@@ -70,13 +72,14 @@ def _fill(ax, geom, fc, ec, lw, z=2):
     for g in geoms:
         if g.is_empty:
             continue
-        a, = ax.fill(*g.exterior.xy, facecolor=fc, edgecolor=ec, linewidth=lw, zorder=z)
+        (a,) = ax.fill(*g.exterior.xy, facecolor=fc, edgecolor=ec, linewidth=lw, zorder=z)
         arts.append(a)
     return arts
 
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
@@ -102,8 +105,10 @@ def main():
     m = 0.08 * max(x1 - x0, y1 - y0)
 
     fig, ax = plt.subplots(figsize=(6.6, 6.6))
-    ax.set_aspect("equal"); ax.axis("off")
-    ax.set_xlim(x0 - m, x1 + m); ax.set_ylim(y0 - m, y1 + m)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.set_xlim(x0 - m, x1 + m)
+    ax.set_ylim(y0 - m, y1 + m)
     ax.set_title("Kakeya needle set: a solid triangle with Perron-tree branches", fontsize=10)
     counter = ax.text(0.02, 0.98, "", transform=ax.transAxes, va="top", fontsize=10, color=COLORS["guide"])
     holder = {"arts": []}

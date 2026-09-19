@@ -13,6 +13,7 @@ carpeted with tangent wave packets (centre on the curve, long axis along the tan
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/restriction_conjecture.py
 """
+
 import numpy as np
 from _shared import COLORS, math_check, new_axes, save_preview
 
@@ -37,12 +38,14 @@ def wave_packet(a: float, x: float, length: float, width: float) -> np.ndarray:
     p = np.array([x, a * x * x])
     t = tangent_unit(a, x)
     nrm = np.array([-t[1], t[0]])
-    return np.array([
-        p - (length / 2) * t - (width / 2) * nrm,
-        p + (length / 2) * t - (width / 2) * nrm,
-        p + (length / 2) * t + (width / 2) * nrm,
-        p - (length / 2) * t + (width / 2) * nrm,
-    ])
+    return np.array(
+        [
+            p - (length / 2) * t - (width / 2) * nrm,
+            p + (length / 2) * t - (width / 2) * nrm,
+            p + (length / 2) * t + (width / 2) * nrm,
+            p - (length / 2) * t + (width / 2) * nrm,
+        ]
+    )
 
 
 def main():
@@ -51,7 +54,6 @@ def main():
     length, width = 0.55, 0.10
     packets = [wave_packet(a, float(x), length, width) for x in xs_tube]
 
-    # tangency verification: long axis parallel to the curve tangent; centre on the curve
     angle_errs, center_errs = [], []
     for x, pk in zip(xs_tube, packets, strict=True):
         long_axis = pk[1] - pk[0]
@@ -85,23 +87,33 @@ def main():
         poly_xy = np.vstack([pk, pk[0]])
         ax.fill(poly_xy[:, 0], poly_xy[:, 1], color="#c8d0f0", alpha=0.75, zorder=1)
         ax.plot(poly_xy[:, 0], poly_xy[:, 1], color=COLORS["outer"], lw=1.1, zorder=2)
-    # outward normal arrow on one packet
     x0 = 0.8625
     p0 = np.array([x0, a * x0 * x0])
     t0 = tangent_unit(a, x0)
     ext = np.array([t0[1], -t0[0]])  # exterior normal
-    ax.annotate("", xy=tuple(p0 + 0.30 * ext), xytext=tuple(p0),
-                arrowprops=dict(arrowstyle="->", color=COLORS["guide"], lw=1.3))
+    ax.annotate(
+        "", xy=tuple(p0 + 0.30 * ext), xytext=tuple(p0), arrowprops=dict(arrowstyle="->", color=COLORS["guide"], lw=1.3)
+    )
     ax.text(*(p0 + 0.37 * ext), r"$\omega$", fontsize=13, ha="left", va="top")
-    ax.text(0.0, a * 1.35 ** 2 * 0.62,
-            r"$Eg(x)=\int_{S^{n-1}} g(\omega)\,e^{2\pi i x\cdot\omega}\,d\sigma(\omega)$",
-            ha="center", va="center", fontsize=13)
-    ax.text(0.0, a * 1.35 ** 2 * 0.40,
-            r"$\|Eg\|_{L^q}\lesssim\|g\|_\infty,\quad q>\frac{2n}{n-1}$",
-            ha="center", va="center", fontsize=13)
+    ax.text(
+        0.0,
+        a * 1.35**2 * 0.62,
+        r"$Eg(x)=\int_{S^{n-1}} g(\omega)\,e^{2\pi i x\cdot\omega}\,d\sigma(\omega)$",
+        ha="center",
+        va="center",
+        fontsize=13,
+    )
+    ax.text(
+        0.0,
+        a * 1.35**2 * 0.40,
+        r"$\|Eg\|_{L^q}\lesssim\|g\|_\infty,\quad q>\frac{2n}{n-1}$",
+        ha="center",
+        va="center",
+        fontsize=13,
+    )
     ax.set_title("Restriction: wave packets tangent to the paraboloid")
     ax.set_xlim(-1.5, 1.5)
-    ax.set_ylim(-0.35, a * 1.35 ** 2 + 0.15)
+    ax.set_ylim(-0.35, a * 1.35**2 + 0.15)
     print("wrote", save_preview(fig))
 
 

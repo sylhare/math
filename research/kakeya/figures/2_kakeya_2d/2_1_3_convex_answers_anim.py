@@ -21,11 +21,10 @@ import math
 import numpy as np
 from _shared import COLORS, circle, math_check, save_gif
 
-STEPS = 20  # frames per 60-degree pivot (and for the circle half-turn)
+STEPS = 20  # frames per 60-degree pivot
 END_HOLD = 8
 
-# Circle: needle length 1 spun about its midpoint -> disc radius 1/2
-DISC_R = 0.5
+DISC_R = 0.5  # needle length 1 spun about its midpoint
 
 
 def circle_needles():
@@ -36,7 +35,7 @@ def circle_needles():
     return out
 
 
-# Reuleaux triangle of width 1: pivot the width-segment about each vertex
+# Reuleaux triangle of width 1
 RV = np.array([[math.cos(math.radians(d)), math.sin(math.radians(d))] for d in (90, 210, 330)]) / math.sqrt(3.0)
 
 
@@ -50,7 +49,6 @@ def _arc(center, p0, p1, r=1.0, n=60):
 
 
 def reuleaux_outline():
-    # each arc is centred at a vertex, radius 1, spanning the other two vertices
     segs = [_arc(RV[0], RV[1], RV[2]), _arc(RV[1], RV[2], RV[0]), _arc(RV[2], RV[0], RV[1])]
     return np.vstack(segs)
 
@@ -58,7 +56,7 @@ def reuleaux_outline():
 def reuleaux_needles():
     out = []
     for i, v in enumerate(RV):
-        p, q = RV[(i + 1) % 3], RV[(i + 2) % 3]  # the two far vertices on the opposite arc
+        p, q = RV[(i + 1) % 3], RV[(i + 2) % 3]
         a0 = math.atan2(p[1] - v[1], p[0] - v[0])
         a1 = math.atan2(q[1] - v[1], q[0] - v[0])
         if a1 < a0:
@@ -68,7 +66,7 @@ def reuleaux_needles():
     return out
 
 
-# Equilateral triangle of height 1: pivot the height-segment about each vertex
+# equilateral triangle of height 1
 TH_APEX = np.array([0.0, 1.0])
 TH_BL = np.array([-1.0 / math.sqrt(3.0), 0.0])
 TH_BR = np.array([1.0 / math.sqrt(3.0), 0.0])
@@ -94,7 +92,6 @@ def main():
     cN, rN, tN = circle_needles(), reuleaux_needles(), tri_needles()
     areas = (math.pi / 4, (math.pi - math.sqrt(3.0)) / 2, 1.0 / math.sqrt(3.0))
 
-    # Every needle has length exactly 1
     for name, lst in (("circle", cN), ("reuleaux", rN), ("triangle", tN)):
         mx = max(abs(np.linalg.norm(b - a) - 1.0) for a, b in lst)
         assert mx < 1e-9, f"{name}: every needle must have length 1 (err {mx:.1e})"
@@ -121,18 +118,17 @@ def main():
     tri = np.array([TH_APEX, TH_BL, TH_BR, TH_APEX])
 
     fig, axes = plt.subplots(1, 3, figsize=(13.2, 5.0))
-    titles = [f"circle: spin about a point\narea pi/4 = {areas[0]:.3f}",
-              f"Reuleaux: pivot about 3 points\narea (pi-sqrt3)/2 = {areas[1]:.3f}",
-              f"equilateral triangle\narea 1/sqrt3 = {areas[2]:.3f}"]
+    titles = [
+        f"circle: spin about a point\narea pi/4 = {areas[0]:.3f}",
+        f"Reuleaux: pivot about 3 points\narea (pi-sqrt3)/2 = {areas[1]:.3f}",
+        f"equilateral triangle\narea 1/sqrt3 = {areas[2]:.3f}",
+    ]
     outlines = [disc, reul, tri]
     needle_lists = [cN, rN, tN]
-    # Recentre each shape on its centroid (only the height-1 triangle sits off-origin, centroid y=1/3)
-    # so all three line up horizontally and vertically inside one shared, symmetric axis box.
+    # recentre on centroid (height-1 triangle centroid y=1/3) so the three align
     off = [np.array([0.0, 0.0]), np.array([0.0, 0.0]), np.array([0.0, -1.0 / 3.0])]
     outlines = [outlines[j] + off[j] for j in range(3)]
     needle_lists = [[(a + off[j], b + off[j]) for a, b in needle_lists[j]] for j in range(3)]
-    # Size each panel to its own shape's radius (same 1.18 margin as the non-convex figure) so both
-    # answer gifs render each shape at the same on-screen size, with the three panels aligned.
     lim = [float(np.max(np.hypot(o[:, 0], o[:, 1]))) * 1.18 for o in outlines]
     nframes = max(len(cN), len(rN), len(tN))
     frames = list(range(nframes)) + [nframes - 1] * END_HOLD
@@ -149,10 +145,10 @@ def main():
             lst = needle_lists[j]
             upto = min(k + 1, len(lst))
             step = max(1, upto // 60)
-            for a, b in lst[:upto:step]:  # accumulated needle fan
+            for a, b in lst[:upto:step]:
                 ax.plot([a[0], b[0]], [a[1], b[1]], color=COLORS["needle"], lw=0.6, alpha=0.25)
             a, b = lst[upto - 1]
-            ax.plot([a[0], b[0]], [a[1], b[1]], color=COLORS["accent"], lw=2.6, zorder=4)  # current needle
+            ax.plot([a[0], b[0]], [a[1], b[1]], color=COLORS["accent"], lw=2.6, zorder=4)
             ax.set_title(titles[j], fontsize=10)
         return []
 

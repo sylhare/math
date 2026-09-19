@@ -73,7 +73,6 @@ def cantor_intervals(m: int) -> list[tuple[float, float]]:
 
 
 def main():
-    # Left set: uniform box counts (exact)
     left_deltas = [2.0 ** (-k) for k in LEFT_KS]
     left_N = [occupied_cells_1overn(d) for d in left_deltas]
     left_cells = [occupied_indices_1overn(d) for d in left_deltas]
@@ -81,7 +80,6 @@ def main():
     left_ly = [math.log(N) for N in left_N]
     left_slope = float(np.polyfit(left_lx, left_ly, 1)[0])
 
-    # Cantor set: uniform box counts (closed form)
     right_deltas = [3.0 ** (-m) for m in RIGHT_MS]
     right_N = [2**m for m in RIGHT_MS]
     right_ivs = [cantor_intervals(m) for m in RIGHT_MS]
@@ -89,13 +87,11 @@ def main():
     right_ly = [math.log(N) for N in right_N]
     right_slope = float(np.polyfit(right_lx, right_ly, 1)[0])
 
-    # Adaptive Hausdorff cover costs
     # left: eps -> 0 limit of (1/M)^s + (M-1) eps^s  is  (1/M)^s ; take M -> inf.
     left_cost = [(1.0 / M) ** S_LEFT for M in ADAPT_M]
     # right: natural cover sum (2 * 3^-s)^m at s = dim  == 1  for every level.
     right_cost = [(2.0 * 3.0 ** (-DIM_C)) ** m for m in RIGHT_MS]
 
-    # Validation (assert the relations the figure draws)
     # (1) {1/n} box-count slope trends to 1/2 on exact counts, N strictly grows as delta shrinks.
     assert all(left_N[i] < left_N[i + 1] for i in range(len(left_N) - 1)), (
         "occupied-cell count must strictly increase as delta shrinks"
@@ -175,7 +171,6 @@ def main():
         ax.tick_params(labelsize=8)
         ax.spines[["top", "right", "left"]].set_visible(False)
 
-    # build the frame schedule: [box0]*START + box + [boxN]*MID + adapt + [adaptK]*END
     box_descs = [("box", i) for i in range(len(LEFT_KS))]
     adapt_descs = [("adapt", j) for j in range(len(ADAPT_M))]
     schedule = (
@@ -186,7 +181,6 @@ def main():
         + [adapt_descs[-1]] * END_HOLD
     )
 
-    # dot positions for 1/n (a visible sample; the crowd near 0 shows the pile-up)
     dots_x = np.array([1.0 / n for n in range(1, 121)])
 
     def draw_left_set(desc):
@@ -197,9 +191,9 @@ def main():
         if kind == "box":
             delta = left_deltas[idx]
             cells = left_cells[idx]
-            for c in cells:  # occupied cells light up
+            for c in cells:
                 _bar(ax_setL, c * delta, delta, COLORS["region"], 0.9)
-            if 1.0 / delta <= 40:  # grid only while it stays legible
+            if 1.0 / delta <= 40:  # grid only while legible
                 for t in np.arange(0, 1.0 + delta / 2, delta):
                     ax_setL.plot([t, t], [0, HBAR], color=COLORS["muted"], lw=0.35, zorder=2)
             ax_setL.plot(dots_x, np.full_like(dots_x, 0.5 * HBAR), "o", color=COLORS["needle"], ms=2.6, zorder=3)
@@ -208,8 +202,8 @@ def main():
             )
         else:
             M = ADAPT_M[idx]
-            _bar(ax_setL, 0.0, 1.0 / M, COLORS["region"], 0.9)  # one interval swallows the tail
-            for k in range(1, M):  # M-1 tiny intervals on 1/1..1/(M-1)
+            _bar(ax_setL, 0.0, 1.0 / M, COLORS["region"], 0.9)
+            for k in range(1, M):
                 _bar(ax_setL, 1.0 / k - 0.0025, 0.005, COLORS["accent"], 0.95, z=4)
             ax_setL.plot(dots_x, np.full_like(dots_x, 0.5 * HBAR), "o", color=COLORS["needle"], ms=2.6, zorder=3)
             ax_setL.annotate(
@@ -235,7 +229,7 @@ def main():
             ax_setR.set_title(f"Cantor: delta = 1/3^{m},  N = {right_N[ridx]} = 2^{m}", fontsize=10)
         else:
             m = RIGHT_MS[-1]
-            for a, b in right_ivs[-1]:  # natural cover already optimal
+            for a, b in right_ivs[-1]:
                 _bar(ax_setR, a, b - a, COLORS["region"], 0.55)
                 _bar(ax_setR, a, b - a, COLORS["accent"], 0.9)
             ax_setR.set_title(f"Cantor: natural cover optimal  (dim_H = {DIM_C:.4f})", fontsize=10)

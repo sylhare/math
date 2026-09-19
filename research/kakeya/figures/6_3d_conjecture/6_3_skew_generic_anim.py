@@ -18,27 +18,28 @@ Inset B (Monte-Carlo): 200 random axis pairs, red = axes within delta, blue = sk
 Run: PYTHONPATH=research/kakeya/figures uv run --with matplotlib --with shapely --with pillow \
      python research/kakeya/figures/6_3d_conjecture/6_3_skew_generic_anim.py
 """
+
 import math
 
 import numpy as np
 from _shared import COLORS, math_check, save_gif
 from matplotlib.animation import FuncAnimation
 
-N_SWEEP = 72        # coloured-tube directions along the great circle
-HOLD = 8            # frames held at the start
-END_HOLD = 8        # frames held at the end
-DELTA_MC = 0.10     # Monte-Carlo tube radius scale: axes within DELTA_MC count as a crossing
-N_MC = 200          # random axis pairs
-CUBE = 2.0          # random centers uniform in [-CUBE/2, CUBE/2]^3
-FLASH = 0.03        # dist below this flashes the swept tube red (near a crossing)
+N_SWEEP = 72  # sweep directions on great circle
+HOLD = 8  # start hold frames
+END_HOLD = 8  # end hold frames
+DELTA_MC = 0.10  # axes within this count as a crossing
+N_MC = 200  # random axis pairs
+CUBE = 2.0  # centers in [-CUBE/2, CUBE/2]^3
+FLASH = 0.03  # dist below this flashes red
 
 
-# Geometry (pure numpy, portable; line_line_distance reused from 6_1)
+# geometry
 def fibonacci_sphere(n: int) -> np.ndarray:
     """n roughly-uniform points on the unit sphere S^2 (for sampling directions)."""
     i = np.arange(n) + 0.5
     phi = np.arccos(1 - 2 * i / n)
-    theta = np.pi * (1 + 5 ** 0.5) * i
+    theta = np.pi * (1 + 5**0.5) * i
     return np.column_stack([np.sin(phi) * np.cos(theta), np.sin(phi) * np.sin(theta), np.cos(phi)])
 
 
@@ -87,24 +88,26 @@ def tube_surface(center, direction, length, radius, n_theta=16):
 
 
 def main():
-    # Fixed skew reference pair (same PROBE + tube as 6_1)
-    dir_a = np.array([1.0, 0.2, 0.3]); dir_a /= np.linalg.norm(dir_a)   # PROBE direction
-    dir_b = np.array([0.2, 1.0, -0.3]); dir_b /= np.linalg.norm(dir_b)  # sweep start direction
-    cen_a = np.array([-0.15, 0.0, 0.0])   # PROBE center
-    cen_b = np.array([0.15, 0.0, 0.35])   # swept-tube center (fixed offset)
+    dir_a = np.array([1.0, 0.2, 0.3])
+    dir_a /= np.linalg.norm(dir_a)  # probe direction
+    dir_b = np.array([0.2, 1.0, -0.3])
+    dir_b /= np.linalg.norm(dir_b)  # sweep start
+    cen_a = np.array([-0.15, 0.0, 0.0])  # probe center
+    cen_b = np.array([0.15, 0.0, 0.35])  # swept-tube center
     miss_dist = line_line_distance(cen_a, dir_a, cen_b, dir_b)
 
-    # Sweep d2 along a great circle e1 = dir_b, e2 orthonormal
+    # sweep d2 on great circle: e1=dir_b, e2 orthonormal
     w = cen_b - cen_a
-    k = np.cross(w, dir_a)                 # crossing normal: dist = 0 iff d2 . k = 0
+    k = np.cross(w, dir_a)  # crossing normal: dist=0 iff d2.k=0
     e1 = dir_b
-    e2 = np.cross(e1, dir_a); e2 /= np.linalg.norm(e2)
-    # isolated crossing angles on the circle: (e1.k) cos phi + (e2.k) sin phi = 0
+    e2 = np.cross(e1, dir_a)
+    e2 /= np.linalg.norm(e2)
+    # crossing angles: (e1.k)cos phi + (e2.k)sin phi = 0
     alpha = math.atan2(float(e1 @ k), float(e2 @ k))
     phi_cross = sorted({(-alpha) % (2 * math.pi), (-alpha + math.pi) % (2 * math.pi)})
 
     base = np.linspace(0.0, 2 * math.pi, N_SWEEP, endpoint=False)
-    phis = np.sort(np.concatenate([base, phi_cross]))   # land exactly on the crossings too
+    phis = np.sort(np.concatenate([base, phi_cross]))  # land exactly on crossings
 
     def d2_of(phi):
         v = math.cos(phi) * e1 + math.sin(phi) * e2
@@ -113,10 +116,9 @@ def main():
     dirs2 = [d2_of(p) for p in phis]
     dists = np.array([line_line_distance(cen_a, dir_a, cen_b, d2) for d2 in dirs2])
 
-    frac_open = float((dists > 1e-2).mean())          # away from crossings the gap stays open
-    dip = float(dists.min())                          # pinches to ~0 at a crossing
+    frac_open = float((dists > 1e-2).mean())  # gap open away from crossings
+    dip = float(dists.min())  # pinches to ~0 at crossing
 
-    # Monte-Carlo: random pairs are overwhelmingly skew
     def mc_fraction(delta, seed=0):
         rng = np.random.default_rng(seed)
 
@@ -135,15 +137,16 @@ def main():
     _, frac_cross_half = mc_fraction(DELTA_MC / 2)
     miss_frac = 1.0 - frac_cross
 
-    # 2D control: two non-parallel lines through the origin always meet
+    # 2D: non-parallel lines through origin meet
     d2a = np.array([math.cos(math.radians(20)), math.sin(math.radians(20))])
     d2b = np.array([math.cos(math.radians(110)), math.sin(math.radians(110))])
-    cross_dist_2d = line_line_distance(np.array([0.0, 0.0, 0.0]),
-                                       np.array([d2a[0], d2a[1], 0.0]),
-                                       np.array([0.0, 0.0, 0.0]),
-                                       np.array([d2b[0], d2b[1], 0.0]))
+    cross_dist_2d = line_line_distance(
+        np.array([0.0, 0.0, 0.0]),
+        np.array([d2a[0], d2a[1], 0.0]),
+        np.array([0.0, 0.0, 0.0]),
+        np.array([d2b[0], d2b[1], 0.0]),
+    )
 
-    # Assert the drawn relations
     assert miss_dist > 1e-2, "the fixed 6_1 pair must MISS (positive axis distance)"
     assert frac_open > 0.90, "the 3D gap must stay open away from the isolated crossings"
     assert dip < 1e-2, "the gap must pinch to ~0 at the codim-1 crossing directions"
@@ -156,19 +159,24 @@ def main():
         [
             ("R^3 fixed pair (from 6_1)", f"min axis dist = {miss_dist:.3f} > 0   (they MISS)"),
             ("dist(l1,l2) formula", "|(p2-p1).(d1 x d2)| / |d1 x d2|"),
-            ("sweep, gap stays open", f"{frac_open*100:.1f}% of {len(phis)} dirs have dist > 1e-2"),
+            ("sweep, gap stays open", f"{frac_open * 100:.1f}% of {len(phis)} dirs have dist > 1e-2"),
             ("sweep, dip at crossing", f"min dist = {dip:.2e}  (isolated codim-1 events)"),
             ("crossing dirs on circle", f"phi = {phi_cross[0]:.3f}, {phi_cross[1]:.3f} rad (2 of them)"),
             ("R^2 two lines (20,110 deg)", f"min dist = {cross_dist_2d:.3e}  (they CROSS)"),
-            (f"Monte-Carlo miss @ delta={DELTA_MC}", f"{miss_frac*100:.1f}% skew  ({int(frac_cross*N_MC)}/{N_MC} cross)"),
-            ("crossing frac vs delta", f"delta={DELTA_MC}: {frac_cross:.3f}  ->  "
-                                       f"delta={DELTA_MC/2}: {frac_cross_half:.3f}  (~O(delta))"),
+            (
+                f"Monte-Carlo miss @ delta={DELTA_MC}",
+                f"{miss_frac * 100:.1f}% skew  ({int(frac_cross * N_MC)}/{N_MC} cross)",
+            ),
+            (
+                "crossing frac vs delta",
+                f"delta={DELTA_MC}: {frac_cross:.3f}  ->  delta={DELTA_MC / 2}: {frac_cross_half:.3f}  (~O(delta))",
+            ),
             ("why 3D is hard", "no crossing engine; needs the Wolff axiom instead"),
         ],
     )
 
-    # Figure
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
@@ -177,23 +185,30 @@ def main():
     ax_main = fig.add_subplot(gs[:, 0], projection="3d")
     ax_a = fig.add_subplot(gs[0, 1])
     ax_b = fig.add_subplot(gs[1, 1])
-    fig.suptitle("R^3: generic lines MISS (dist > 0);   R^2: always cross",
-                 fontsize=13, y=0.97)
+    fig.suptitle("R^3: generic lines MISS (dist > 0);   R^2: always cross", fontsize=13, y=0.97)
 
-    radius = 0.05  # display tube radius (delta/2)
+    radius = 0.05  # display radius delta/2
 
-    # --- INSET A (static): two 2D lines through the origin cross at distance 0
-    ax_a.set_aspect("equal"); ax_a.axis("off")
+    # inset A: 2D lines cross at dist 0
+    ax_a.set_aspect("equal")
+    ax_a.axis("off")
     for d2, col in ((d2a, COLORS["outer"]), (d2b, COLORS["accent"])):
         seg = np.array([-0.6 * d2, 0.6 * d2])
         ax_a.plot(seg[:, 0], seg[:, 1], color=col, lw=2.4)
     ax_a.plot(0, 0, "o", color=COLORS["guide"], ms=7, zorder=5)
-    ax_a.annotate("meet: dist = 0.000", (0, 0), (-0.55, -0.5), color=COLORS["guide"],
-                  fontsize=9, arrowprops=dict(arrowstyle="->", color=COLORS["guide"]))
-    ax_a.set_xlim(-0.7, 0.7); ax_a.set_ylim(-0.7, 0.7)
+    ax_a.annotate(
+        "meet: dist = 0.000",
+        (0, 0),
+        (-0.55, -0.5),
+        color=COLORS["guide"],
+        fontsize=9,
+        arrowprops=dict(arrowstyle="->", color=COLORS["guide"]),
+    )
+    ax_a.set_xlim(-0.7, 0.7)
+    ax_a.set_ylim(-0.7, 0.7)
     ax_a.set_title("R^2: different directions cross", fontsize=10)
 
-    # --- INSET B (static): Monte-Carlo cloud of random axis pairs
+    # inset B: Monte-Carlo cloud
     order = np.argsort(mc_ds)
     xs = np.arange(N_MC)
     cols = np.where(mc_ds[order] < DELTA_MC, COLORS["accent"], COLORS["outer"])
@@ -206,11 +221,10 @@ def main():
     ax_b.set_ylabel("axis distance", fontsize=8)
     ax_b.tick_params(labelsize=7)
     ax_b.grid(True, color=COLORS["muted"], alpha=0.25, lw=0.5)
-    ax_b.set_title(f"200 random pairs: {miss_frac*100:.0f}% skew (miss)", fontsize=10)
+    ax_b.set_title(f"200 random pairs: {miss_frac * 100:.0f}% skew (miss)", fontsize=10)
 
-    # probe (grey) axis is fixed
     probe_seg = np.array([cen_a - 0.5 * dir_a, cen_a + 0.5 * dir_a])
-    tip_trail = np.array([0.62 * d for d in dirs2])  # swept-direction tips over S^2
+    tip_trail = np.array([0.62 * d for d in dirs2])  # swept tips over S^2
 
     frames = [0] * HOLD + list(range(len(phis))) + [len(phis) - 1] * END_HOLD
 
@@ -223,32 +237,36 @@ def main():
 
         ax_main.cla()
         ax_main.set_box_aspect((1, 1, 1))
-        ax_main.set_xlim(-0.7, 0.7); ax_main.set_ylim(-0.7, 0.7); ax_main.set_zlim(-0.7, 0.7)
-        ax_main.set_xticklabels([]); ax_main.set_yticklabels([]); ax_main.set_zticklabels([])
-        azim = 30 + 0.35 * fi   # slow azimuth drift
+        ax_main.set_xlim(-0.7, 0.7)
+        ax_main.set_ylim(-0.7, 0.7)
+        ax_main.set_zlim(-0.7, 0.7)
+        ax_main.set_xticklabels([])
+        ax_main.set_yticklabels([])
+        ax_main.set_zticklabels([])
+        azim = 30 + 0.35 * fi
         ax_main.view_init(elev=18, azim=azim)
 
-        # faint trail of swept directions over the sphere
-        ax_main.plot(tip_trail[:, 0], tip_trail[:, 1], tip_trail[:, 2],
-                     color=COLORS["muted"], lw=0.7, alpha=0.5)
+        ax_main.plot(tip_trail[:, 0], tip_trail[:, 1], tip_trail[:, 2], color=COLORS["muted"], lw=0.7, alpha=0.5)
 
-        # fixed grey PROBE tube + axis
         Xp, Yp, Zp = tube_surface(cen_a, dir_a, 1.0, radius)
         ax_main.plot_surface(Xp, Yp, Zp, color=COLORS["guide"], alpha=0.30, linewidth=0)
-        ax_main.plot(probe_seg[:, 0], probe_seg[:, 1], probe_seg[:, 2],
-                     color=COLORS["guide"], lw=1.4)
+        ax_main.plot(probe_seg[:, 0], probe_seg[:, 1], probe_seg[:, 2], color=COLORS["guide"], lw=1.4)
 
-        # swept coloured tube + axis
         Xs, Ys, Zs = tube_surface(cen_b, d2, 1.0, radius * 1.1)
         ax_main.plot_surface(Xs, Ys, Zs, color=col, alpha=0.85, linewidth=0)
         swept_seg = np.array([cen_b - 0.5 * d2, cen_b + 0.5 * d2])
         ax_main.plot(swept_seg[:, 0], swept_seg[:, 1], swept_seg[:, 2], color=col, lw=1.4)
 
-        # shortest-gap segment between the two axes
         f1, f2 = line_closest_points(cen_a, dir_a, cen_b, d2)
-        ax_main.plot([f1[0], f2[0]], [f1[1], f2[1]], [f1[2], f2[2]],
-                     color=COLORS["accent"] if crossing else COLORS["needle"],
-                     lw=2.2, marker="o", ms=3)
+        ax_main.plot(
+            [f1[0], f2[0]],
+            [f1[1], f2[1]],
+            [f1[2], f2[2]],
+            color=COLORS["accent"] if crossing else COLORS["needle"],
+            lw=2.2,
+            marker="o",
+            ms=3,
+        )
 
         tag = "CROSS (dist -> 0)" if crossing else "skew: gap stays open"
         ax_main.set_title(f"dist(l1, l2) = {dist:.3f}\n{tag}", fontsize=11)

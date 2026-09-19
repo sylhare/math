@@ -6,6 +6,7 @@ frame). Wavelength and crest position measured from the dominant FFT bin each fr
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/plane_wave_anim.py
 """
+
 import numpy as np
 from _shared import COLORS, math_check, save_gif
 from matplotlib.animation import FuncAnimation
@@ -13,7 +14,7 @@ from matplotlib.animation import FuncAnimation
 
 def wave_field(xi: tuple[float, float], c: float, t: float, L: float, n: int) -> np.ndarray:
     """Sample cos(2 pi (x . xi - c t)) on an n x n grid over [0, L]^2."""
-    coords = np.linspace(0.0, L, n, endpoint=False)  # periodic sampling for a clean FFT
+    coords = np.linspace(0.0, L, n, endpoint=False)  # periodic sampling for clean fft
     xg, yg = np.meshgrid(coords, coords)
     return np.cos(2 * np.pi * (xg * xi[0] + yg * xi[1] - c * t))
 
@@ -30,25 +31,24 @@ def measure_freq_phase(field: np.ndarray, L: float) -> tuple[float, float]:
     fx = freqs[None, :] * np.ones((n, 1))
     fy = freqs[:, None] * np.ones((1, n))
     half = (fx > 1e-9) | ((np.abs(fx) <= 1e-9) & (fy > 1e-9))
-    mag = np.where(half, mag, 0.0)  # keep only the canonical half-plane (drops DC too)
+    mag = np.where(half, mag, 0.0)  # canonical half-plane (drops dc)
     iy, ix = np.unravel_index(int(np.argmax(mag)), mag.shape)
     freq_mag = float(np.hypot(freqs[ix], freqs[iy]))
     return freq_mag, float(np.angle(spec[iy, ix]))
 
 
 def main():
-    L, n = 2.0, 400          # integer-ish domain keeps xi close to FFT bins
+    L, n = 2.0, 400  # keeps xi near fft bins
     xi = (2.0, 1.0)
     xi_vec = np.array(xi)
-    mag = float(np.hypot(*xi))         # |xi| = sqrt(5) ~ 2.2361
+    mag = float(np.hypot(*xi))  # |xi| = sqrt(5)
     wavelength = 1.0 / mag
-    c = 1.0                             # phase speed factor
+    c = 1.0  # phase speed factor
     frames = 50
     T = 1.5
     dt = T / frames
     ts = np.arange(frames) * dt
 
-    # measure wavelength + crest position per frame
     lambdas, phases = [], []
     for t in ts:
         fmag, ph = measure_freq_phase(wave_field(xi, c, t, L, n), L)
@@ -71,8 +71,11 @@ def main():
         [
             ("field", "u(x,t) = cos(2 pi (x . xi - c t))"),
             ("xi", f"{xi}   |xi| = {mag:.4f}"),
-            ("wavelength 1/|xi| (constant?)", f"{wavelength:.4f}   measured min {lambdas.min():.4f} max {lambdas.max():.4f}  ->  {'YES' if lambda_const else 'NO'}"),
-            ("phase speed c/|xi|", f"{c/mag:.4f}  (crest normal per unit t)"),
+            (
+                "wavelength 1/|xi| (constant?)",
+                f"{wavelength:.4f}   measured min {lambdas.min():.4f} max {lambdas.max():.4f}  ->  {'YES' if lambda_const else 'NO'}",
+            ),
+            ("phase speed c/|xi|", f"{c / mag:.4f}  (crest normal per unit t)"),
             ("per-frame displacement expected", f"{disp_expected:.5f}  (= c/|xi| * dt, dt={dt:.4f})"),
             ("per-frame displacement measured", f"mean {disp.mean():.5f}  std {disp.std():.2e}"),
             ("displacement constant & matches?", f"{'YES' if disp_const and disp_matches else 'NO'}"),
@@ -83,35 +86,37 @@ def main():
     assert disp_matches, "measured crest displacement must equal c/|xi| * dt"
 
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(figsize=(5.2, 5.2))
-    im = ax.imshow(wave_field(xi, c, 0.0, L, n), origin="lower", extent=(0, L, 0, L),
-                   cmap="RdBu", vmin=-1, vmax=1, animated=True)
+    im = ax.imshow(
+        wave_field(xi, c, 0.0, L, n), origin="lower", extent=(0, L, 0, L), cmap="RdBu", vmin=-1, vmax=1, animated=True
+    )
     ax.set_aspect("equal")
     ax.set_xlabel("x")
     ax.set_ylabel("y")
 
-    # static arrow along xi (one wavelength long), from the domain centre
     ctr = np.array([L / 2, L / 2])
     u = xi_vec / mag
-    ax.annotate("", xy=tuple(ctr + u * wavelength), xytext=tuple(ctr),
-                arrowprops=dict(arrowstyle="-|>", color=COLORS["guide"], lw=2.0))
-    ax.text(*(ctr - u * 0.12 + np.array([0.03, 0.0])), "xi", color=COLORS["guide"],
-            fontsize=12, weight="bold")
+    ax.annotate(
+        "",
+        xy=tuple(ctr + u * wavelength),
+        xytext=tuple(ctr),
+        arrowprops=dict(arrowstyle="-|>", color=COLORS["guide"], lw=2.0),
+    )
+    ax.text(*(ctr - u * 0.12 + np.array([0.03, 0.0])), "xi", color=COLORS["guide"], fontsize=12, weight="bold")
 
-    # moving wavefront: the crest line x.xi = c t, perpendicular to xi
     perp = np.array([-u[1], u[0]])
-    front, = ax.plot([], [], color="k", lw=1.6)
+    (front,) = ax.plot([], [], color="k", lw=1.6)
 
     def update(i):
         t = ts[i]
         im.set_data(wave_field(xi, c, t, L, n))
-        # crest nearest domain centre: signed offset so that (base) . xi = c t
         s = crest_pos[i]
         base = s * u
-        base = base + np.round((ctr @ u - s) / wavelength) * wavelength * u  # shift to a crest near centre
+        base = base + np.round((ctr @ u - s) / wavelength) * wavelength * u  # shift to crest near centre
         p0 = base - perp * L
         p1 = base + perp * L
         front.set_data([p0[0], p1[0]], [p0[1], p1[1]])

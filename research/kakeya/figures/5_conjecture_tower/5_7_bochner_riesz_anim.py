@@ -5,6 +5,7 @@ Radial slice at R = 1: m^alpha(x) = (1 - x^2)_+^alpha. alpha = 0 is the hard-edg
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/bochner_riesz_anim.py
 """
+
 import numpy as np
 from _shared import COLORS, math_check, save_gif
 from matplotlib.animation import FuncAnimation
@@ -16,7 +17,7 @@ HOLD = 10  # frames held at each end
 def profile(x: np.ndarray, alpha: float, radius: float = 1.0) -> np.ndarray:
     """m^alpha_R(x) = (1 - x^2 / R^2)_+^alpha along a radial slice."""
     base = np.clip(1.0 - (x / radius) ** 2, 0.0, None)
-    return base ** alpha
+    return base**alpha
 
 
 def alpha_schedule() -> np.ndarray:
@@ -27,14 +28,14 @@ def alpha_schedule() -> np.ndarray:
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     alphas = alpha_schedule()
     x = np.linspace(-1.6, 1.6, 800)
-    xin = x[np.abs(x) <= 1]  # support, for the exact-profile check
+    xin = x[np.abs(x) <= 1]  # support, for exact-profile check
 
-    # Validation across every frame: endpoints pinned, curve == (1-x^2)^alpha on [-1,1]
     max_dev = 0.0
     for a in alphas:
         got = profile(xin, a)
@@ -42,7 +43,7 @@ def main():
         max_dev = max(max_dev, float(np.max(np.abs(got - want))))
     m0 = [float(profile(np.array([0.0]), a)[0]) for a in alphas]
     max_m0_err = max(abs(v - 1.0) for v in m0)
-    # m(+-1) = 0 for alpha > 0; at alpha = 0, 0^0 = 1 (the hard-edge discontinuity)
+    # m(+-1)=0 for alpha>0; at alpha=0, 0^0=1 (hard edge)
     m1_pos = [float(profile(np.array([1.0]), a)[0]) for a in alphas if a > 0]
     max_m1_err = max(abs(v) for v in m1_pos)
     m1_edge = float(profile(np.array([1.0]), 0.0)[0])
@@ -65,19 +66,18 @@ def main():
     ax.set_aspect("auto")
     for spine in ("top", "right", "left", "bottom"):
         ax.spines[spine].set_visible(False)
-    ax.annotate("", xy=(1.62, 0), xytext=(-1.62, 0),
-                arrowprops=dict(arrowstyle="->", color="k", lw=1.1))
-    ax.annotate("", xy=(0, 1.28), xytext=(0, -0.06),
-                arrowprops=dict(arrowstyle="->", color="k", lw=1.1))
+    ax.annotate("", xy=(1.62, 0), xytext=(-1.62, 0), arrowprops=dict(arrowstyle="->", color="k", lw=1.1))
+    ax.annotate("", xy=(0, 1.28), xytext=(0, -0.06), arrowprops=dict(arrowstyle="->", color="k", lw=1.1))
     ax.text(1.63, -0.02, r"$\xi$", ha="left", va="top", fontsize=13)
     ax.text(-1.0, -0.03, r"$-R$", ha="center", va="top", fontsize=12)
     ax.text(1.0, -0.03, r"$R$", ha="center", va="top", fontsize=12)
     ax.plot([-1, -1, 1, 1], [0, 1, 1, 0], ":", color=COLORS["guide"], lw=1.1)  # unit box
     ax.set_xlim(-1.75, 1.8)
     ax.set_ylim(-0.12, 1.4)
-    ax.set_xticks([]); ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_yticks([])
 
-    # ghost the hard edge (alpha=0 indicator) as a reference for the rounding
+    # ghost alpha=0 hard edge
     ax.plot(xin, np.ones_like(xin), color=COLORS["accent"], lw=1.4, alpha=0.35)
     ax.plot([-1, -1], [0, 1], color=COLORS["accent"], lw=1.4, alpha=0.35)
     ax.plot([1, 1], [0, 1], color=COLORS["accent"], lw=1.4, alpha=0.35)

@@ -12,6 +12,7 @@ finite-level approximation.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/besicovitch_assembly_anim.py
 """
+
 import numpy as np
 from _shared import COLORS, SQRT3, equilateral, math_check, new_axes, poly, save_gif, triangle_fan_degrees
 from matplotlib.animation import FuncAnimation
@@ -21,13 +22,13 @@ from shapely.ops import unary_union
 
 H = SQRT3 / 2.0
 APEX = (0.5, H)
-N_TREE = 6              # 2^6 subtriangles per tree
+N_TREE = 6  # 2^6 subtriangles per tree
 S = 0.2
 TARGETS = (0.0, 120.0, 240.0)
 
 
 def _slivers(n: int):
-    N = 2 ** n
+    N = 2**n
     w = 1.0 / N
     return [[poly(np.array([[i * w, 0.0], [(i + 1) * w, 0.0], APEX]))] for i in range(N)]
 
@@ -35,14 +36,14 @@ def _slivers(n: int):
 def perron_tree(n: int, s: float = 0.2):
     """Symmetric cut-and-shift merge over n levels; returns (union, list of triangle polys)."""
     shapes = _slivers(n)
-    w = 1.0 / (2 ** n)
+    w = 1.0 / (2**n)
     for _ in range(n):
         step = 0.5 * (1.0 - s) * w
         shapes = [
             [shp_translate(p, xoff=+step) for p in shapes[i]] + [shp_translate(p, xoff=-step) for p in shapes[i + 1]]
             for i in range(0, len(shapes), 2)
         ]
-        w *= (1.0 + s)
+        w *= 1.0 + s
     tris = [p for shp in shapes for p in shp]
     return unary_union(tris), tris
 
@@ -74,7 +75,6 @@ def main():
     trees_final = [shp_rotate(tree, a, origin=APEX) for a in TARGETS]
     besic = unary_union(trees_final)
 
-    # view centred on the apex (rotation pivot); half-width r_max holds a tree at any angle, no clip
     _apex = np.array(APEX)
     _verts = np.vstack([np.array(t.exterior.coords)[:3] for t in tris])
     r_max = float(np.max(np.linalg.norm(_verts - _apex, axis=1)))
@@ -82,19 +82,17 @@ def main():
     xl = (APEX[0] - r_max - _pad, APEX[0] + r_max + _pad)
     yl = (APEX[1] - r_max - _pad, APEX[1] + r_max + _pad)
 
-    # Frame plan: (angles, n_landed) -- n_landed = copies that have reached their target
     HOLD = 5
     SWEEP = 26
     frames = []
     frames += [((0.0, 0.0, 0.0), 1)] * HOLD
     for j in range(1, SWEEP + 1):
-        frames.append(((0.0, 120.0 * j / SWEEP, 0.0), 1))       # 2nd copy rotating in
+        frames.append(((0.0, 120.0 * j / SWEEP, 0.0), 1))
     frames += [((0.0, 120.0, 0.0), 2)] * (HOLD + 2)
     for j in range(1, SWEEP + 1):
-        frames.append(((0.0, 120.0, 240.0 * j / SWEEP), 2))     # 3rd copy rotating in
+        frames.append(((0.0, 120.0, 240.0 * j / SWEEP), 2))
     frames += [((0.0, 120.0, 240.0), 3)] * (HOLD + 4)
 
-    # Invariant: final coverage is exactly 0..180
     final_cover = covered_bins(tris, TARGETS)
     full = bool(final_cover.all())
     idx = np.where(final_cover)[0]
@@ -115,22 +113,31 @@ def main():
     )
     assert full and idx.min() == 0 and idx.max() + 1 == 180, "final coverage must be exactly 0..180 deg"
 
-    # Animation: one panel, the three coloured Perron trees rotating into place
     fig, ax = new_axes(1, figsize=(6.6, 6.9))
     tree_colors = [COLORS["region"], COLORS["needle"], COLORS["accent"]]
 
     def update(i):
         angles, nland = frames[i]
-        n_visible = 1 + sum(1 for a in angles[1:] if a > 0.0)  # copy 0 always; later copies once moving
-        ax.clear(); ax.set_aspect("equal"); ax.axis("off")
-        ax.set_xlim(*xl); ax.set_ylim(*yl)  # centred on the apex; holds every rotation, no clipping
+        n_visible = 1 + sum(1 for a in angles[1:] if a > 0.0)
+        ax.clear()
+        ax.set_aspect("equal")
+        ax.axis("off")
+        ax.set_xlim(*xl)
+        ax.set_ylim(*yl)
         for k in range(n_visible):
             _fill(ax, shp_rotate(tree, angles[k], origin=APEX), tree_colors[k], 0.62)
         ax.plot(*APEX, marker="o", color=COLORS["guide"], ms=4)
         ax.set_title("Besicovitch set: three Perron trees rotated into place", fontsize=12)
         rotating = "   (rotating the next copy into place)" if n_visible > nland else ""
-        ax.text(0.5, 0.03, f"trees in place: {nland}/3      directions covered: {60 * nland} of 180 deg{rotating}",
-                transform=ax.transAxes, ha="center", fontsize=11, color=COLORS["guide"])
+        ax.text(
+            0.5,
+            0.03,
+            f"trees in place: {nland}/3      directions covered: {60 * nland} of 180 deg{rotating}",
+            transform=ax.transAxes,
+            ha="center",
+            fontsize=11,
+            color=COLORS["guide"],
+        )
         return []
 
     anim = FuncAnimation(fig, update, frames=len(frames), interval=70, blit=False)

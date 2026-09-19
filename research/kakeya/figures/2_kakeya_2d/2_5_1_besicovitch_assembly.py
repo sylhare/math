@@ -14,20 +14,20 @@ renders the minimum-visible finite-level approximation.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/besicovitch_assembly.py
 """
+
 import numpy as np
 from _shared import COLORS, SQRT3, equilateral, math_check, new_axes, poly, save_preview, triangle_fan_degrees
 from shapely.affinity import rotate as shp_rotate
 from shapely.affinity import translate as shp_translate
 from shapely.ops import unary_union
 
-H = SQRT3 / 2.0          # height of the base-1 equilateral triangle
-APEX = (0.5, H)          # shared apex / rotation pivot
+H = SQRT3 / 2.0  # height of the base-1 equilateral triangle
+APEX = (0.5, H)  # shared apex / rotation pivot
 
 
-# Perron cut-and-shift, replicated locally (not imported)
 def _slivers(n: int):
     """2^n thin subtriangles of the base-1 equilateral triangle, all sharing the apex."""
-    N = 2 ** n
+    N = 2**n
     w = 1.0 / N
     return [[poly(np.array([[i * w, 0.0], [(i + 1) * w, 0.0], APEX]))] for i in range(N)]
 
@@ -39,14 +39,14 @@ def perron_tree(n: int, s: float = 0.2):
     which shrinks the footprint while preserving every segment's direction. Returns (union, tris).
     """
     shapes = _slivers(n)
-    w = 1.0 / (2 ** n)
+    w = 1.0 / (2**n)
     for _ in range(n):
         step = 0.5 * (1.0 - s) * w
         shapes = [
             [shp_translate(p, xoff=+step) for p in shapes[i]] + [shp_translate(p, xoff=-step) for p in shapes[i + 1]]
             for i in range(0, len(shapes), 2)
         ]
-        w *= (1.0 + s)
+        w *= 1.0 + s
     tris = [p for shp in shapes for p in shp]
     return unary_union(tris), tris
 
@@ -87,12 +87,10 @@ def main():
     base_area = poly(equilateral(1.0)).area
     rotations = (0.0, 120.0, 240.0)
 
-    # assemble: three rotated copies of the finished tree about the apex
     besic = unary_union([shp_rotate(tree, a, origin=APEX) for a in rotations])
     covered = _covered_directions(tris, rotations, APEX)
     lo, hi = triangle_fan_degrees(equilateral(1.0))
 
-    # tree area by level (this schedule plateaus)
     decay = {k: perron_tree(k, s)[0].area for k in (1, 3, 6, 9)}
 
     math_check(
@@ -109,7 +107,6 @@ def main():
         ],
     )
 
-    # Preview
     fig, ax = new_axes(2, figsize=(11, 5.6))
     _draw_region(ax[0], tree, COLORS["region"], 0.75)
     _draw_rays(ax[0], tris, (0.0,), APEX, COLORS["needle"])
@@ -117,7 +114,9 @@ def main():
 
     _draw_region(ax[1], besic, COLORS["region"], 0.8)
     _draw_rays(ax[1], tris, rotations, APEX, COLORS["needle"])
-    ax[1].set_title(f"three trees 0/120/240 deg: all {int(covered.sum())} deg  (area {besic.area:.3f} -> 0 in the limit)")
+    ax[1].set_title(
+        f"three trees 0/120/240 deg: all {int(covered.sum())} deg  (area {besic.area:.3f} -> 0 in the limit)"
+    )
     print("wrote", save_preview(fig))
 
 

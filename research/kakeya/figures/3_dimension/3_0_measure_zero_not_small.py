@@ -42,7 +42,6 @@ def main():
     ax[0].set_aspect("auto")
     ax[0].axis("on")
 
-    # Left: total cover length collapsing to zero (log-log), one line per set
     eps = np.logspace(-1, -6, 60)
     ax[0].loglog(eps, eps, color=COLORS["needle"], lw=2.2, label="rationals")
     ax[0].loglog(eps, eps, color=COLORS["accent"], lw=2.2, ls="--", label="Cantor")
@@ -52,7 +51,6 @@ def main():
     ax[0].set_title("All three: cover length -> 0 (measure zero)", fontsize=11)
     ax[0].legend(fontsize=9, loc="lower right")
 
-    # Right: what each set still contains
     ax[1].set_aspect("auto")
     ax[1].axis("on")
     rng = np.random.default_rng(3)

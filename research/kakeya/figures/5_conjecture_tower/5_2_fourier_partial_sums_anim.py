@@ -8,6 +8,7 @@ L2 error ||sq - S_N||_2 decreases monotonically in N; Gibbs overshoot persists a
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/fourier_partial_sums_anim.py
 """
+
 import math
 
 import numpy as np
@@ -37,14 +38,14 @@ def main():
     x = np.linspace(0.0, 1.0, 20001)
     f = square_wave(x)
 
-    odd_ns = list(range(1, 50, 2))  # 1, 3, 5, ..., 49
+    odd_ns = list(range(1, 50, 2))
     errors, overshoots, gibbs = [], [], []
     for n in odd_ns:
         s = partial_sum(x, n)
         errors.append(math.sqrt(max(np.trapezoid((f - s) ** 2, x), 0.0)))
-        peak = float(s.max()) - 1.0            # peak height above the step (step = 1)
+        peak = float(s.max()) - 1.0  # height above step (step = 1)
         overshoots.append(peak)
-        gibbs.append(peak / 2.0)               # as a fraction of the jump (jump = 2)
+        gibbs.append(peak / 2.0)  # fraction of jump (jump = 2)
     errors = np.array(errors)
     overshoots = np.array(overshoots)
     gibbs = np.array(gibbs)
@@ -59,8 +60,8 @@ def main():
             ("frames (odd harmonics N)", f"{odd_ns[0]}, {odd_ns[1]}, ..., {odd_ns[-1]}  ({len(odd_ns)} steps)"),
             ("L2 error  N=1  ->  N=49", f"{errors[0]:.4f}  ->  {errors[-1]:.4f}"),
             ("L2 error monotone decreasing?", "YES" if monotone else "NO"),
-            ("Gibbs overshoot (frac of jump)  N=1 -> N=49", f"{100*gibbs[0]:.1f}%  ->  {100*gibbs[-1]:.2f}%"),
-            ("Gibbs limit ~ 8.95% of the jump", f"{100*gibbs[-1]:.2f}%  (persists, does not -> 0)"),
+            ("Gibbs overshoot (frac of jump)  N=1 -> N=49", f"{100 * gibbs[0]:.1f}%  ->  {100 * gibbs[-1]:.2f}%"),
+            ("Gibbs limit ~ 8.95% of the jump", f"{100 * gibbs[-1]:.2f}%  (persists, does not -> 0)"),
         ],
     )
     assert monotone, "L2 error must decrease monotonically as N grows"
@@ -68,16 +69,16 @@ def main():
     assert 0.085 <= gibbs[-1] <= 0.095, "overshoot should sit near the 8.95% Gibbs constant"
 
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(1, 2, figsize=(12.5, 5.0))
 
-    # (a) reconstruction: target + live partial sum
     ax[0].plot(x, f, color=COLORS["guide"], lw=1.6, label="square wave")
     ax[0].axhline(1.0, color=COLORS["muted"], lw=0.7, ls=":")
     ax[0].axhline(-1.0, color=COLORS["muted"], lw=0.7, ls=":")
-    live, = ax[0].plot([], [], color=COLORS["needle"], lw=1.6)
+    (live,) = ax[0].plot([], [], color=COLORS["needle"], lw=1.6)
     ax[0].set_xlim(0, 1)
     ax[0].set_ylim(-1.4, 1.4)
     ax[0].set_xlabel("x")
@@ -94,9 +95,8 @@ def main():
         idx = odd_ns.index(n)
         s = partial_sum(x, n)
         live.set_data(x, s)
-        ax[0].set_title(f"N = {n}    L2 err = {errors[idx]:.3f}    Gibbs = {100*gibbs[idx]:.1f}% of jump")
+        ax[0].set_title(f"N = {n}    L2 err = {errors[idx]:.3f}    Gibbs = {100 * gibbs[idx]:.1f}% of jump")
 
-        # (b) spectrum filling in: bars up to N strong, the rest faint
         ax[1].cla()
         shown = odd_mask & (ks_all <= n)
         rest = odd_mask & (ks_all > n)

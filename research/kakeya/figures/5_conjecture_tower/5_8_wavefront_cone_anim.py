@@ -6,6 +6,7 @@ Point source of u(x, t) = e^{it sqrt(-Delta)} f spreads along the light cone |x|
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/wavefront_cone_anim.py
 """
+
 import math
 
 import numpy as np
@@ -30,13 +31,13 @@ def time_schedule() -> np.ndarray:
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3d projection)
 
     times = time_schedule()
 
-    # Validation across every frame: measured wavefront radius == t (unit speed)
     max_radius_err = 0.0
     for t in times:
         c = circle(r=max(t, 1e-9), n=200)
@@ -59,21 +60,25 @@ def main():
 
     fig = plt.figure(figsize=(11, 5.4))
 
-    # (a) 2D space: expanding wavefront, past slices faint
     ax = fig.add_subplot(1, 2, 1)
-    ax.set_aspect("equal"); ax.axis("off")
+    ax.set_aspect("equal")
+    ax.axis("off")
     lim = T_MAX * 1.15
-    ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim)
+    ax.set_xlim(-lim, lim)
+    ax.set_ylim(-lim, lim)
     ax.plot([0], [0], marker="*", ms=13, color=COLORS["accent"], zorder=5)
     ax.set_title("wavefront: radius = t")
     (live2d,) = ax.plot([], [], color=COLORS["outer"], lw=2.6, zorder=4)
     readout = ax.text(-lim * 0.95, lim * 0.86, "", fontsize=11, color=COLORS["outer"])
 
-    # (b) 3D space-time cone building up
     ax3 = fig.add_subplot(1, 2, 2, projection="3d")
-    ax3.set_xlabel("x_1"); ax3.set_ylabel("x_2"); ax3.set_zlabel("t")
+    ax3.set_xlabel("x_1")
+    ax3.set_ylabel("x_2")
+    ax3.set_zlabel("t")
     ax3.set_title("space-time light cone  |x| = t  (45 deg)")
-    ax3.set_xlim(-T_MAX, T_MAX); ax3.set_ylim(-T_MAX, T_MAX); ax3.set_zlim(0, T_MAX)
+    ax3.set_xlim(-T_MAX, T_MAX)
+    ax3.set_ylim(-T_MAX, T_MAX)
+    ax3.set_zlim(0, T_MAX)
     ax3.set_box_aspect((1, 1, 1))
     ax3.view_init(elev=18, azim=-60)
     ax3.scatter([0], [0], [0], color=COLORS["accent"], marker="*", s=90)
@@ -84,13 +89,11 @@ def main():
         t = times[i]
         c = circle(r=max(t, 1e-9), n=160)
         ring = np.vstack([c, c[:1]])
-        # 2D live wavefront + a faint trail of the family
         live2d.set_data(ring[:, 0], ring[:, 1])
         if t > 1e-6:
             (tr,) = ax.plot(ring[:, 0], ring[:, 1], color=COLORS["needle"], lw=0.7, alpha=0.16)
             trails2d.append(tr)
         readout.set_text(f"t = {t:.2f}    |x| = {t:.2f}")
-        # 3D: stack a ring at height t so the cone builds up
         if t > 1e-6:
             (r3,) = ax3.plot(ring[:, 0], ring[:, 1], zs=t, color=COLORS["outer"], lw=1.4, alpha=0.6)
             rings3d.append(r3)

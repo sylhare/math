@@ -7,6 +7,7 @@ Similarity dimension dim = log N / log r is constant in k (a property of the rul
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/fractal_iterate_anim.py
 """
+
 import math
 from itertools import pairwise
 
@@ -63,11 +64,11 @@ def main():
         parts = []
         if k <= SIERP_DEPTH:
             n_s = len(sierp[k])
-            ok = ok and n_s == 3 ** k
+            ok = ok and n_s == 3**k
             parts.append(f"Sierpinski {n_s:<4d}(=3^{k} {3**k})")
         if k <= KOCH_DEPTH:
             n_k = len(koch[k]) - 1
-            ok = ok and n_k == 4 ** k
+            ok = ok and n_k == 4**k
             parts.append(f"Koch {n_k:<5d}(=4^{k} {4**k})")
         rows.append((f"depth {k}", "   ".join(parts)))
     assert ok, "piece counts must equal 3^k (Sierpinski) and 4^k (Koch) at every depth"
@@ -83,6 +84,7 @@ def main():
 
     # Figure
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
@@ -91,7 +93,6 @@ def main():
         a.set_aspect("equal")
         a.axis("off")
 
-    # stage sequence: depth 0..max, holding each
     n_stages = max(SIERP_DEPTH, KOCH_DEPTH) + 1
     frame_stage = []
     for k in range(n_stages):
@@ -103,19 +104,23 @@ def main():
         ks = min(k, SIERP_DEPTH)
         kk = min(k, KOCH_DEPTH)
 
-        ax[0].cla(); ax[0].axis("off"); ax[0].set_aspect("equal")
+        ax[0].cla()
+        ax[0].axis("off")
+        ax[0].set_aspect("equal")
         for tri in sierp[ks]:
             ax[0].fill(tri[:, 0], tri[:, 1], color=COLORS["needle"], lw=0)
-        ax[0].set_xlim(-0.05, 1.05); ax[0].set_ylim(-0.05, SQRT3 / 2.0 + 0.05)
-        ax[0].set_title(f"Sierpinski, depth {ks}\n"
-                        f"{3 ** ks} triangles = 3^{ks}   dim = log3/log2 = {dim_sierp:.4f}")
+        ax[0].set_xlim(-0.05, 1.05)
+        ax[0].set_ylim(-0.05, SQRT3 / 2.0 + 0.05)
+        ax[0].set_title(f"Sierpinski, depth {ks}\n{3**ks} triangles = 3^{ks}   dim = log3/log2 = {dim_sierp:.4f}")
 
-        ax[1].cla(); ax[1].axis("off"); ax[1].set_aspect("equal")
+        ax[1].cla()
+        ax[1].axis("off")
+        ax[1].set_aspect("equal")
         c = koch[kk]
         ax[1].plot(c[:, 0], c[:, 1], color=COLORS["needle"], lw=1.1)
-        ax[1].set_xlim(-0.05, 1.05); ax[1].set_ylim(-0.1, 0.5)
-        ax[1].set_title(f"Koch curve, depth {kk}\n"
-                        f"{4 ** kk} segments = 4^{kk}   dim = log4/log3 = {dim_koch:.4f}")
+        ax[1].set_xlim(-0.05, 1.05)
+        ax[1].set_ylim(-0.1, 0.5)
+        ax[1].set_title(f"Koch curve, depth {kk}\n{4**kk} segments = 4^{kk}   dim = log4/log3 = {dim_koch:.4f}")
         return []
 
     anim = FuncAnimation(fig, update, frames=len(frame_stage), interval=180, blit=False)

@@ -11,6 +11,7 @@ Fattening form: |N_delta K| >= c_eps * delta^eps for every eps > 0.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/dimension_boxcount.py
 """
+
 import math
 
 import numpy as np
@@ -61,11 +62,15 @@ def _dim(n_boxes, delta):
 
 def _draw_grid_and_boxes(ax, delta, hits, geometry_draw, title):
     n = round(1.0 / delta)
-    for (i, j) in hits:  # shade the covering boxes
-        ax.fill([i * delta, (i + 1) * delta, (i + 1) * delta, i * delta],
-                [j * delta, j * delta, (j + 1) * delta, (j + 1) * delta],
-                color=COLORS["region"], alpha=0.7, zorder=1)
-    for k in range(n + 1):  # grid lines
+    for i, j in hits:
+        ax.fill(
+            [i * delta, (i + 1) * delta, (i + 1) * delta, i * delta],
+            [j * delta, j * delta, (j + 1) * delta, (j + 1) * delta],
+            color=COLORS["region"],
+            alpha=0.7,
+            zorder=1,
+        )
+    for k in range(n + 1):
         ax.plot([0, 1], [k * delta, k * delta], color=COLORS["muted"], lw=0.5, zorder=2)
         ax.plot([k * delta, k * delta], [0, 1], color=COLORS["muted"], lw=0.5, zorder=2)
     geometry_draw(ax)
@@ -76,14 +81,12 @@ def _draw_grid_and_boxes(ax, delta, hits, geometry_draw, title):
 
 def main():
     delta = 0.1
-    # horizontal unit segment, strictly inside one grid row
-    seg_p0, seg_p1 = np.array([0.0, 0.55]), np.array([1.0, 0.55])
+    seg_p0, seg_p1 = np.array([0.0, 0.55]), np.array([1.0, 0.55])  # strictly inside one grid row
 
     n_seg, hits_seg = boxcount_segment(seg_p0, seg_p1, delta)
     n_sq, hits_sq = boxcount_square(delta)
     d_seg, d_sq = _dim(n_seg, delta), _dim(n_sq, delta)
 
-    # scaling check at delta = 1/5
     n_seg2, _ = boxcount_segment(seg_p0, seg_p1, 0.2)
     n_sq2, _ = boxcount_square(0.2)
 
@@ -107,17 +110,13 @@ def main():
         a.set_yticks([])
 
     def _seg(a):
-        a.plot([seg_p0[0], seg_p1[0]], [seg_p0[1], seg_p1[1]],
-               color=COLORS["needle"], lw=3.0, zorder=3)
+        a.plot([seg_p0[0], seg_p1[0]], [seg_p0[1], seg_p1[1]], color=COLORS["needle"], lw=3.0, zorder=3)
 
     def _square(a):
-        a.fill([0, 1, 1, 0], [0, 0, 1, 1], facecolor="none",
-               edgecolor=COLORS["needle"], lw=2.5, hatch="//", zorder=3)
+        a.fill([0, 1, 1, 0], [0, 0, 1, 1], facecolor="none", edgecolor=COLORS["needle"], lw=2.5, hatch="//", zorder=3)
 
-    _draw_grid_and_boxes(ax[0], delta, hits_seg, _seg,
-                         f"unit segment   N = {n_seg},  d = {d_seg:.0f}")
-    _draw_grid_and_boxes(ax[1], delta, hits_sq, _square,
-                         f"unit square   N = {n_sq},  d = {d_sq:.0f}")
+    _draw_grid_and_boxes(ax[0], delta, hits_seg, _seg, f"unit segment   N = {n_seg},  d = {d_seg:.0f}")
+    _draw_grid_and_boxes(ax[1], delta, hits_sq, _square, f"unit square   N = {n_sq},  d = {d_sq:.0f}")
     print("wrote", save_preview(fig))
 
 

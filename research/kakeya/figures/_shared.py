@@ -2,6 +2,7 @@
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/<name>.py
 """
+
 from __future__ import annotations
 
 import inspect
@@ -12,11 +13,11 @@ import numpy as np
 
 # Palette
 COLORS = {
-    "needle": "#1f77b4",   # unit segments / the family
-    "region": "#9ecae1",   # swept area, faint
-    "accent": "#d62728",   # inner/thin tubes, grains
-    "outer": "#3457d5",    # thick/outer tubes
-    "guide": "#555555",    # arrows, axes, wireframe
+    "needle": "#1f77b4",  # unit segments
+    "region": "#9ecae1",  # swept area
+    "accent": "#d62728",  # inner tubes
+    "outer": "#3457d5",  # thick tubes
+    "guide": "#555555",  # arrows, axes
     "muted": "#999999",
 }
 SQRT3 = math.sqrt(3.0)
@@ -38,8 +39,7 @@ def unit_needle(cx: float, cy: float, angle_rad: float, length: float = 1.0) -> 
 def deltoid(b: float = 0.25, n: int = 400) -> np.ndarray:
     """Three-cusped hypocycloid, rolling radius b: chord 4b, area 2*pi*b^2 (b=1/4 -> chord 1, area pi/8)."""
     t = np.linspace(0, 2 * math.pi, n, endpoint=False)
-    return np.column_stack([2 * b * np.cos(t) + b * np.cos(2 * t),
-                            2 * b * np.sin(t) - b * np.sin(2 * t)])
+    return np.column_stack([2 * b * np.cos(t) + b * np.cos(2 * t), 2 * b * np.sin(t) - b * np.sin(2 * t)])
 
 
 def circle(r: float = 0.5, n: int = 400, cx: float = 0.0, cy: float = 0.0) -> np.ndarray:
@@ -72,6 +72,7 @@ def union_area(polys) -> float:
 # Preview + reporting
 def new_axes(ncols: int = 1, figsize=None):
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 

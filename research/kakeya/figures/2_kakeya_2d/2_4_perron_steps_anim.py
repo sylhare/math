@@ -25,9 +25,9 @@ H = SQRT3 / 2.0  # height of the base-1 equilateral triangle
 APEX = np.array([0.0, H])
 NLEV = 6  # 2^NLEV sub-triangles
 ALPHA_MAX = 0.6  # final overlap fraction
-FAN = 60.0  # apex angle in degrees
+FAN = 60.0  # apex angle, deg
 
-DIRR = np.array([0.5, 0.0]) - APEX  # apex -> right base corner (unit, length = side = 1)
+DIRR = np.array([0.5, 0.0]) - APEX  # apex -> right base corner, length 1
 DIRL = np.array([-0.5, 0.0]) - APEX  # apex -> left base corner
 
 
@@ -80,11 +80,13 @@ def main():
     xs_div = np.linspace(-0.5, 0.5, 2**NLEV + 1)
 
     SWEEP, SUBH, END = 22, 8, 10
-    # frames: ("sweep", f) needle sweeps the fan; ("sub", 1) show subdivision; ("sprout", i) alpha index
-    frames = ([("sweep", (i + 1) / SWEEP) for i in range(SWEEP)]
-              + [("sub", 1.0)] * SUBH
-              + [("sprout", i) for i in range(len(alphas))]
-              + [("sprout", len(alphas) - 1)] * END)
+    # frames: sweep the fan, show subdivision, then sprout over alpha indices
+    frames = (
+        [("sweep", (i + 1) / SWEEP) for i in range(SWEEP)]
+        + [("sub", 1.0)] * SUBH
+        + [("sprout", i) for i in range(len(alphas))]
+        + [("sprout", len(alphas) - 1)] * END
+    )
 
     fig, ax = plt.subplots(figsize=(6.2, 6.4))
 
@@ -92,8 +94,12 @@ def main():
         """small arc gauge, bottom-left, filling 0..60 deg."""
         cx, cy, r = -0.62, 0.15, 0.16
         a = np.linspace(0, math.radians(deg), 30)
-        ax.plot(cx + r * np.cos(np.linspace(0, math.radians(FAN), 30)),
-                cy + r * np.sin(np.linspace(0, math.radians(FAN), 30)), color=COLORS["muted"], lw=1.0)
+        ax.plot(
+            cx + r * np.cos(np.linspace(0, math.radians(FAN), 30)),
+            cy + r * np.sin(np.linspace(0, math.radians(FAN), 30)),
+            color=COLORS["muted"],
+            lw=1.0,
+        )
         if deg > 0:
             ax.plot(cx + r * np.cos(a), cy + r * np.sin(a), color=COLORS["accent"], lw=3.0)
         ax.text(cx, cy - 0.12, f"fan {deg:.0f} deg", fontsize=8, ha="center", color=COLORS["guide"])
@@ -109,10 +115,9 @@ def main():
         if kind == "sweep":
             ax.fill(tri[:, 0], tri[:, 1], facecolor=COLORS["region"], edgecolor=COLORS["outer"], lw=1.3, alpha=0.6)
             frac = val
-            for g in np.linspace(0.0, frac, 6):  # faint fan of swept needles
+            for g in np.linspace(0.0, frac, 6):
                 d = DIRR + (DIRL - DIRR) * g
-                ax.plot([APEX[0], APEX[0] + d[0]], [APEX[1], APEX[1] + d[1]],
-                        color=COLORS["needle"], lw=0.7, alpha=0.3)
+                ax.plot([APEX[0], APEX[0] + d[0]], [APEX[1], APEX[1] + d[1]], color=COLORS["needle"], lw=0.7, alpha=0.3)
             d = DIRR + (DIRL - DIRR) * frac
             ax.plot([APEX[0], APEX[0] + d[0]], [APEX[1], APEX[1] + d[1]], color=COLORS["needle"], lw=3.0, zorder=4)
             cover_gauge(ax, FAN * frac)
@@ -123,18 +128,21 @@ def main():
             for x in xs_div[::2]:
                 ax.plot([x, APEX[0]], [0.0, APEX[1]], color=COLORS["guide"], lw=0.4, alpha=0.7)
             cover_gauge(ax, FAN)
-            ax.set_title(f"2. subdivide the base into 2^{NLEV} = {2**NLEV}\nthin sub-triangles (shared apex)",
-                         fontsize=11)
+            ax.set_title(
+                f"2. subdivide the base into 2^{NLEV} = {2**NLEV}\nthin sub-triangles (shared apex)", fontsize=11
+            )
 
-        else:  # sprout
+        else:
             i = val
             geom = sprout(alphas[i])
             polys = geom.geoms if geom.geom_type == "MultiPolygon" else [geom]
             for g in polys:
                 ax.fill(*g.exterior.xy, facecolor=COLORS["region"], edgecolor=COLORS["outer"], lw=0.8, alpha=0.7)
             cover_gauge(ax, FAN)
-            ax.set_title(f"3. sprout: slide to overlap\narea {area_frac[i] * 100:.0f}% of the triangle, fan still 60 deg",
-                         fontsize=11)
+            ax.set_title(
+                f"3. sprout: slide to overlap\narea {area_frac[i] * 100:.0f}% of the triangle, fan still 60 deg",
+                fontsize=11,
+            )
         return []
 
     anim = FuncAnimation(fig, update, frames=len(frames), interval=120, blit=False)

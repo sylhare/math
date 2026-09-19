@@ -27,7 +27,7 @@ from shapely.ops import unary_union
 SIDE = 1.0
 R = SIDE / math.sqrt(3.0)
 CORNERS_DEG = (90.0, 210.0, 330.0)
-DEPTHS = list(range(1, 9))  # subdivision depth n = 1..8 (N = 2^n pieces)
+DEPTHS = list(range(1, 9))  # depth n = 1..8 (N = 2^n)
 HOLD = 6
 END_HOLD = 8
 
@@ -59,21 +59,21 @@ def sprout(n):
 
 
 def main():
-    A0 = Polygon([tuple(v) for v in VERTS]).area  # original triangle area (the pinned content)
+    A0 = Polygon([tuple(v) for v in VERTS]).area  # original triangle area (pinned content)
 
     stages = []
     for n in DEPTHS:
         pieces = sprout(n)
         union = unary_union(pieces)
-        s_sum = float(sum(p.area for p in pieces))  # sum of piece areas (content)
-        u_area = float(union.area)  # union area (footprint)
+        s_sum = float(sum(p.area for p in pieces))
+        u_area = float(union.area)
         stages.append(
             dict(
                 n=n,
                 pieces=pieces,
                 union=union,
-                content=s_sum / A0,  # normalised so content == 1 ("areas sum to 1")
-                footprint=u_area / A0,  # union as a fraction of A_0
+                content=s_sum / A0,  # normalised so content == 1
+                footprint=u_area / A0,
                 compression=s_sum / u_area,  # S_n / U_n
             )
         )
@@ -82,7 +82,6 @@ def main():
     footprints = [s["footprint"] for s in stages]
     comps = [s["compression"] for s in stages]
 
-    # Assertions: content is pinned, footprint falls, compression climbs
     assert max(abs(c - 1.0) for c in contents) < 1e-9, f"sum of piece areas must equal A_0 (content=1): {contents}"
     fdiffs = np.diff(footprints)
     assert (fdiffs < 0).all(), f"footprint (union/A_0) must strictly decrease: {footprints}"
@@ -104,7 +103,6 @@ def main():
         ],
     )
 
-    # Figure
     import matplotlib
 
     matplotlib.use("Agg")
@@ -116,7 +114,6 @@ def main():
     axL, axR = ax
     axL.set_aspect("equal")
 
-    # fixed drawing window over all depths
     allb = np.array([s["union"].bounds for s in stages])
     x0, y0, x1, y1 = allb[:, 0].min(), allb[:, 1].min(), allb[:, 2].max(), allb[:, 3].max()
     padx, pady = 0.06 * (x1 - x0), 0.06 * (y1 - y0)
@@ -128,7 +125,7 @@ def main():
         s = stages[frame_stage[fi]]
         upto = frame_stage[fi] + 1
 
-        # LEFT: the pile; translucent pieces so overlaps stack darker (multiplicity = compression)
+        # left: the pile (overlaps stack darker)
         axL.cla()
         axL.set_aspect("equal")
         axL.set_xlim(x0 - padx, x1 + padx)
@@ -183,7 +180,7 @@ def main():
         )
         axL.set_title(f"Perron pile, depth n = {s['n']}  ({2 ** s['n']} translated pieces)", fontsize=10)
 
-        # RIGHT: content (flat 1) vs footprint (falling); the shaded gap is the compression
+        # right: content vs footprint
         axR.cla()
         axR.set_xlim(ns[0] - 0.4, ns[-1] + 0.4)
         axR.set_ylim(0, 1.12)

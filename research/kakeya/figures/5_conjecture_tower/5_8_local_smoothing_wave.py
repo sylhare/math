@@ -10,6 +10,7 @@ smoothing conjecture recovers it by averaging in t:
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/local_smoothing_wave.py
 """
+
 import math
 
 import numpy as np
@@ -24,24 +25,23 @@ def s_p(n: int, p: float) -> float:
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3d projection)
 
-    times = [0.5, 1.0, 1.5]  # t1 < t2 < t3
+    times = [0.5, 1.0, 1.5]
 
-    # Validation: each wavefront is the circle of radius exactly t
     radius_ok = True
     for t in times:
-        c = circle(r=t, n=200)  # helper draws radius-r circle centred at origin
+        c = circle(r=t, n=200)
         r_meas = float(np.mean(np.hypot(c[:, 0], c[:, 1])))
         radius_ok = radius_ok and abs(r_meas - t) < 1e-9
-    # cone half-angle: |x| = t means radius grows as slope dr/dt = 1 -> angle to t-axis is atan(1)
+    # |x|=t: dr/dt=1, angle to t-axis = atan(1)
     half_angle = math.degrees(math.atan2(1.0, 1.0))
 
     fig = plt.figure(figsize=(12, 5.6))
 
-    # (a) 2D space: expanding wavefronts
     ax = fig.add_subplot(1, 2, 1)
     ax.set_aspect("equal")
     ax.axis("off")
@@ -51,25 +51,21 @@ def main():
         ring = np.vstack([c, c[:1]])
         ax.plot(ring[:, 0], ring[:, 1], color=col, lw=2.2, label=f"t = {t:g},  |x| = {t:g}")
     ax.plot([0], [0], marker="*", ms=13, color=COLORS["accent"], zorder=5)
-    ax.annotate("point source", (0, 0), textcoords="offset points", xytext=(6, 6),
-                fontsize=9, color=COLORS["accent"])
+    ax.annotate("point source", (0, 0), textcoords="offset points", xytext=(6, 6), fontsize=9, color=COLORS["accent"])
     lim = max(times) * 1.15
     ax.set_xlim(-lim, lim)
     ax.set_ylim(-lim, lim)
     ax.set_title("wavefronts: radius = t")
     ax.legend(loc="lower center", fontsize=8, frameon=False, ncol=1)
 
-    # (b) 3D space-time cone |x| = t
     ax3 = fig.add_subplot(1, 2, 2, projection="3d")
     T = 1.6
     tt = np.linspace(0.0, T, 40)
     th = np.linspace(0.0, 2 * math.pi, 80)
     TT, TH = np.meshgrid(tt, th)
-    X = TT * np.cos(TH)   # radius = t
+    X = TT * np.cos(TH)  # radius = t
     Y = TT * np.sin(TH)
-    ax3.plot_surface(X, Y, TT, color=COLORS["outer"], alpha=0.35,
-                     linewidth=0, antialiased=True, shade=True)
-    # stack the three fixed-time slices as rings up the cone (the t we average over)
+    ax3.plot_surface(X, Y, TT, color=COLORS["outer"], alpha=0.35, linewidth=0, antialiased=True, shade=True)
     for t, col in zip(times, shades, strict=False):
         c = circle(r=t, n=120)
         ring = np.vstack([c, c[:1]])

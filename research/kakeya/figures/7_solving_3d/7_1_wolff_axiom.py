@@ -9,11 +9,11 @@ Two slab prisms R at the same delta: satisfying (count <= delta^-2 |R|) and forb
 slab with count > delta^-2 |R|).
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/wolff_axiom.py
 """
+
 import numpy as np
 from _shared import COLORS, math_check, save_preview
 
 
-# Geometry (pure numpy, portable)
 def prism_volume(dims) -> float:
     """Volume |R| of an axis-aligned rectangular prism of side lengths (Lx, Ly, Lz)."""
     lx, ly, lz = dims
@@ -22,7 +22,7 @@ def prism_volume(dims) -> float:
 
 def wolff_bound(delta: float, dims) -> float:
     """The Wolff cap on tube count inside R:  delta^-2 |R|."""
-    return delta ** -2 * prism_volume(dims)
+    return delta**-2 * prism_volume(dims)
 
 
 def slab_tubes(dims, delta, n, rng):
@@ -66,27 +66,28 @@ def prism_edges(dims):
     edges = []
     for i in range(8):
         for j in range(i + 1, 8):
-            if np.sum(np.abs(c[i] - c[j]) > 1e-9) == 1:  # differ in exactly one coordinate
+            if np.sum(np.abs(c[i] - c[j]) > 1e-9) == 1:  # differ in one coordinate
                 edges.append((c[i], c[j]))
     return edges
 
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     delta = 0.1
     n_wolff = (3 + 2) / 2  # (n+2)/2 in R^3
 
-    # Satisfying slab: count <= delta^-2 |R|
+    # satisfying: count <= delta^-2 |R|
     dims_ok = (1.2, 1.2, 0.30)
-    bound_ok = wolff_bound(delta, dims_ok)     # 100 * 0.432 = 43.2
+    bound_ok = wolff_bound(delta, dims_ok)  # 100 * 0.432 = 43.2
     n_ok = 18
 
-    # Forbidden slab: count > delta^-2 |R|
+    # forbidden: count > delta^-2 |R|
     dims_bad = (1.2, 1.2, 0.12)
-    bound_bad = wolff_bound(delta, dims_bad)   # 100 * 0.1728 = 17.28
+    bound_bad = wolff_bound(delta, dims_bad)  # 100 * 0.1728 = 17.28
     n_bad = 26
 
     math_check(
@@ -101,7 +102,6 @@ def main():
         ],
     )
 
-    # Preview
     radius = delta / 2.0
     fig = plt.figure(figsize=(12.5, 6.2))
 
@@ -120,9 +120,13 @@ def main():
             X, Y, Z = tube_surface(c, d, 1.0, radius)
             ax.plot_surface(X, Y, Z, color=COLORS["accent"], alpha=0.55, linewidth=0)
         ax.set_box_aspect((1.2, 1.2, 0.7))
-        ax.set_xlim(-0.75, 0.75); ax.set_ylim(-0.75, 0.75); ax.set_zlim(-0.4, 0.4)
+        ax.set_xlim(-0.75, 0.75)
+        ax.set_ylim(-0.75, 0.75)
+        ax.set_zlim(-0.4, 0.4)
         ax.view_init(elev=22, azim=-60)
-        ax.set_xticklabels([]); ax.set_yticklabels([]); ax.set_zticklabels([])
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+        ax.set_zticklabels([])
 
     print("wrote", save_preview(fig))
 

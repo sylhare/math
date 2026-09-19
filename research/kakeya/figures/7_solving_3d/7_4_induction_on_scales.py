@@ -11,12 +11,13 @@ alpha > 0, repeat until d reaches 3. The per-step multiplicity inequality decide
 Schematic: alpha, start 2.5 and cap 3 are exact; the lossy leak is illustrative.
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/induction_on_scales.py
 """
+
 import numpy as np
 from _shared import COLORS, math_check, save_preview
 
-D_START = 2.5    # Wolff's 1995 lower bound in R^3 = (n+2)/2
-D_TARGET = 3.0   # full dimension (Wang-Zahl)
-ALPHA = 0.1      # fixed per-step gain of the graininess induction
+D_START = 2.5  # Wolff 1995 bound (n+2)/2
+D_TARGET = 3.0  # full dimension (Wang-Zahl)
+ALPHA = 0.1  # per-step gain
 
 
 def ratchet(d_start: float, d_target: float, alpha: float):
@@ -32,13 +33,14 @@ def lossy(d_start: float, alpha: float, leak: float, n_steps: int):
     per step shrinks and the estimate converges to a ceiling < 3."""
     ds = [d_start]
     for _ in range(n_steps):
-        gain = alpha - leak * (ds[-1] - d_start)   # leak grows as we climb -> stalls
+        gain = alpha - leak * (ds[-1] - d_start)  # leak grows as we climb -> stalls
         ds.append(ds[-1] + max(0.0, gain))
     return np.array(ds)
 
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
@@ -53,7 +55,10 @@ def main():
             ("fixed per-step gain", f"alpha = {ALPHA}  ->  K(d) => K(d + alpha)"),
             ("steps to close the gap", f"{n_steps}  = (3 - 2.5) / alpha"),
             ("graininess ratchet reaches", f"{good[-1]:.3f}  (terminates at exactly 3)"),
-            ("per-step increments", "  ".join(f"{good[i + 1] - good[i]:.2f}" for i in range(n_steps)) + "  (each = alpha)"),
+            (
+                "per-step increments",
+                "  ".join(f"{good[i + 1] - good[i]:.2f}" for i in range(n_steps)) + "  (each = alpha)",
+            ),
             ("lossy 'Chinese whispers' stalls", f"{bad[-1]:.3f}  (< 3: compounding leak never closes the gap)"),
             ("lossy inequality", "mu <~ mu_fat * mu_fine        (fat tube over-counted -> wasteful)"),
             ("graininess inequality", "mu <~ mu_coarse * mu_fine     mu_coarse = mult of U_{T c T_rho} T"),
@@ -67,15 +72,17 @@ def main():
     ax.axhline(D_TARGET, color=COLORS["accent"], ls="--", lw=1.2, alpha=0.7)
     ax.text(0.05, D_TARGET + 0.008, "dimension 3 (Wang-Zahl: full)", color=COLORS["accent"], fontsize=10)
 
-    # graininess ratchet: staircase up to 3 (red = grains)
     ax.step(steps, good, where="post", color=COLORS["accent"], lw=2.2, label="graininess: mu ~ mu_coarse * mu_fine")
     ax.plot(steps, good, "o", color=COLORS["accent"], ms=5)
     for i in range(n_steps):
-        ax.annotate("", xy=(steps[i], good[i + 1]), xytext=(steps[i], good[i]),
-                    arrowprops=dict(arrowstyle="->", color=COLORS["accent"], lw=1.1))
+        ax.annotate(
+            "",
+            xy=(steps[i], good[i + 1]),
+            xytext=(steps[i], good[i]),
+            arrowprops=dict(arrowstyle="->", color=COLORS["accent"], lw=1.1),
+        )
     ax.text(n_steps - 0.5, good[-1] - 0.045, "+alpha each step", color=COLORS["accent"], fontsize=9, ha="right")
 
-    # lossy induction: stalls below 3 (blue = fat tube)
     ax.step(steps, bad, where="post", color=COLORS["outer"], lw=2.0, label="lossy: mu ~ mu_fat * mu_fine")
     ax.plot(steps, bad, "s", color=COLORS["outer"], ms=4)
     ax.text(n_steps, bad[-1] - 0.05, f"stalls at {bad[-1]:.2f}", color=COLORS["outer"], fontsize=9, ha="right")

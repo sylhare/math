@@ -19,9 +19,9 @@ import math
 import numpy as np
 from _shared import COLORS, circle, deltoid, math_check, save_gif
 
-R_ROLL = 0.25  # rolling radius r (= b); fixed circle radius = 3r
+R_ROLL = 0.25  # rolling radius r; fixed = 3r
 R_FIX = 3.0 * R_ROLL
-N = 96  # frames over one full revolution
+N = 96
 END_HOLD = 10
 
 
@@ -31,15 +31,15 @@ def rolling_center(t):
 
 def traced_point(t):
     """Marked point on the rolling rim = the deltoid point at parameter t."""
-    return np.array([2 * R_ROLL * math.cos(t) + R_ROLL * math.cos(2 * t),
-                     2 * R_ROLL * math.sin(t) - R_ROLL * math.sin(2 * t)])
+    return np.array(
+        [2 * R_ROLL * math.cos(t) + R_ROLL * math.cos(2 * t), 2 * R_ROLL * math.sin(t) - R_ROLL * math.sin(2 * t)]
+    )
 
 
 def main():
     ts = np.linspace(0.0, 2 * math.pi, N, endpoint=True)
-    curve = deltoid(R_ROLL, n=400)  # reference deltoid from _shared
+    curve = deltoid(R_ROLL, n=400)
 
-    # Assertions: the traced point lies on the rolling rim; chord 4r = 1; area 2 pi r^2 = pi/8
     rim_err = max(abs(np.linalg.norm(traced_point(t) - rolling_center(t)) - R_ROLL) for t in ts)
     assert rim_err < 1e-9, f"traced point must lie on the rolling rim (err {rim_err:.2e})"
     chord = 4 * R_ROLL
@@ -55,7 +55,6 @@ def main():
         ],
     )
 
-    # Figure
     import matplotlib
 
     matplotlib.use("Agg")
@@ -83,10 +82,14 @@ def main():
         ax.set_xlim(-lim, lim)
         ax.set_ylim(-lim, lim)
         ax.plot(fixed[:, 0], fixed[:, 1], color=COLORS["guide"], lw=1.5)
-        ax.plot(curve[: max(2, int(400 * (k + 1) / N)), 0],
-                curve[: max(2, int(400 * (k + 1) / N)), 1], color=COLORS["accent"], lw=2.0)  # deltoid so far
+        ax.plot(
+            curve[: max(2, int(400 * (k + 1) / N)), 0],
+            curve[: max(2, int(400 * (k + 1) / N)), 1],
+            color=COLORS["accent"],
+            lw=2.0,
+        )
         ax.fill(roll[:, 0], roll[:, 1], facecolor=COLORS["region"], edgecolor=COLORS["outer"], lw=1.2, alpha=0.7)
-        ax.plot([c[0], p[0]], [c[1], p[1]], color=COLORS["outer"], lw=1.0)  # spoke to the marked point
+        ax.plot([c[0], p[0]], [c[1], p[1]], color=COLORS["outer"], lw=1.0)
         ax.plot(*p, "o", color=COLORS["accent"], ms=8, zorder=5)
         ax.plot(*c, "o", color=COLORS["guide"], ms=3, zorder=5)
         ax.set_title("a circle rolling inside a 3x circle draws the deltoid", fontsize=11)

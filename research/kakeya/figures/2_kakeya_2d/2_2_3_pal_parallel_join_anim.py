@@ -19,16 +19,16 @@ import numpy as np
 from _shared import COLORS, math_check, poly, save_gif
 
 L = 1.0  # needle length
-D_SEP = 0.5  # distance between the two parallel lines
-ALPHA = 0.30  # turn angle far out (rad)
-DETOUR = 1.1  # how far right the needle slides before turning
+D_SEP = 0.5  # gap between the parallel lines
+ALPHA = 0.30  # turn angle far out, rad
+DETOUR = 1.1  # slide distance before turning
 
-U = np.array([-math.cos(ALPHA), math.sin(ALPHA)])  # diagonal direction after the first turn
-E = np.array([DETOUR + 1.0, 0.0])  # first pivot (far-right end on the bottom line)
-LAM = D_SEP / math.sin(ALPHA)  # slide up the diagonal until the pivot end reaches y = d
-PIVOT2 = E + LAM * U  # second pivot, on the top line y = d
-TARGET = np.array([PIVOT2[0] - 0.15, D_SEP])  # final needle right-end on the top line
-START = (np.array([0.0, 0.0]), np.array([1.0, 0.0]))  # bottom needle, pointing right
+U = np.array([-math.cos(ALPHA), math.sin(ALPHA)])  # diagonal direction after first turn
+E = np.array([DETOUR + 1.0, 0.0])  # first pivot
+LAM = D_SEP / math.sin(ALPHA)  # slide up diagonal until pivot end reaches y = d
+PIVOT2 = E + LAM * U  # second pivot, on line y = d
+TARGET = np.array([PIVOT2[0] - 0.15, D_SEP])  # final right-end
+START = (np.array([0.0, 0.0]), np.array([1.0, 0.0]))  # bottom needle
 
 N1, N2, N3, N4, N5 = 14, 12, 14, 12, 12
 HOLD0, END_HOLD = 8, 8
@@ -38,19 +38,19 @@ def needle(phase, f):
     """Needle endpoints (A, B) at fraction f of the given phase."""
     if phase == 0:
         return START
-    if phase == 1:  # slide right along the bottom line (free)
+    if phase == 1:  # slide right on bottom line (free)
         sx = DETOUR * f
         return (np.array([sx, 0.0]), np.array([sx + 1.0, 0.0]))
-    if phase == 2:  # rotate about E by alpha (cost: sector 1)
+    if phase == 2:  # rotate about E by alpha (sector 1)
         th = ALPHA * f
         return (E.copy(), E + np.array([-math.cos(th), math.sin(th)]))
     if phase == 3:  # slide up the diagonal (free)
         s = LAM * f
         return (E + s * U, E + np.array([-math.cos(ALPHA), math.sin(ALPHA)]) + s * U)
-    if phase == 4:  # rotate about PIVOT2 back to flat (cost: sector 2)
+    if phase == 4:  # rotate about PIVOT2 back to flat (sector 2)
         th = ALPHA * (1 - f)
         return (PIVOT2.copy(), PIVOT2 + np.array([-math.cos(th), math.sin(th)]))
-    endR = PIVOT2 + (TARGET - PIVOT2) * f  # phase 5: slide left along the top line (free)
+    endR = PIVOT2 + (TARGET - PIVOT2) * f  # phase 5: slide left on top line (free)
     return (endR, endR + np.array([-1.0, 0.0]))
 
 
@@ -84,7 +84,7 @@ def main():
 
     par = np.array([START[0], START[1], TARGET, TARGET + np.array([-1.0, 0.0])])
 
-    # Bounding box over the whole choreography (so nothing is clipped)
+    # bounding box over the whole maneuver
     pts = [par]
     for p, _ in plan:
         for i in range(21):
@@ -104,7 +104,7 @@ def main():
     import matplotlib.pyplot as plt
     from matplotlib.animation import FuncAnimation
 
-    # figure aspect matches the data box so nothing is squished
+    # aspect matches the data box
     w = 9.5
     h = max(3.2, w * (yhi - ylo) / (xhi - xlo)) + 0.5
     fig, ax = plt.subplots(figsize=(w, h))
@@ -132,8 +132,7 @@ def main():
                 w1 = wedge(E, math.pi, math.pi - th1)
                 ax.fill(w1[:, 0], w1[:, 1], facecolor=COLORS["accent"], edgecolor="none", alpha=0.85, zorder=2)
             if phase >= 4:
-                # the needle sweeps from the diagonal (pi-alpha) down to flat (pi); the swept red
-                # must trail behind it, growing from the diagonal edge toward the needle's angle.
+                # swept wedge trails the needle from the diagonal (pi-alpha) to flat (pi)
                 th_needle = 0.0 if phase > 4 else ALPHA * (1 - f)
                 w2 = wedge(PIVOT2, math.pi - ALPHA, math.pi - th_needle)
                 ax.fill(w2[:, 0], w2[:, 1], facecolor=COLORS["accent"], edgecolor="none", alpha=0.85, zorder=2)

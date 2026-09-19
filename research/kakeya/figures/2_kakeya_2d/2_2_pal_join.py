@@ -15,6 +15,7 @@ sweeps ~0 area, so the total swept area
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/pal_join.py
 """
+
 import math
 from itertools import pairwise
 
@@ -23,8 +24,8 @@ from _shared import COLORS, math_check, save_preview
 from shapely.geometry import Polygon
 from shapely.ops import unary_union
 
-GAP = 0.3          # fixed lateral gap between the two parallel unit needles (lines y=0 and y=GAP)
-LEN = 1.0          # needle length (fixed)
+GAP = 0.3  # lateral gap between the parallel needles (y=0 and y=GAP)
+LEN = 1.0  # needle length
 
 
 def maneuver_needles(D: float, n: int = 400) -> list[np.ndarray]:
@@ -45,22 +46,22 @@ def maneuver_needles(D: float, n: int = 400) -> list[np.ndarray]:
         needles.append(np.array([trail, tip]))
 
     n1 = max(2, n // 5)
-    # 1. slide out along +x, trailing end (0,0) -> (D,0)
+    # 1. slide out
     for x in np.linspace(0.0, D, n1):
         add(np.array([x, 0.0]), 0.0)
-    # 2. rotate up by phi about the far trailing end (D,0)
+    # 2. rotate up about far end
     piv = np.array([D, 0.0])
     for a in np.linspace(0.0, phi, n1):
         add(piv, a)
-    # 3. slide along the tilted axis until trailing end reaches height GAP
+    # 3. slide along tilted axis
     s = GAP / math.sin(phi)
     for u in np.linspace(0.0, s, n1):
         add(piv + u * np.array([math.cos(phi), math.sin(phi)]), phi)
-    # 4. rotate back down to horizontal about the raised trailing end
+    # 4. rotate back down
     piv2 = piv + s * np.array([math.cos(phi), math.sin(phi)])
     for a in np.linspace(phi, 0.0, n1):
         add(piv2, a)
-    # 5. slide back along -x to land the needle on line y = GAP at x in [0,1]
+    # 5. slide home to G2
     for x in np.linspace(piv2[0], 0.0, n1):
         add(np.array([x, GAP]), 0.0)
     return needles
@@ -74,7 +75,7 @@ def swept_area(needles: list[np.ndarray]) -> float:
         if q.is_valid and q.area > 0:
             quads.append(q)
         else:
-            q = q.buffer(0)               # fix bow-tie / degenerate quads
+            q = q.buffer(0)  # fix bow-tie quads
             if not q.is_empty:
                 quads.append(q)
     return unary_union(quads).area
@@ -90,16 +91,23 @@ def main():
         "Pal join: swept area shrinks with detour distance D",
         [
             ("gap g (fixed), needle length", f"g = {GAP}, L = {LEN}"),
-            ("turn angle phi(D) = 2 arctan(g/2D)", "  ".join(f"D={D:g}:{math.degrees(predicted[D]):.1f} deg" for D in Ds)),
+            (
+                "turn angle phi(D) = 2 arctan(g/2D)",
+                "  ".join(f"D={D:g}:{math.degrees(predicted[D]):.1f} deg" for D in Ds),
+            ),
             ("predicted area ~ phi(D) (rad)", "  ".join(f"D={D:g}:{predicted[D]:.4f}" for D in Ds)),
             ("measured swept area (drawn)", "  ".join(f"D={D:g}:{measured[D]:.4f}" for D in Ds)),
             ("monotone decreasing in D?", f"{decreasing}"),
-            ("area -> 0 as D -> inf?", f"{measured[Ds[-1]] < measured[Ds[0]]}  (schematic; lemma: area < eps for every eps > 0)"),
+            (
+                "area -> 0 as D -> inf?",
+                f"{measured[Ds[-1]] < measured[Ds[0]]}  (schematic; lemma: area < eps for every eps > 0)",
+            ),
         ],
     )
 
-    # Preview: the maneuver for a mid D, plus the area-vs-D trend
+    # preview
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
@@ -107,22 +115,24 @@ def main():
 
     Dshow = 4.0
     needles = maneuver_needles(Dshow)
-    swept = unary_union(
-        [Polygon([a[0], a[1], b[1], b[0]]).buffer(0) for a, b in pairwise(needles)]
-    )
+    swept = unary_union([Polygon([a[0], a[1], b[1], b[0]]).buffer(0) for a, b in pairwise(needles)])
     geoms = swept.geoms if swept.geom_type == "MultiPolygon" else [swept]
     for g in geoms:
         axL.fill(*g.exterior.xy, color=COLORS["region"], alpha=0.7, edgecolor="none")
     for nd in needles[:: max(1, len(needles) // 60)]:
         axL.plot(nd[:, 0], nd[:, 1], color=COLORS["needle"], lw=0.6, alpha=0.7)
-    # the two parallel unit needles G1, G2, drawn bold
     axL.plot([0, 1], [0, 0], color=COLORS["accent"], lw=3.0, solid_capstyle="round")
     axL.plot([0, 1], [GAP, GAP], color=COLORS["accent"], lw=3.0, solid_capstyle="round")
     axL.text(0.5, -0.12, "$G_1$", color=COLORS["accent"], ha="center", fontsize=13)
     axL.text(0.5, GAP + 0.06, "$G_2$", color=COLORS["accent"], ha="center", fontsize=13)
-    axL.annotate("far detour (slide out along axis)", xy=(Dshow, 0.0), xytext=(Dshow * 0.45, -0.55),
-                 color=COLORS["guide"], fontsize=9,
-                 arrowprops=dict(arrowstyle="->", color=COLORS["guide"]))
+    axL.annotate(
+        "far detour (slide out along axis)",
+        xy=(Dshow, 0.0),
+        xytext=(Dshow * 0.45, -0.55),
+        color=COLORS["guide"],
+        fontsize=9,
+        arrowprops=dict(arrowstyle="->", color=COLORS["guide"]),
+    )
     axL.set_aspect("equal")
     axL.axis("off")
     axL.set_title(f"Pal join, D = {Dshow:g}  (schematic; measured area {measured.get(Dshow, swept.area):.3f})")

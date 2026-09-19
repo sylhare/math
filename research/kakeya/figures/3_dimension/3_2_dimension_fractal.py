@@ -12,6 +12,7 @@ Self-similar dimension (N copies each scaled by 1/r): dim = log N / log r.
 
 Run: uv run --with matplotlib --with shapely python research/kakeya/figures/dimension_fractal.py
 """
+
 import math
 from itertools import pairwise
 
@@ -56,8 +57,7 @@ def koch_curve(depth):
             d = q - p
             a = p + d / 3.0
             b = p + 2 * d / 3.0
-            # apex of the outward bump (rotate (b-a) by +60 deg)
-            ang = math.radians(60)
+            ang = math.radians(60)  # outward bump: rotate (b-a) by +60 deg
             rot = np.array([[math.cos(ang), -math.sin(ang)], [math.sin(ang), math.cos(ang)]])
             apex = a + rot @ (b - a)
             out += [a, apex, b, q]
@@ -74,7 +74,7 @@ def sierpinski_points(n_chains=150_000, steps=45, burn=8, seed=0):
     for s in range(steps):
         idx = rng.integers(0, 3, size=n_chains)
         p = (p + verts[idx]) / 2.0
-        if s >= burn:  # drop burn-in
+        if s >= burn:
             out.append(p.copy())
     return np.concatenate(out)
 
@@ -98,11 +98,10 @@ def main():
     dim_sierp = math.log(3) / math.log(2)
     dim_koch = math.log(4) / math.log(3)
 
-    # Sierpinski box-count over delta = 2^-5 .. 2^-10
     pts = sierpinski_points()
     ks = list(range(5, 11))
     _, counts, slope = boxcount_slope(pts, ks)
-    ratios = counts[1:] / counts[:-1]  # successive N ratios -> 3
+    ratios = counts[1:] / counts[:-1]  # -> 3
 
     math_check(
         "Hausdorff / self-similar dimension  (dim = log N / log r)",
@@ -119,7 +118,6 @@ def main():
 
     fig, ax = new_axes(3, figsize=(15, 5.2))
 
-    # Cantor: stack surviving intervals, one row per level (top = level 0)
     levels = cantor_levels(5)
     for lvl, intervals in enumerate(levels):
         y = -lvl
@@ -129,14 +127,12 @@ def main():
     ax[0].set_ylim(-len(levels) + 0.5, 0.5)
     ax[0].set_title(f"Cantor set   dim = log2/log3 = {dim_cantor:.4f}")
 
-    # Sierpinski: fill the surviving sub-triangles
     for tri in sierpinski_triangles(6):
         ax[1].fill(tri[:, 0], tri[:, 1], color=COLORS["needle"], lw=0)
     ax[1].set_xlim(-0.05, 1.05)
     ax[1].set_ylim(-0.05, SQRT3 / 2.0 + 0.05)
     ax[1].set_title(f"Sierpinski   dim = log3/log2 = {dim_sierp:.4f}\n(box-count slope {slope:.3f})")
 
-    # Koch: the polyline
     koch = koch_curve(4)
     ax[2].plot(koch[:, 0], koch[:, 1], color=COLORS["needle"], lw=1.0)
     ax[2].set_xlim(-0.05, 1.05)

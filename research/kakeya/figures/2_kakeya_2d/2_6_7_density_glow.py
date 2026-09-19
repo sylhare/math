@@ -7,6 +7,7 @@ direction.
 
 Run: uv run --with matplotlib --with shapely --with pillow python research/kakeya/figures/2_kakeya_2d/2_6_7_density_glow.py
 """
+
 import math
 
 import numpy as np
@@ -16,13 +17,13 @@ SIDE = 1.0
 R = SIDE / math.sqrt(3.0)
 CORNERS_DEG = (90.0, 210.0, 330.0)
 LEN_CORNER, LEN_EDGE = 0.74, 0.52
-HALFW = 0.009                       # needle half-width (perp jitter in the density)
-JF, KF = 210, 95                    # needles per corner fan / per edge
+HALFW = 0.009  # needle half-width
+JF, KF = 210, 95  # needles per corner fan / per edge
 CORE = "#f4e37a"
 GRID = 1200
-STEP = 0.0010                       # spacing of samples along a needle
-CORE_LEVEL = 0.82                   # brightness of the solid core plateau (0..1)
-BLUR_SIGMA = 1.1                    # gaussian blur radius, in grid cells
+STEP = 0.0010  # spacing of samples along a needle
+CORE_LEVEL = 0.82  # brightness of the solid core plateau (0..1)
+BLUR_SIGMA = 1.1  # gaussian blur radius, in grid cells
 
 VERTS = np.array([R * np.array([math.cos(math.radians(d)), math.sin(math.radians(d))]) for d in CORNERS_DEG])
 
@@ -36,7 +37,7 @@ def _segments():
     rng = np.random.default_rng(7)
     cen = VERTS.mean(0)
     segs = []
-    for d0 in CORNERS_DEG:                       # corner fans: full turn once tripled
+    for d0 in CORNERS_DEG:  # corner fans
         v = R * _unit(d0)
         for th in np.linspace(d0 - 60, d0 + 60, JF):
             segs.append((v, v + LEN_CORNER * (0.60 + 0.62 * rng.random()) * _unit(th)))
@@ -62,7 +63,8 @@ def _needle_points(segs, rng):
         pts = base + np.outer(t, d)
         perp = np.array([-d[1], d[0]]) / length
         pts = pts + np.outer(rng.uniform(-HALFW, HALFW, n), perp)
-        xs.append(pts[:, 0]); ys.append(pts[:, 1])
+        xs.append(pts[:, 0])
+        ys.append(pts[:, 1])
     return np.concatenate(xs), np.concatenate(ys)
 
 
@@ -98,13 +100,13 @@ def _glow_cmap():
 
     return LinearSegmentedColormap.from_list(
         "kakeya_glow",
-        [(0.00, "#0b0b12"), (0.14, "#2f2708"), (0.34, "#8a7220"),
-         (0.62, CORE), (0.86, "#faf0a6"), (1.00, "#fffde8")],
+        [(0.00, "#0b0b12"), (0.14, "#2f2708"), (0.34, "#8a7220"), (0.62, CORE), (0.86, "#faf0a6"), (1.00, "#fffde8")],
     )
 
 
 def main():
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
@@ -121,18 +123,19 @@ def main():
     y0, y1 = yc - span / 2, yc + span / 2
 
     hist, _, _ = np.histogram2d(px, py, bins=GRID, range=[[x0, x1], [y0, y1]])
-    dens = np.sqrt(hist.T)                             # (row=y, col=x); sqrt lifts faint tips
+    dens = np.sqrt(hist.T)  # (row=y, col=x); sqrt lifts faint tips
     dens = np.clip(dens / np.percentile(dens[dens > 0], 99.3), 0.0, 1.0)
-    dens = np.maximum(dens, CORE_LEVEL * _core_mask(x0, x1, y0, y1))   # solid core plateau
+    dens = np.maximum(dens, CORE_LEVEL * _core_mask(x0, x1, y0, y1))  # solid core plateau
     dens = _blur(dens, BLUR_SIGMA)
     dens = np.clip(dens / dens.max(), 0.0, 1.0)
 
     cmap = _glow_cmap()
     fig, ax = plt.subplots(figsize=(6.6, 6.6))
     fig.patch.set_facecolor(cmap(0.0))
-    ax.set_position([0, 0, 1, 1]); ax.set_aspect("equal"); ax.axis("off")
-    ax.imshow(dens, origin="lower", extent=(x0, x1, y0, y1), cmap=cmap,
-              interpolation="bilinear", vmin=0.0, vmax=1.0)
+    ax.set_position([0, 0, 1, 1])
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.imshow(dens, origin="lower", extent=(x0, x1, y0, y1), cmap=cmap, interpolation="bilinear", vmin=0.0, vmax=1.0)
 
     math_check(
         "Kakeya needle set as a density glow (method 7)",
