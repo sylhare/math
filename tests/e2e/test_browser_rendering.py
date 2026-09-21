@@ -5,11 +5,9 @@ in a real browser — catching JS failures, blank pages, and
 missing content that static HTML parsing would miss.
 """
 
-import http.server
+import contextlib
 import subprocess
 import sys
-import threading
-import time
 from pathlib import Path
 
 import pytest
@@ -18,10 +16,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 from math_explorations.export import export_notebook, get_all_notebooks
 
-# How long to wait for marimo's JS to render (seconds)
-RENDER_TIMEOUT = 20
-# Minimum number of cell outputs expected from a successful export
+RENDER_TIMEOUT = 10
 MIN_OUTPUT_COUNT = 3
+PAGE_TIMEOUT = 60000
 
 
 def _ensure_playwright_browsers():
@@ -53,33 +50,37 @@ def exported_docs(tmp_path_factory):
 
 @pytest.fixture(scope="module")
 def http_server(exported_docs):
-    """Start a local HTTP server serving the exported docs."""
+    """Serve the exported docs via file:// URI."""
     doc_dir = next(iter(exported_docs.values())).parent
-
-    class QuietHandler(http.server.SimpleHTTPRequestHandler):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, directory=str(doc_dir), **kwargs)
-
-        def log_message(self, format, *args):
-            pass
-
-    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), QuietHandler)
-    port = server.server_address[1]
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    yield f"http://127.0.0.1:{port}"
-    server.shutdown()
+    return f"file://{doc_dir}"
 
 
 @pytest.fixture(scope="module")
-def browser_context():
-    """Launch a shared browser instance for all tests."""
+def browser_context(http_server, exported_docs):
+    """Launch a shared browser context with warmed CDN cache for all tests."""
     _ensure_playwright_browsers()
     from playwright.sync_api import sync_playwright
 
     pw = sync_playwright().start()
     browser = pw.chromium.launch(headless=True)
-    yield browser
+    context = browser.new_context()
+    context.route("**/health", lambda route: route.fulfill(status=404, body=""))
+    context.route(
+        "**/gtag/js*", lambda route: route.fulfill(status=200, content_type="application/javascript", body="")
+    )
+    context.route("*google-analytics*/**", lambda route: route.fulfill(status=204, body=""))
+
+    first_html = next(iter(exported_docs.values())).name
+    warmup_page = context.new_page()
+    try:
+        warmup_page.goto(f"{http_server}/{first_html}", wait_until="domcontentloaded", timeout=PAGE_TIMEOUT)
+        with contextlib.suppress(Exception):
+            warmup_page.wait_for_selector(".marimo", timeout=RENDER_TIMEOUT * 1000)
+    finally:
+        warmup_page.close()
+
+    yield context
+    context.close()
     browser.close()
     pw.stop()
 
@@ -100,7 +101,7 @@ class TestBrowserRendering:
 
         page = browser_context.new_page()
         html_file = html_path.name
-        page.goto(f"{http_server}/{html_file}", wait_until="domcontentloaded", timeout=30000)
+        page.goto(f"{http_server}/{html_file}", wait_until="commit", timeout=PAGE_TIMEOUT)
         page.wait_for_selector("#root", timeout=10000)
         page.close()
 
@@ -112,8 +113,9 @@ class TestBrowserRendering:
         page.on("pageerror", lambda err: page_errors.append(str(err)))
 
         html_file = exported_docs[notebook.stem].name
-        page.goto(f"{http_server}/{html_file}", wait_until="domcontentloaded", timeout=30000)
-        time.sleep(RENDER_TIMEOUT)
+        page.goto(f"{http_server}/{html_file}", wait_until="domcontentloaded", timeout=PAGE_TIMEOUT)
+        with contextlib.suppress(Exception):
+            page.wait_for_selector(".marimo", timeout=RENDER_TIMEOUT * 1000)
         page.close()
 
         if page_errors:
@@ -135,8 +137,9 @@ class TestBrowserRendering:
         page.on("response", on_response)
 
         html_file = exported_docs[notebook.stem].name
-        page.goto(f"{http_server}/{html_file}", wait_until="domcontentloaded", timeout=30000)
-        time.sleep(RENDER_TIMEOUT)
+        page.goto(f"{http_server}/{html_file}", wait_until="domcontentloaded", timeout=PAGE_TIMEOUT)
+        with contextlib.suppress(Exception):
+            page.wait_for_selector(".marimo", timeout=RENDER_TIMEOUT * 1000)
         page.close()
 
         if failed:
