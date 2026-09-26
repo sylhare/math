@@ -90,16 +90,12 @@ ignore = [
     "B018",    # marimo displays the last expression
 ]
 "research/**/*.py" = [
-    # Staging/experiment figure scripts. Real-error checks (F-codes, correctness) stay ON; only these
-    # four are relaxed, each for a concrete reason (everything else, incl. B905/RUF046/B007, is fixed):
-    "E701",    # `if x: y` / `a; b` - the compact one-line axis setup this folder is authored in;
-    "E702",    #   the only auto-fix is `ruff format`, a 1400-line rewrite of throwaway visual code.
-    "UP031",   # printf `%` in prints/titles - ruff rewrites it to .format(), not cleaner; mostly in
-               #   the frozen attempt/ files we deliberately do not churn.
+    # Staging/experiment figure scripts, ruff-formatted. Real-error checks (F-codes, correctness) stay
+    # ON; only these are relaxed, each for a concrete reason:
+    "UP031",   # printf `%` in prints/titles - ruff rewrites it to .format(), not cleaner.
     "RUF059",  # unused unpack in demo tuples - a preview-only rule (does not fire under pinned ruff).
 ]
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-exclude = ["research/kakeya/figures/**"]
